@@ -35,11 +35,9 @@ class Resource:
             except KeyError:
                 allow = ', '.join(resource)
                 raise aiohttp.HttpErrorException(405,
-                                                 headers=(('URI', message.path),
-                                                          ('Allow', allow)))
+                                                 headers=(('Allow', allow)))
         except KeyError:
-            raise aiohttp.HttpErrorException(404,
-                                             headers=(('URI', message.path))
+            raise aiohttp.HttpErrorException(404)
 
 
 class RESTServer(aiohttp.server.ServerHttpProtocol):
@@ -62,6 +60,8 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
         body = yield from self.dispatch(method, path, messaage, payload)
         response.add_header('Content-Length', len(body))
         response.add_header('Host', self.hostname)
+        response.add_header('Content-Type', 'application/json')
+        response.add_header('Server', 'asyncio/aiorest')
 
         # content encoding
         accept_encoding = headers.get('accept-encoding', '').lower()
