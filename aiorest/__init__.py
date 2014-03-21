@@ -1,6 +1,11 @@
 import functools
+import inspect
+import re
+
 import asyncio
 import aiohttp, aiohttp.server
+
+from types import MethodType
 
 
 class rest:
@@ -44,6 +49,12 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
     def __init__(self, *, hostname, **kwargs):
         super().__init__(**kwargs)
         self.hostname = hostname
+        self._urls = {'POST': [],
+                      'GET': [],
+                      'PUT': [],
+                      'DELETE': [],
+                      'PATCH': [],
+                      'HEAD': []}
 
     @asyncio.coroutine
     def handle_request(self, message, payload):
@@ -57,7 +68,7 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             headers.add_header(hdr, val)
 
         response = aiohttp.Response(self.transport, 200)
-        body = yield from self.dispatch(method, path, messaage, payload)
+        body = yield from self.dispatch(method, path, message, payload)
         response.add_header('Content-Length', len(body))
         response.add_header('Host', self.hostname)
         response.add_header('Content-Type', 'application/json')
@@ -79,3 +90,48 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             self.keep_alive(True)
 
         self.log_access(message, None, response, time.time() - now)
+
+    def add_url(self, method, regexp, handler):
+        compiled = re.compile(regexp)
+        method = method.upper()
+        if method not in self._urls:
+            raise RuntimeError("Unknowm method {}".format(method))
+        if isinstance(handler, MethodType):
+            holder = handler.__func__
+        else:
+            holder = handler
+        holder.__signature__ = inspect.signature(handler)
+        self._urls[method] = (compiled, handler)
+
+    @asyncio.coroutine
+    def dispatch(self, method, path, message, payload):
+        table = self._urls[method]
+        matches = []
+        for url, handler in table:
+            match = url.match(path)
+            if match is None:
+                continue
+            matches.append((match, handler))
+        if not matches:
+            # add log
+            raise HttpErrorException(404, "Not Found")
+        if len(matches) != 1:
+            # add log about ambiguous path matching
+            raise HttpErrorException(500, "Internal Server Error")
+        match, handler = matches[0]
+        if isinstance(func, MethodType):
+            holder = func.__func__
+        else:
+            holder = func
+        signature = holder.__signature__
+        args, kwargs = self.construct_args(signature, match.groupdict())
+        try:
+            return yield from handler(*args, **kwargs)
+        except aiohttp.HttpException as exc:
+            raise
+        except Exception as exc:
+            # add log about error
+            raise HttpErrorException(500, "Internal Server Error")
+
+    def construct_args(self, signature, variables):
+        pass
