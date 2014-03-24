@@ -1,5 +1,7 @@
+import collections
 import functools
 import inspect
+import json
 import re
 
 import asyncio
@@ -8,53 +10,20 @@ import aiohttp, aiohttp.server
 from types import MethodType
 
 
-class rest:
-    def __init__(self, method, name=None):
-        self.method = method
-        self.name = name
-
-    def __call__(self, func):
-        if self.name is None:
-            self.name = func.__name__
-        @functools.wraps(func)
-        def wrapped(self, *args, **kwargs):
-            return func(self, *args, **kwargs)
-        return wrapped
-
-
-
-class Resource:
-    def __init__(self):
-        self._apis = {}
-        for name in dir(self.__class__):
-            val = getattr(self.__class__.name)
-            if isinstance(val, rest):
-                self._apis[(val.name, val.method)] = val
-
-    def dispatch(self, message):
-        try:
-            resource = self._apis[request.path]
-            try:
-                method = resource[message.method]
-                method(self)
-            except KeyError:
-                allow = ', '.join(resource)
-                raise aiohttp.HttpErrorException(405,
-                                                 headers=(('Allow', allow)))
-        except KeyError:
-            raise aiohttp.HttpErrorException(404)
+Entry = collections.namedtuple('Entry', 'regex method handler')
 
 
 class RESTServer(aiohttp.server.ServerHttpProtocol):
+
+    DYN = re.compile(r'^\{.+\}$')
+    PLAIN = re.compile(r'^[^{}]+$')
+
+    METHODS = {'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'}
+
     def __init__(self, *, hostname, **kwargs):
         super().__init__(**kwargs)
         self.hostname = hostname
-        self._urls = {'POST': [],
-                      'GET': [],
-                      'PUT': [],
-                      'DELETE': [],
-                      'PATCH': [],
-                      'HEAD': []}
+        self._urls = []
 
     @asyncio.coroutine
     def handle_request(self, message, payload):
@@ -64,7 +33,6 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
 
         headers = email.message.Message()
         for hdr, val in message.headers:
-            print(hdr, val)
             headers.add_header(hdr, val)
 
         response = aiohttp.Response(self.transport, 200)
@@ -91,47 +59,69 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
 
         self.log_access(message, None, response, time.time() - now)
 
-    def add_url(self, method, regexp, handler):
-        compiled = re.compile(regexp)
+    def add_url(self, method, path, handler):
+        assert path.startswith('/')
+        assert callable(handler), handler
         method = method.upper()
-        if method not in self._urls:
-            raise RuntimeError("Unknowm method {}".format(method))
+        assert method in self.METHODS, method
+        regexp = []
+        for part in path.split('/'):
+            if not part:
+                continue
+            if self.DYN.match(part):
+                regexp.append('(?P<'+part[1:-1]+'>.+)')
+            elif self.PLAIN.match(part):
+                regexp.append(part)
+            else:
+                raise RuntimeError("Invalid part '{}'['{}']".format(part, path))
+        pattern = '/' + '/'.join(regexp)
+        if path.endswith('/') and pattern != '/':
+            pattern += '/'
+        compiled = re.compile(pattern)
         if isinstance(handler, MethodType):
             holder = handler.__func__
         else:
             holder = handler
         holder.__signature__ = inspect.signature(handler)
-        self._urls[method] = (compiled, handler)
+        self._urls.append(Entry(compiled, method, handler))
 
     @asyncio.coroutine
     def dispatch(self, method, path, message, payload):
-        table = self._urls[method]
-        matches = []
-        for url, handler in table:
-            match = url.match(path)
+        allowed_methods = set()
+        for entry in self._urls:
+            match = entry.regex.match(path)
             if match is None:
                 continue
-            matches.append((match, handler))
-        if not matches:
-            # add log
-            raise HttpErrorException(404, "Not Found")
-        if len(matches) != 1:
-            # add log about ambiguous path matching
-            raise HttpErrorException(500, "Internal Server Error")
-        match, handler = matches[0]
-        if isinstance(func, MethodType):
-            holder = func.__func__
+            if entry.method != method:
+                allowed_methods.add(entry.method)
+            else:
+                break
         else:
-            holder = func
-        signature = holder.__signature__
+            if allowed_methods:
+                allow = ', '.join(sorted(allowed_methods))
+                # add log
+                raise aiohttp.HttpErrorException(405,
+                                                 headers=(('Allow', allow),))
+            else:
+                # add log
+                raise aiohttp.HttpErrorException(404, "Not Found")
+
+        handler = entry.handler
+        signature = inspect.signature(handler)
+        # add signature check
         args, kwargs = self.construct_args(signature, match.groupdict())
         try:
-            return yield from handler(*args, **kwargs)
+            if asyncio.iscoroutinefunction(handler):
+                ret = yield from handler(*args, **kwargs)
+            else:
+                ret = handler(*args, **kwargs)
         except aiohttp.HttpException as exc:
             raise
         except Exception as exc:
             # add log about error
-            raise HttpErrorException(500, "Internal Server Error")
+            raise aiohttp.HttpErrorException(500, "Internal Server Error")
+        else:
+            return json.dumps(ret)
 
     def construct_args(self, signature, variables):
-        pass
+        return (), variables
