@@ -4,7 +4,7 @@ from unittest import mock
 import asyncio
 import aiohttp
 import email
-from aiorest import RESTServer
+from aiorest import RESTServer, Request
 import json
 
 
@@ -190,3 +190,19 @@ class RouterTests(unittest.TestCase):
                              ctx.exception.headers)
 
         self.loop.run_until_complete(go())
+
+    def test_dispatch_with_request(self):
+        def f(id, req: Request):
+            self.assertIsInstance(req, Request)
+            self.assertEqual('GET', req.method)
+            self.assertEqual('/post/123', req.path)
+            return {'a': 1, 'b': 2}
+        self.server.add_url('get', '/post/{id}', f)
+
+        ret = self.loop.run_until_complete(self.server.dispatch(
+            aiohttp.RawRequestMessage('GET', '/post/123', '1.1',
+                                      (), True, None),
+            email.message.Message(), b'',
+            aiohttp.Response(None, 200)))
+        # json.loads is required to avoid items order in dict
+        self.assertEqual({"b": 2, "a": 1}, json.loads(ret))

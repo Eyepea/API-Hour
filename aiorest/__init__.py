@@ -58,9 +58,9 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
         super().__init__(**kwargs)
         self.hostname = hostname
         self._urls = []
-        self._default_anns = ((Request, Request.construct),
-                              (Response, Response.construct),
-                              (PostData, PostData.construct))
+        self._default_anns = {Request: Request.construct,
+                              Response: Response.construct,
+                              PostData: PostData.construct}
 
     @asyncio.coroutine
     def handle_request(self, message, payload):
@@ -148,11 +148,8 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
         handler = entry.handler
         sig = inspect.signature(handler)
         try:
-            args, kwargs, ret_ann = self.construct_args(sig,
-                                                        message,
-                                                        headers,
-                                                        payload,
-                                                        response,
+            args, kwargs, ret_ann = self.construct_args(sig, message, headers,
+                                                        payload, response,
                                                         match.groupdict())
             if asyncio.iscoroutinefunction(handler):
                 ret = yield from handler(*args, **kwargs)
@@ -164,12 +161,23 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             raise
         except Exception as exc:
             # add log about error
-            raise aiohttp.HttpErrorException(500, "Internal Server Error")
+            raise aiohttp.HttpErrorException(500,
+                                             "Internal Server Error") from exc
         else:
             return json.dumps(ret)
 
     def construct_args(self, sig, message, headers, payload, response, kwargs):
         # add signature check
+        extra = set()
+        for name, param in sig.parameters.items():
+            if param.annotation is param.empty:
+                continue
+            ctor = self._default_anns.get(param.annotation)
+            if ctor is not None:
+                assert param.default is param.empty, param
+                assert name not in kwargs, (kwargs, name)
+                extra.add(name)
+                kwargs[name] = ctor(message, headers, payload, response)
         try:
             bargs = sig.bind(**kwargs)
         except TypeError:
@@ -177,6 +185,8 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
         else:
             args = bargs.arguments
             for name, param in sig.parameters.items():
+                if name in extra:
+                    continue
                 if param.annotation is param.empty:
                     continue
                 val = args.get(name, param.default)
