@@ -1,8 +1,10 @@
 import collections
+import email
 import functools
 import inspect
 import json
 import re
+import time
 
 import asyncio
 import aiohttp, aiohttp.server
@@ -37,7 +39,7 @@ class Response:
         return cls(response)
 
 
-class PostData:
+class PostJson:
 
     def __init__(self, payload):
         self._payload = payload
@@ -60,10 +62,11 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
         self._urls = []
         self._default_anns = {Request: Request.construct,
                               Response: Response.construct,
-                              PostData: PostData.construct}
+                              PostJson: PostJson.construct}
 
     @asyncio.coroutine
     def handle_request(self, message, payload):
+        now = time.time()
 
         headers = email.message.Message()
         for hdr, val in message.headers:
@@ -71,10 +74,10 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
 
         response = aiohttp.Response(self.transport, 200)
         body = yield from self.dispatch(message, headers, payload, response)
+        bbody = body.encode('utf-8')
         response.add_header('Content-Length', len(body))
         response.add_header('Host', self.hostname)
         response.add_header('Content-Type', 'application/json')
-        response.add_header('Server', 'asyncio/aiorest')
 
         # content encoding
         accept_encoding = headers.get('accept-encoding', '').lower()
@@ -86,7 +89,7 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             response.add_compression_filter('gzip')
 
         response.send_headers()
-        response.write(body.encode('utf-8'))
+        response.write(bbody)
         response.write_eof()
         if response.keep_alive():
             self.keep_alive(True)
