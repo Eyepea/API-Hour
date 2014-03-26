@@ -13,6 +13,40 @@ from types import MethodType
 Entry = collections.namedtuple('Entry', 'regex method handler')
 
 
+class Request:
+
+    def __init__(self, message, headers):
+        self._message = message
+        self.version = message.version
+        self.method = message.method
+        self.path = message.path
+        self.headers = headers
+
+    @classmethod
+    def construct(cls, message, headers, payload, response):
+        return cls(message, payload)
+
+
+class Response:
+
+    def __init__(self, response_impl):
+        self._impl = response_impl
+
+    @classmethod
+    def construct(cls, message, headers, payload, response):
+        return cls(response)
+
+
+class PostData:
+
+    def __init__(self, payload):
+        self._payload = payload
+
+    @classmethod
+    def construct(cls, message, headers, payload, response):
+        return cls(payload)
+
+
 class RESTServer(aiohttp.server.ServerHttpProtocol):
 
     DYN = re.compile(r'^\{.+\}$')
@@ -24,19 +58,19 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
         super().__init__(**kwargs)
         self.hostname = hostname
         self._urls = []
+        self._default_anns = ((Request, Request.construct),
+                              (Response, Response.construct),
+                              (PostData, PostData.construct))
 
     @asyncio.coroutine
     def handle_request(self, message, payload):
-        method = message.method
-        path = message.path
-        version = message.version
 
         headers = email.message.Message()
         for hdr, val in message.headers:
             headers.add_header(hdr, val)
 
         response = aiohttp.Response(self.transport, 200)
-        body = yield from self.dispatch(method, path, message, payload)
+        body = yield from self.dispatch(message, headers, payload, response)
         response.add_header('Content-Length', len(body))
         response.add_header('Host', self.hostname)
         response.add_header('Content-Type', 'application/json')
@@ -59,7 +93,7 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
 
         self.log_access(message, None, response, time.time() - now)
 
-    def add_url(self, method, path, handler):
+    def add_url(self, method, path, handler, anns=()):
         assert path.startswith('/')
         assert callable(handler), handler
         method = method.upper()
@@ -73,11 +107,14 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             elif self.PLAIN.match(part):
                 regexp.append(part)
             else:
-                raise RuntimeError("Invalid part '{}'['{}']".format(part, path))
+                raise ValueError("Invalid path '{}'['{}']".format(path, part))
         pattern = '/' + '/'.join(regexp)
         if path.endswith('/') and pattern != '/':
             pattern += '/'
-        compiled = re.compile(pattern)
+        try:
+            compiled = re.compile('^' + pattern + '$')
+        except re.error:
+            raise ValueError("Invalid path '{}'".format(path))
         if isinstance(handler, MethodType):
             holder = handler.__func__
         else:
@@ -86,7 +123,9 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
         self._urls.append(Entry(compiled, method, handler))
 
     @asyncio.coroutine
-    def dispatch(self, method, path, message, payload):
+    def dispatch(self, message, headers, payload, response):
+        path = message.path
+        method = message.method.upper()
         allowed_methods = set()
         for entry in self._urls:
             match = entry.regex.match(path)
@@ -107,14 +146,20 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
                 raise aiohttp.HttpErrorException(404, "Not Found")
 
         handler = entry.handler
-        signature = inspect.signature(handler)
-        # add signature check
-        args, kwargs = self.construct_args(signature, match.groupdict())
+        sig = inspect.signature(handler)
         try:
+            args, kwargs, ret_ann = self.construct_args(sig,
+                                                        message,
+                                                        headers,
+                                                        payload,
+                                                        response,
+                                                        match.groupdict())
             if asyncio.iscoroutinefunction(handler):
                 ret = yield from handler(*args, **kwargs)
             else:
                 ret = handler(*args, **kwargs)
+            if ret_ann is not None:
+                ret = ret_ann(ret)
         except aiohttp.HttpException as exc:
             raise
         except Exception as exc:
@@ -123,5 +168,26 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
         else:
             return json.dumps(ret)
 
-    def construct_args(self, signature, variables):
-        return (), variables
+    def construct_args(self, sig, message, headers, payload, response, kwargs):
+        # add signature check
+        try:
+            bargs = sig.bind(**kwargs)
+        except TypeError:
+            raise
+        else:
+            args = bargs.arguments
+            for name, param in sig.parameters.items():
+                if param.annotation is param.empty:
+                    continue
+                val = args.get(name, param.default)
+                # NOTE: default value always being passed through annotation
+                #       is it realy neccessary?
+                try:
+                    args[name] = param.annotation(val)
+                except (TypeError, ValueError) as exc:
+                    raise ParametersError(
+                        'Invalid value for argument {!r}: {!r}'
+                        .format(name, exc)) from exc
+            if sig.return_annotation is not sig.empty:
+                return bargs.args, bargs.kwargs, sig.return_annotation
+            return bargs.args, bargs.kwargs, None
