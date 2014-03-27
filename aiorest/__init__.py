@@ -67,34 +67,46 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
     @asyncio.coroutine
     def handle_request(self, message, payload):
         now = time.time()
+        #self.log.debug("Start handle request %r at %d", message, now)
 
-        headers = email.message.Message()
-        for hdr, val in message.headers:
-            headers.add_header(hdr, val)
+        try:
+            headers = email.message.Message()
+            for hdr, val in message.headers:
+                headers.add_header(hdr, val)
 
-        response = aiohttp.Response(self.transport, 200)
-        body = yield from self.dispatch(message, headers, payload, response)
-        bbody = body.encode('utf-8')
-        response.add_header('Content-Length', len(body))
-        response.add_header('Host', self.hostname)
-        response.add_header('Content-Type', 'application/json')
+            response = aiohttp.Response(self.transport, 200)
+            body = yield from self.dispatch(message, headers, payload, response)
+            bbody = body.encode('utf-8')
 
-        # content encoding
-        accept_encoding = headers.get('accept-encoding', '').lower()
-        if 'deflate' in accept_encoding:
-            response.add_header('Content-Encoding', 'deflate')
-            response.add_compression_filter('deflate')
-        elif 'gzip' in accept_encoding:
-            response.add_header('Content-Encoding', 'gzip')
-            response.add_compression_filter('gzip')
+            response.add_header('Host', self.hostname)
+            response.add_header('Content-Type', 'application/json')
+            response.add_header('Content-Length', str(len(bbody)))
 
-        response.send_headers()
-        response.write(bbody)
-        response.write_eof()
-        if response.keep_alive():
-            self.keep_alive(True)
+            # content encoding
+            accept_encoding = headers.get('accept-encoding', '').lower()
+            ## if 'deflate' in accept_encoding:
+            ##     response.add_header('Transfer-Encoding', 'chunked')
+            ##     response.add_header('Content-Encoding', 'deflate')
+            ##     response.add_compression_filter('deflate')
+            ## elif 'gzip' in accept_encoding:
+            ##     response.add_header('Transfer-Encoding', 'chunked')
+            ##     response.add_header('Content-Encoding', 'gzip')
+            ##     response.add_compression_filter('gzip')
+            ## else:
+            ##     response.add_header('Content-Length', str(len(bbody)))
 
-        self.log_access(message, None, response, time.time() - now)
+            response.send_headers()
+            response.write(bbody)
+            response.write_eof()
+            if response.keep_alive():
+                self.keep_alive(True)
+
+            #self.log.debug("Fihish handle request %r at %d -> %s",
+            #               message, time.time(), body)
+            self.log_access(message, None, response, time.time() - now)
+        except Exception as exc:
+            #self.log.exception("Cannot handle request %r", message)
+            raise
 
     def add_url(self, method, path, handler, anns=()):
         assert path.startswith('/')
