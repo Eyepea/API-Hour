@@ -19,12 +19,15 @@ Entry = collections.namedtuple('Entry', 'regex method handler use_request')
 
 class Request:
 
-    def __init__(self, message, headers, payload):
-        self._payload = payload
+    def __init__(self, message, headers, post_body):
         self.version = message.version
         self.method = message.method.upper()
         self.path = message.path
         self.uri = message.path
+        if post_body:
+            self.json_body = json.loads(post_body.decode('utf-8'))
+        else:
+            self.json_body = None
         #self.query = query
         self.query = message.path
         self.request_headers = headers
@@ -107,7 +110,18 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             for hdr, val in message.headers:
                 headers.add_header(hdr, val)
 
-            request = Request(message, headers, payload)
+            if payload is not None:
+                post_body = bytearray()
+                try:
+                    while True:
+                        chunk = yield from payload.read()
+                        post_body.extend(chunk)
+                except aiohttp.EofStream:
+                    pass
+            else:
+                post_body = None
+
+            request = Request(message, headers, post_body)
 
             response = aiohttp.Response(self.transport, 200)
             body = yield from self.dispatch(request)
@@ -115,20 +129,21 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
 
             response.add_header('Host', self.hostname)
             response.add_header('Content-Type', 'application/json')
-            response.add_header('Content-Length', str(len(bbody)))
 
             # content encoding
-            accept_encoding = headers.get('accept-encoding', '').lower()
+            ## accept_encoding = headers.get('accept-encoding', '').lower()
             ## if 'deflate' in accept_encoding:
             ##     response.add_header('Transfer-Encoding', 'chunked')
+            ##     response.add_chunking_filter(1025)
             ##     response.add_header('Content-Encoding', 'deflate')
             ##     response.add_compression_filter('deflate')
             ## elif 'gzip' in accept_encoding:
             ##     response.add_header('Transfer-Encoding', 'chunked')
+            ##     response.add_chunking_filter(1025)
             ##     response.add_header('Content-Encoding', 'gzip')
             ##     response.add_compression_filter('gzip')
             ## else:
-            ##     response.add_header('Content-Length', str(len(bbody)))
+            response.add_header('Content-Length', str(len(bbody)))
 
             response.send_headers()
             response.write(bbody)
