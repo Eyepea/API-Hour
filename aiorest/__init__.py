@@ -12,6 +12,9 @@ import aiohttp, aiohttp.server
 
 from types import MethodType
 from datetime import datetime, timedelta
+from urllib.parse import urlsplit, parse_qsl
+
+from .multidict import MultiDict
 
 
 Entry = collections.namedtuple('Entry', 'regex method handler use_request')
@@ -19,17 +22,22 @@ Entry = collections.namedtuple('Entry', 'regex method handler use_request')
 
 class Request:
 
-    def __init__(self, message, headers, post_body):
+    def __init__(self, host, message, headers, req_body):
         self.version = message.version
         self.method = message.method.upper()
-        self.path = message.path
-        self.uri = message.path
-        if post_body:
-            self.json_body = json.loads(post_body.decode('utf-8'))
+        self.host = headers.get('HOST', host)
+        self.host_url = 'http://' + self.host
+        self.path_qs = message.path
+        res = urlsplit(self.path_qs)
+        self.path = res.path
+        self.path_url = self.host_url + self.path
+        self.url = self.host_url + self.path_qs
+        self.query_string = res.query
+        self.args = MultiDict(parse_qsl(self.query_string))
+        if req_body:
+            self.json_body = json.loads(req_body.decode('utf-8'))
         else:
             self.json_body = None
-        #self.query = query
-        self.query = message.path
         self.request_headers = headers
         self.response_headers = email.message.Message()
 
@@ -90,8 +98,8 @@ class Session(collections.MutableMapping):
 
 class RESTServer(aiohttp.server.ServerHttpProtocol):
 
-    DYN = re.compile(r'^\{.+\}$')
-    PLAIN = re.compile(r'^[^{}]+$')
+    DYN = re.compile(r'^\{[_a-zA-Z][_a-zA-Z0-9]*\}$')
+    PLAIN = re.compile(r'^[^{}/]+$')
 
     METHODS = {'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'}
 
@@ -111,17 +119,17 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
                 headers.add_header(hdr, val)
 
             if payload is not None:
-                post_body = bytearray()
+                req_body = bytearray()
                 try:
                     while True:
                         chunk = yield from payload.read()
-                        post_body.extend(chunk)
+                        req_body.extend(chunk)
                 except aiohttp.EofStream:
                     pass
             else:
                 post_body = None
 
-            request = Request(message, headers, post_body)
+            request = Request(self.hostname, message, headers, req_body)
 
             response = aiohttp.Response(self.transport, 200)
             body = yield from self.dispatch(request)
@@ -265,7 +273,7 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
                 try:
                     args[name] = param.annotation(val)
                 except (TypeError, ValueError) as exc:
-                    raise ParametersError(
+                    raise ValueError(
                         'Invalid value for argument {!r}: {!r}'
                         .format(name, exc)) from exc
             if sig.return_annotation is not sig.empty:

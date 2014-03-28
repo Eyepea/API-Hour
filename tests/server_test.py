@@ -15,10 +15,18 @@ def func_POST(id, request):
     assert request.json_body == {'q': 'val'}, request.json_body
     return {'success': True}
 
+
 def func_GET(id: int, req):
     assert id == 123, id
     assert req.json_body is None, req.json_body
+    req.args
     return {'success': True}
+
+
+def func_GET2(id: int, req):
+    assert id == 123, id
+    assert req.json_body is None, req.json_body
+    return {'success': True, 'args': list(req.args)}
 
 
 class RouterTests(unittest.TestCase):
@@ -29,6 +37,7 @@ class RouterTests(unittest.TestCase):
         self.server = RESTServer(debug=True, keep_alive=75,
                                  hostname='localhost', loop=self.loop)
         self.server.add_url('POST', '/post/{id}', func_POST, use_request=True)
+        self.server.add_url('GET', '/post/{id}/2', func_GET2, use_request='req')
         self.server.add_url('GET', '/post/{id}', func_GET, use_request='req')
 
     def tearDown(self):
@@ -68,6 +77,27 @@ class RouterTests(unittest.TestCase):
             response = yield from aiohttp.request('GET', url, loop=self.loop)
             data = yield from response.read()
             self.assertEqual(b'{"success": true}', data)
+
+        self.loop.run_until_complete(query())
+
+        svr.close()
+        self.loop.run_until_complete(svr.wait_closed())
+
+    def test_GET_with_query_string(self):
+        port = find_unused_port()
+
+        svr = self.loop.run_until_complete(self.loop.create_server(
+            lambda: self.server,
+            'localhost', port))
+        url = 'http://localhost:{}/post/123/2?a=1&b=2'.format(port)
+
+        def query():
+            response = yield from aiohttp.request('GET', url, loop=self.loop)
+            data = yield from response.read()
+            dct = json.loads(data.decode('utf-8'))
+            self.assertEqual({'success': True,
+                              'args': [['a', '1'], ['b', '2']],
+                              }, dct)
 
         self.loop.run_until_complete(query())
 

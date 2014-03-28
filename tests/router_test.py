@@ -55,7 +55,7 @@ class RouterTests(unittest.TestCase):
         @asyncio.coroutine
         def go():
             with self.assertRaises(aiohttp.HttpException) as ctx:
-                request = Request(aiohttp.RawRequestMessage(
+                request = Request('host', aiohttp.RawRequestMessage(
                     'POST', '/not/found', '1.1', (), True, None),
                     email.message.Message(), None)
                 yield from self.server.dispatch(request)
@@ -72,7 +72,7 @@ class RouterTests(unittest.TestCase):
         @asyncio.coroutine
         def go():
             with self.assertRaises(aiohttp.HttpException) as ctx:
-                request = Request(
+                request = Request('host',
                     aiohttp.RawRequestMessage('DELETE', '/post/123', '1.1',
                                               (), True, None),
                     email.message.Message(), None)
@@ -88,7 +88,7 @@ class RouterTests(unittest.TestCase):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}', f)
 
-        request = Request(
+        request = Request('host',
             aiohttp.RawRequestMessage('GET', '/post/123', '1.1',
                                       (), True, None),
                                       email.message.Message(), None)
@@ -101,7 +101,7 @@ class RouterTests(unittest.TestCase):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}/', f)
 
-        request = Request(
+        request = Request('host',
             aiohttp.RawRequestMessage('GET', '/post/123/', '1.1',
                                       (), True, None),
                                       email.message.Message(), None)
@@ -114,7 +114,7 @@ class RouterTests(unittest.TestCase):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}/', f)
 
-        request = Request(
+        request = Request('host',
             aiohttp.RawRequestMessage('GET', '/post/123', '1.1',
                                       (), True, None),
                                       email.message.Message(), None)
@@ -128,7 +128,7 @@ class RouterTests(unittest.TestCase):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}/', f)
 
-        request = Request(
+        request = Request('host',
             aiohttp.RawRequestMessage('GET', '/po/123', '1.1',
                                       (), True, None),
                                       email.message.Message(), None)
@@ -142,7 +142,7 @@ class RouterTests(unittest.TestCase):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}', f)
 
-        request = Request(
+        request = Request('host',
             aiohttp.RawRequestMessage('GET', '/post/123', '1.1',
                                       (), True, None),
                                       email.message.Message(), None)
@@ -160,7 +160,7 @@ class RouterTests(unittest.TestCase):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}', f)
 
-        request = Request(
+        request = Request('host',
             aiohttp.RawRequestMessage('GET', '/post/123', '1.1',
                                       (), True, None),
                                       email.message.Message(), None)
@@ -180,7 +180,7 @@ class RouterTests(unittest.TestCase):
                 headers=(('WWW-Authenticate', 'Basic'),))
         self.server.add_url('get', '/post/{id}', f)
 
-        request = Request(
+        request = Request('host',
             aiohttp.RawRequestMessage('GET', '/post/123', '1.1',
                                       (), True, None),
                                       email.message.Message(), None)
@@ -203,7 +203,7 @@ class RouterTests(unittest.TestCase):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}', f, use_request='req')
 
-        request = Request(
+        request = Request('host',
             aiohttp.RawRequestMessage('GET', '/post/123', '1.1',
                                       (), True, None),
                                       email.message.Message(), None)
