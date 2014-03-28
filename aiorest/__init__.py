@@ -1,6 +1,4 @@
 import collections
-import email
-import email.message
 import functools
 import inspect
 import json
@@ -39,7 +37,7 @@ class Request:
         else:
             self.json_body = None
         self.request_headers = headers
-        self.response_headers = email.message.Message()
+        self.response_headers = MultiDict()
 
     @property
     def cookies(self):
@@ -115,9 +113,9 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
         #self.log.debug("Start handle request %r at %d", message, now)
 
         try:
-            headers = email.message.Message()
+            headers = MultiDict()
             for hdr, val in message.headers:
-                headers.add_header(hdr, val)
+                headers.add(hdr, val)
 
             if payload is not None:
                 req_body = bytearray()
