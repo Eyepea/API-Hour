@@ -166,6 +166,7 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             raise
 
     def add_url(self, method, path, handler, use_request=False):
+        """XXX"""
         assert callable(handler), handler
         if isinstance(handler, MethodType):
             holder = handler.__func__
