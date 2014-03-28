@@ -5,10 +5,10 @@ from collections import MutableMapping
 
 
 class MultiDict(MutableMapping):
-    """
-        An ordered dictionary that can have multiple values for each key.
-        Adds the methods getall, getone, mixed and extend and add to the normal
-        dictionary interface.
+    """An ordered dictionary that can have multiple values for each key.
+
+    Adds the methods getall, getone, mixed and extend and add to the normal
+    dictionary interface.
     """
 
     def __init__(self, *args, **kw):
@@ -28,9 +28,7 @@ class MultiDict(MutableMapping):
 
     @classmethod
     def view_list(cls, lst):
-        """
-        Create a dict that is a view on the given list
-        """
+        """Create a dict that is a view on the given list."""
         if not isinstance(lst, list):
             raise TypeError(
                 "%s.view_list(obj) takes only actual list objects, not %r"
@@ -41,9 +39,7 @@ class MultiDict(MutableMapping):
 
     @classmethod
     def from_fieldstorage(cls, fs):
-        """
-        Create a dict from a cgi.FieldStorage instance
-        """
+        """Create a dict from a cgi.FieldStorage instance."""
         obj = cls()
         # fs.list can be None when there's nothing to parse
         for field in fs.list or ():
@@ -90,21 +86,20 @@ class MultiDict(MutableMapping):
         self._items.append((key, value))
 
     def add(self, key, value):
-        """
-        Add the key and value, not overwriting any previous value.
-        """
+        """Add the key and value, not overwriting any previous value."""
         self._items.append((key, value))
 
     def getall(self, key):
-        """
-        Return a list of all values matching the key (may be an empty list)
+        """Return a list of all values matching the key.
+
+        May return an empty list).
         """
         return [v for k, v in self._items if k == key]
 
     def getone(self, key):
-        """
-        Get one value matching the key, raising a KeyError if multiple
-        values were found.
+        """Get one value matching the key.
+
+        Raise a KeyError if multiple values were found.
         """
         v = self.getall(key)
         if not v:
@@ -114,8 +109,7 @@ class MultiDict(MutableMapping):
         return v[0]
 
     def mixed(self):
-        """
-        Returns a dictionary where the values are either single
+        """Returns a dictionary where the values are either single
         values, or a list of values when a key/value appears more than
         once in this dictionary.  This is similar to the kind of
         dictionary often used to represent the variables in a web
@@ -137,8 +131,8 @@ class MultiDict(MutableMapping):
         return result
 
     def dict_of_lists(self):
-        """
-        Returns a dictionary where each key is associated with a list of values.
+        """Returns a dictionary where each key is associated with a
+        list of values.
         """
         r = {}
         for key, val in self.items():
@@ -190,18 +184,6 @@ class MultiDict(MutableMapping):
 
     def popitem(self):
         return self._items.pop()
-
-    def update(self, *args, **kw):
-        if args:
-            lst = args[0]
-            if len(lst) != len(dict(lst)):
-                # this does not catch the cases where we overwrite existing
-                # keys, but those would produce too many warning
-                msg = ("Behavior of MultiDict.update() has changed "
-                    "and overwrites duplicate keys. Consider using .extend()"
-                )
-                warnings.warn(msg, UserWarning, stacklevel=2)
-        MutableMapping.update(self, *args, **kw)
 
     def extend(self, other=None, **kwargs):
         if other is None:
