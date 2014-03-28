@@ -4,13 +4,16 @@ from unittest import mock
 import asyncio
 import aiohttp
 import email
-from aiorest import RESTServer, Request, Response, PostJson
+from aiorest import RESTServer, Request
 import json
 
 from test.support import find_unused_port
 
 
-def func(id, req: Request, resp: Response, post: PostJson):
+def func(id, request):
+    return {'success': True}
+
+def func2(id, req):
     return {'success': True}
 
 
@@ -21,8 +24,8 @@ class RouterTests(unittest.TestCase):
         asyncio.set_event_loop(None)
         self.server = RESTServer(debug=True, keep_alive=75,
                                  hostname='localhost', loop=self.loop)
-        self.server.add_url('POST', '/post/{id}', func)
-        self.server.add_url('GET', '/post/{id}', func)
+        self.server.add_url('POST', '/post/{id}', func, use_request=True)
+        self.server.add_url('GET', '/post/{id}', func2, use_request='req')
 
     def tearDown(self):
         self.loop.close()
