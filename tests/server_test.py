@@ -37,8 +37,8 @@ class RouterTests(unittest.TestCase):
         self.server = RESTServer(debug=True, keep_alive=75,
                                  hostname='localhost', loop=self.loop)
         self.server.add_url('POST', '/post/{id}', func_POST, use_request=True)
-        self.server.add_url('GET', '/post/{id}/2', func_GET2, use_request='req')
         self.server.add_url('GET', '/post/{id}', func_GET, use_request='req')
+        self.server.add_url('GET', '/post/{id}/2', func_GET2, use_request='req')
 
     def tearDown(self):
         self.loop.close()

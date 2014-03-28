@@ -99,7 +99,8 @@ class Session(collections.MutableMapping):
 class RESTServer(aiohttp.server.ServerHttpProtocol):
 
     DYN = re.compile(r'^\{[_a-zA-Z][_a-zA-Z0-9]*\}$')
-    PLAIN = re.compile(r'^[^{}/]+$')
+    GOOD = r'[^{}/]+'
+    PLAIN = re.compile('^'+GOOD+'$')
 
     METHODS = {'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'}
 
@@ -197,7 +198,7 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             if not part:
                 continue
             if self.DYN.match(part):
-                regexp.append('(?P<'+part[1:-1]+'>.+)')
+                regexp.append('(?P<'+part[1:-1]+'>'+self.GOOD+')')
             elif self.PLAIN.match(part):
                 regexp.append(part)
             else:
