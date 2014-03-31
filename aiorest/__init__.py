@@ -18,6 +18,12 @@ from .multidict import MultiDict
 Entry = collections.namedtuple('Entry', 'regex method handler use_request')
 
 
+class Response:
+
+    def __init__(self):
+        self.headers = MultiDict()
+
+
 class Request:
 
     def __init__(self, host, message, headers, req_body):
@@ -36,8 +42,8 @@ class Request:
             self.json_body = json.loads(req_body.decode('utf-8'))
         else:
             self.json_body = None
-        self.request_headers = headers
-        self.response_headers = MultiDict()
+        self.headers = headers
+        self.response = Response()
 
     @property
     def cookies(self):
