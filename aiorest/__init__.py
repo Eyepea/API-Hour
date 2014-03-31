@@ -4,6 +4,7 @@ import inspect
 import json
 import re
 import time
+import http.cookies
 
 import asyncio
 import aiohttp, aiohttp.server
@@ -13,6 +14,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urlsplit, parse_qsl
 
 from .multidict import MultiDict
+from .util import _ReadonlyDict
 
 
 Entry = collections.namedtuple('Entry', 'regex method handler use_request')
@@ -22,6 +24,12 @@ class Response:
 
     def __init__(self):
         self.headers = MultiDict()
+        # TODO: create cookies;
+        self._cookies = http.cookies.SimpleCookie()
+
+    @property
+    def cookies(self):
+        return self._cookies
 
 
 class Request:
@@ -46,7 +54,7 @@ class Request:
         self.headers = headers
         self._response_fut = None
         self._session = None
-
+        self._cookies = None
 
     @property
     def response(self):
@@ -78,11 +86,16 @@ class Request:
 
     @property
     def cookies(self):
-        """Return all cookies.
+        """Return request cookies.
 
-        A dictionary of Cookie.Morsel objects.
+        A read-only dictionary-like object.
         """
-        pass
+        if self._cookies is None:
+            raw = self.headers.get('COOKIE', '')
+            parsed = http.cookies.SimpleCookie(raw)
+            self._cookies = _ReadonlyDict({key: val.value
+                                           for key, val in parsed.items()})
+        return self._cookies
 
 
 class Session(collections.MutableMapping):
