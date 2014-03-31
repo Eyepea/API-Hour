@@ -41,10 +41,8 @@ class Request:
         self.url = self.host_url + self.path_qs
         self.query_string = res.query
         self.args = MultiDict(parse_qsl(self.query_string))
-        if req_body:
-            self.json_body = json.loads(req_body.decode('utf-8'))
-        else:
-            self.json_body = None
+        self._request_body = req_body
+        self._json_body = None
         self.headers = headers
         self._response_fut = None
         self._session = None
@@ -62,6 +60,17 @@ class Request:
             self._response_fut = asyncio.Future(loop=self._loop)
             self._response_fut.set_result(Response())
         return self._response_fut
+
+    @property
+    def json_body(self):
+        if self._json_body is None:
+            if self._request_body:
+                # TODO: story generated exception and
+                # don't try to parse json next time
+                self._json_body = json.loads(self._request_body.decode('utf-8'))
+            else:
+                raise ValueError("Request has no a body")
+        return self._json_body
 
     @property
     def session(self):
@@ -156,7 +165,8 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             else:
                 post_body = None
 
-            request = Request(self.hostname, message, headers, req_body)
+            request = Request(self.hostname, message, headers, req_body,
+                              loop=self._loop)
 
             response = aiohttp.Response(self.transport, 200)
             body = yield from self.dispatch(request)
@@ -200,7 +210,7 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             holder = handler.__func__
         else:
             holder = handler
-        sig = holder.__signature__ = inspect.signature(handler)
+        sig = holder.__signature__ = inspect.signature(holder)
 
         if use_request:
             if use_request == True:
