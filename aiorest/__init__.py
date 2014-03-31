@@ -61,8 +61,10 @@ class Request:
         """Response property returns a future.
 
         The reason is you can want to add a callback
-         on response object creation.
-        See also http://docs.pylonsproject.org/projects/pyramid/en/latest/api/request.html#pyramid.request.Request.add_response_callback
+        on response object creation.
+
+        See also http://docs.pylonsproject.org/projects/pyramid/en/latest/api/ \
+        request.html#pyramid.request.Request.add_response_callback
         """
         if self._response_fut is None:
             self._response_fut = asyncio.Future(loop=self._loop)
