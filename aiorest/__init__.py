@@ -26,7 +26,10 @@ class Response:
 
 class Request:
 
-    def __init__(self, host, message, headers, req_body):
+    def __init__(self, host, message, headers, req_body, *, loop=None):
+        if loop is None:
+            loop = asyncio.get_event_loop()
+        self._loop = loop
         self.version = message.version
         self.method = message.method.upper()
         self.host = headers.get('HOST', host)
@@ -43,7 +46,26 @@ class Request:
         else:
             self.json_body = None
         self.headers = headers
-        self.response = Response()
+        self._response_fut = None
+        self._session = None
+
+
+    @property
+    def response(self):
+        """Response property returns a future.
+
+        The reason is you can want to add a callback
+         on response object creation.
+        See also http://docs.pylonsproject.org/projects/pyramid/en/latest/api/request.html#pyramid.request.Request.add_response_callback
+        """
+        if self._response_fut is None:
+            self._response_fut = asyncio.Future(loop=self._loop)
+            self._response_fut.set_result(Response())
+        return self._response_fut
+
+    @property
+    def session(self):
+        return self._session
 
     @property
     def cookies(self):
