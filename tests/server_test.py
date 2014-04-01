@@ -42,6 +42,12 @@ class REST:
         self.case.assertEqual('2', req.args['b'])
         return {'success': True, 'args': list(req.args)}
 
+    @asyncio.coroutine
+    def coro_set_cookie(self, value:int, req):
+        response = yield from req.response
+        response.set_cookie('test_cookie', value)
+        return {'success': True}
+
 
 class RouterTests(unittest.TestCase):
 
@@ -56,6 +62,8 @@ class RouterTests(unittest.TestCase):
         self.server.add_url('GET', '/post/{id}', rest.func_GET,
                             use_request='req')
         self.server.add_url('GET', '/post/{id}/2', rest.func_GET2,
+                            use_request='req')
+        self.server.add_url('GET', '/cookie/{value}', rest.coro_set_cookie,
                             use_request='req')
 
     def tearDown(self):
@@ -124,3 +132,24 @@ class RouterTests(unittest.TestCase):
 
         svr.close()
         self.loop.run_until_complete(svr.wait_closed())
+
+    def test_set_cookie(self):
+        port = find_unused_port()
+
+        srv = self.loop.run_until_complete(self.loop.create_server(
+            lambda: self.server,
+            'localhost', port))
+        url = 'http://localhost:{}/cookie/123'.format(port)
+
+        @asyncio.coroutine
+        def query():
+            response = yield from aiohttp.request('GET', url, loop=self.loop)
+            yield from response.read_and_close()
+            self.assertEqual(200, response.status)
+            self.assertIn('test_cookie', response.cookies)
+            self.assertEqual(response.cookies['test_cookie'].value, '123')
+
+        self.loop.run_until_complete(query())
+
+        srv.close()
+        self.loop.run_until_complete(srv.wait_closed())

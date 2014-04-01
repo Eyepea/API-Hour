@@ -59,10 +59,17 @@ Entry = collections.namedtuple('Entry', 'regex method handler use_request')
 
 class Response:
 
-    def __init__(self):
+    def __init__(self, *, loop=None):
         self.headers = MultiDict()
         self._cookies = http.cookies.SimpleCookie()
         self._deleted_cookies = set()
+        self.on_send_headers = asyncio.Future(loop=loop)
+        self.on_send_headers.add_done_callback(self._copy_cookies)
+
+    def _copy_cookies(self, fut):
+        for cookie in self._cookies.values():
+            value = cookie.output(header='')[1:]
+            self.headers.add('Set-Cookie', value)
 
     @property
     def cookies(self):
@@ -144,7 +151,7 @@ class Request:
         """
         if self._response_fut is None:
             self._response_fut = asyncio.Future(loop=self._loop)
-            self._response_fut.set_result(Response())
+            self._response_fut.set_result(Response(loop=self._loop))
         return self._response_fut
 
     @property
@@ -259,37 +266,46 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             request = Request(self.hostname, message, headers, req_body,
                               loop=self._loop)
 
-            response = aiohttp.Response(self.transport, 200)
+            resp_impl = aiohttp.Response(self.transport, 200)
             body = yield from self.dispatch(request)
             bbody = body.encode('utf-8')
 
-            response.add_header('Host', self.hostname)
-            response.add_header('Content-Type', 'application/json')
+            resp_impl.add_header('Host', self.hostname)
+            resp_impl.add_header('Content-Type', 'application/json')
 
             # content encoding
             ## accept_encoding = headers.get('accept-encoding', '').lower()
             ## if 'deflate' in accept_encoding:
-            ##     response.add_header('Transfer-Encoding', 'chunked')
-            ##     response.add_chunking_filter(1025)
-            ##     response.add_header('Content-Encoding', 'deflate')
-            ##     response.add_compression_filter('deflate')
+            ##     resp_impl.add_header('Transfer-Encoding', 'chunked')
+            ##     resp_impl.add_chunking_filter(1025)
+            ##     resp_impl.add_header('Content-Encoding', 'deflate')
+            ##     resp_impl.add_compression_filter('deflate')
             ## elif 'gzip' in accept_encoding:
-            ##     response.add_header('Transfer-Encoding', 'chunked')
-            ##     response.add_chunking_filter(1025)
-            ##     response.add_header('Content-Encoding', 'gzip')
-            ##     response.add_compression_filter('gzip')
+            ##     resp_impl.add_header('Transfer-Encoding', 'chunked')
+            ##     resp_impl.add_chunking_filter(1025)
+            ##     resp_impl.add_header('Content-Encoding', 'gzip')
+            ##     resp_impl.add_compression_filter('gzip')
             ## else:
-            response.add_header('Content-Length', str(len(bbody)))
+            resp_impl.add_header('Content-Length', str(len(bbody)))
 
-            response.send_headers()
-            response.write(bbody)
-            response.write_eof()
-            if response.keep_alive():
+            waiter = asyncio.Future(loop=self._loop)
+            resp = yield from request.response
+            resp.on_send_headers.add_done_callback(waiter.set_result)
+            resp.on_send_headers.set_result(None)
+            yield from waiter
+            for header, values in resp.headers.dict_of_lists().items():
+                for value in values:
+                    resp_impl.add_header(header, value)
+
+            resp_impl.send_headers()
+            resp_impl.write(bbody)
+            resp_impl.write_eof()
+            if resp_impl.keep_alive():
                 self.keep_alive(True)
 
             #self.log.debug("Fihish handle request %r at %d -> %s",
             #               message, time.time(), body)
-            self.log_access(message, None, response, time.time() - now)
+            self.log_access(message, None, resp_impl, time.time() - now)
         except Exception as exc:
             #self.log.exception("Cannot handle request %r", message)
             raise
