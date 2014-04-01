@@ -61,12 +61,51 @@ class Response:
 
     def __init__(self):
         self.headers = MultiDict()
-        # TODO: create cookies;
         self._cookies = http.cookies.SimpleCookie()
+        self._deleted_cookies = set()
 
     @property
     def cookies(self):
         return self._cookies
+
+    def set_cookie(self, name, value, *, expires=None,
+                   domain=None, max_age=None, path=None,
+                   secure=None, httponly=None, version=None):
+        """Set or update response cookie.
+
+        Sets new cookie or updates existent with new value.
+        Also updates only those params which are not None.
+        """
+        if name in self._deleted_cookies:
+            self._deleted_cookies.remove(name)
+            self._cookies.pop(name, None)
+
+        self._cookies[name] = value
+        c = self._cookies[name]
+        if expires is not None:
+            c['expires'] = expires
+        if domain is not None:
+            c['domain'] = domain
+        if max_age is not None:
+            c['max-age'] = max_age
+        if path is not None:
+            c['path'] = path
+        if secure is not None:
+            c['secure'] = secure
+        if httponly is not None:
+            c['httponly'] = httponly
+        if version is not None:
+            c['version'] = version
+
+    def del_cookie(self, name, *, domain=None, path=None):
+        """Delete cookie.
+
+        Creates new empty expired cookie.
+        """
+        # TODO: do we need domain/path here?
+        self._cookies.pop(name, None)
+        self.set_cookie(name, '', max_age=0, domain=domain, path=path)
+        self._deleted_cookies.add(name)
 
 
 class Request:
