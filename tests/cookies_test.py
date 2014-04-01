@@ -11,10 +11,13 @@ class CookiesTests(unittest.TestCase):
     _REQUEST = aiohttp.RawRequestMessage(
         'GET', '/some/path', '1.1', (), True, None)
 
+    def setUp(self):
+        self.loop = mock.Mock()
+
     def test_no_request_cookies(self):
         req = Request('host', aiohttp.RawRequestMessage(
             'GET', '/some/path', '1.1', (), True, None),
-            email.message.Message(), None, loop=None)
+            email.message.Message(), None, loop=self.loop)
 
         self.assertEqual(req.cookies, {})
 
@@ -24,7 +27,7 @@ class CookiesTests(unittest.TestCase):
     def test_request_cookie(self):
         headers = email.message.Message()
         headers['COOKIE'] = 'cookie1=value1; cookie2=value2'
-        req = Request('host', self._REQUEST, headers, None, loop=None)
+        req = Request('host', self._REQUEST, headers, None, loop=self.loop)
 
         self.assertEqual(req.cookies, {
             'cookie1': 'value1',
@@ -35,14 +38,14 @@ class CookiesTests(unittest.TestCase):
         headers = email.message.Message()
         headers['COOKIE'] = 'name=value';
 
-        req = Request('host', self._REQUEST, headers, None, loop=None)
+        req = Request('host', self._REQUEST, headers, None, loop=self.loop)
         self.assertEqual(req.cookies, {'name': 'value'})
 
         with self.assertRaises(TypeError):
             req.cookies['my'] = 'value'
 
     def test_response_cookies(self):
-        resp = Response()
+        resp = Response(loop=self.loop)
 
         self.assertEqual(resp.cookies, {})
         self.assertEqual(str(resp.cookies), '')
@@ -65,7 +68,7 @@ class CookiesTests(unittest.TestCase):
             'Set-Cookie: name=value; Domain=local.host')
 
     def test_response_cookie__issue_del_cookie(self):
-        resp = Response()
+        resp = Response(loop=self.loop)
         self.assertEqual(resp.cookies, {})
         self.assertEqual(str(resp.cookies), '')
 
