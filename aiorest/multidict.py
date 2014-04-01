@@ -210,4 +210,4 @@ class MultiDict(MutableMapping):
     ##
 
     def __iter__(self):
-        return iter(self._items)
+        return iter(k for k, v in self._items)

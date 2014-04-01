@@ -117,7 +117,7 @@ class RouterTests(unittest.TestCase):
             data = yield from response.read()
             dct = json.loads(data.decode('utf-8'))
             self.assertEqual({'success': True,
-                              'args': [['a', '1'], ['b', '2']],
+                              'args': ['a', 'b'],
                               }, dct)
 
         self.loop.run_until_complete(query())
