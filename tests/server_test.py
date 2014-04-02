@@ -78,7 +78,7 @@ class RouterTests(unittest.TestCase):
     def test_simple_POST(self):
         port = find_unused_port()
 
-        svr = self.loop.run_until_complete(self.loop.create_server(
+        srv = self.loop.run_until_complete(self.loop.create_server(
             lambda: self.server,
             'localhost', port))
         url = 'http://localhost:{}/post/123'.format(port)
@@ -95,13 +95,13 @@ class RouterTests(unittest.TestCase):
 
         self.loop.run_until_complete(query())
 
-        svr.close()
-        self.loop.run_until_complete(svr.wait_closed())
+        srv.close()
+        self.loop.run_until_complete(srv.wait_closed())
 
     def test_simple_GET(self):
         port = find_unused_port()
 
-        svr = self.loop.run_until_complete(self.loop.create_server(
+        srv = self.loop.run_until_complete(self.loop.create_server(
             lambda: self.server,
             'localhost', port))
         url = 'http://localhost:{}/post/123'.format(port)
@@ -114,13 +114,13 @@ class RouterTests(unittest.TestCase):
 
         self.loop.run_until_complete(query())
 
-        svr.close()
-        self.loop.run_until_complete(svr.wait_closed())
+        srv.close()
+        self.loop.run_until_complete(srv.wait_closed())
 
     def test_GET_with_query_string(self):
         port = find_unused_port()
 
-        svr = self.loop.run_until_complete(self.loop.create_server(
+        srv = self.loop.run_until_complete(self.loop.create_server(
             lambda: self.server,
             'localhost', port))
         url = 'http://localhost:{}/post/123/2?a=1&b=2'.format(port)
@@ -136,8 +136,8 @@ class RouterTests(unittest.TestCase):
 
         self.loop.run_until_complete(query())
 
-        svr.close()
-        self.loop.run_until_complete(svr.wait_closed())
+        srv.close()
+        self.loop.run_until_complete(srv.wait_closed())
 
     def test_set_cookie(self):
         port = find_unused_port()
