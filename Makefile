@@ -1,7 +1,7 @@
 # Some simple testing tasks (sorry, UNIX only).
 
 PYTHON=python3.3
-FLAKE=flake8
+FLAKE=pyflakes3
 
 
 pep:

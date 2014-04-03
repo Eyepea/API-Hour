@@ -1,5 +1,5 @@
 from itertools import chain
-from collections import OrderedDict, abc, MutableMapping
+from collections import OrderedDict, abc
 
 
 class MultiDict(abc.Mapping):

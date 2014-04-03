@@ -1,10 +1,8 @@
 import unittest
-from unittest import mock
 
 import asyncio
 import aiohttp
-import email
-from aiorest import RESTServer, Request
+from aiorest import RESTServer
 import json
 
 from test.support import find_unused_port

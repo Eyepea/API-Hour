@@ -1,5 +1,4 @@
 import collections
-import functools
 import inspect
 import json
 import re
@@ -10,7 +9,7 @@ import asyncio
 import aiohttp, aiohttp.server
 
 from types import MethodType
-from datetime import datetime, timedelta
+from datetime import datetime
 from urllib.parse import urlsplit, parse_qsl
 
 from collections import namedtuple
@@ -225,7 +224,7 @@ class Session(collections.MutableMapping):
         return "current_csrf_tocken or create new if not exists"
 
     def new_csrf_token(self):
-        return new_csrf_token
+        return 'new_csrf_token'
 
 
 class RESTServer(aiohttp.server.ServerHttpProtocol):
@@ -260,7 +259,7 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
                 except aiohttp.EofStream:
                     pass
             else:
-                post_body = None
+                req_body = None
 
             request = Request(self.hostname, message, headers, req_body,
                               loop=self._loop)
@@ -303,7 +302,7 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             #self.log.debug("Fihish handle request %r at %d -> %s",
             #               message, time.time(), body)
             self.log_access(message, None, resp_impl, time.time() - now)
-        except Exception as exc:
+        except Exception:
             #self.log.exception("Cannot handle request %r", message)
             raise
 
