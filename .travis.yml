@@ -1,0 +1,19 @@
+language: python
+
+python:
+  - "3.3"
+
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq libzmq3-dev
+
+install:
+  - python setup.py install
+  - pip install pyflakes
+  - pip install aiohttp
+
+script:
+  - pyflakes .
+  - python runtests.py -v
+
+cache: apt
