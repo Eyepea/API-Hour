@@ -1,213 +1,188 @@
-# Borrowed from WebOb multidict
+from itertools import chain
+from collections import OrderedDict, abc, MutableMapping
 
 
-from collections import MutableMapping
+class MultiDict(abc.Mapping):
+    """Read-only ordered dictionary that can hava multiple values for each key.
 
-
-class MultiDict(MutableMapping):
-    """An ordered dictionary that can have multiple values for each key.
-
-    Adds the methods getall, getone, mixed and extend and add to the normal
-    dictionary interface.
+    This type of MultiDict must be used for request headers and query args.
     """
 
-    def __init__(self, *args, **kw):
+    def __init__(self, *args, **kwargs):
         if len(args) > 1:
-            raise TypeError("MultiDict can only be called with one positional "
-                            "argument")
+            raise TypeError("MultiDict takes at most 2 positional "
+                            "arguments ({} given)".format(len(args) + 1))
+        self._items = OrderedDict()
         if args:
             if hasattr(args[0], 'items'):
-                items = list(args[0].items())
+                args = list(args[0].items())
             else:
-                items = list(args[0])
-            self._items = items
-        else:
-            self._items = []
-        if kw:
-            self._items.extend(kw.items())
-
-    @classmethod
-    def view_list(cls, lst):
-        """Create a dict that is a view on the given list."""
-        if not isinstance(lst, list):
-            raise TypeError(
-                "%s.view_list(obj) takes only actual list objects, not %r"
-                % (cls.__name__, lst))
-        obj = cls()
-        obj._items = lst
-        return obj
-
-    @classmethod
-    def from_fieldstorage(cls, fs):
-        """Create a dict from a cgi.FieldStorage instance."""
-        obj = cls()
-        # fs.list can be None when there's nothing to parse
-        for field in fs.list or ():
-            charset = field.type_options.get('charset', 'utf8')
-            transfer_encoding = field.headers.get('Content-Transfer-Encoding', None)
-            supported_tranfer_encoding = {
-                'base64' : binascii.a2b_base64,
-                'quoted-printable' : binascii.a2b_qp
-                }
-            if PY3: # pragma: no cover
-                if charset == 'utf8':
-                    decode = lambda b: b
-                else:
-                    decode = lambda b: b.encode('utf8').decode(charset)
+                args = list(args[0])
+        for key, value in chain(args, kwargs.items()):
+            if key in self._items:
+                self._items[key].append(value)
             else:
-                decode = lambda b: b.decode(charset)
-            if field.filename:
-                field.filename = decode(field.filename)
-                obj.add(field.name, field)
-            else:
-                value = field.value
-                if transfer_encoding in supported_tranfer_encoding:
-                    if PY3: # pragma: no cover
-                        # binascii accepts bytes
-                        value = value.encode('utf8')
-                    value = supported_tranfer_encoding[transfer_encoding](value)
-                    if PY3: # pragma: no cover
-                        # binascii returns bytes
-                        value = value.decode('utf8')
-                obj.add(field.name, decode(value))
-        return obj
+                self._items[key] = [value]
 
-    def __getitem__(self, key):
-        for k, v in reversed(self._items):
-            if k == key:
-                return v
-        raise KeyError(key)
-
-    def __setitem__(self, key, value):
-        try:
-            del self[key]
-        except KeyError:
-            pass
-        self._items.append((key, value))
-
-    def add(self, key, value):
-        """Add the key and value, not overwriting any previous value."""
-        self._items.append((key, value))
+    ### multidict interface suitable for wtforms ###
 
     def getall(self, key):
-        """Return a list of all values matching the key.
+        """Returns all values stored at key as a tuple.
 
-        May return an empty list).
+        Raises KeyError if key doesn't exist.
         """
-        return [v for k, v in self._items if k == key]
+        return tuple(self._items[key])
 
     def getone(self, key):
-        """Get one value matching the key.
-
-        Raise a KeyError if multiple values were found.
+        """Return first value stored at key.
         """
-        v = self.getall(key)
-        if not v:
-            raise KeyError('Key not found: %r' % key)
-        if len(v) > 1:
-            raise KeyError('Multiple values match %r: %r' % (key, v))
-        return v[0]
+        return self._items[key][0]
 
-    def mixed(self):
-        """Returns a dictionary where the values are either single
-        values, or a list of values when a key/value appears more than
-        once in this dictionary.  This is similar to the kind of
-        dictionary often used to represent the variables in a web
-        request.
-        """
-        result = {}
-        multi = {}
-        for key, value in self.items():
-            if key in result:
-                # We do this to not clobber any lists that are
-                # *actual* values in this dictionary:
-                if key in multi:
-                    result[key].append(value)
-                else:
-                    result[key] = [result[key], value]
-                    multi[key] = None
-            else:
-                result[key] = value
-        return result
-
-    def dict_of_lists(self):
-        """Returns a dictionary where each key is associated with a
-        list of values.
-        """
-        r = {}
-        for key, val in self.items():
-            r.setdefault(key, []).append(val)
-        return r
-
-    def __delitem__(self, key):
-        items = self._items
-        found = False
-        for i in range(len(items)-1, -1, -1):
-            if items[i][0] == key:
-                del items[i]
-                found = True
-        if not found:
-            raise KeyError(key)
-
-    def __contains__(self, key):
-        for k, v in self._items:
-            if k == key:
-                return True
-        return False
-
-    def clear(self):
-        del self._items[:]
+    ### extra methods ###
 
     def copy(self):
-        return self.__class__(self)
+        """Returns a copy itself.
+        """
+        cls = self.__class__
+        return cls(self.items(getall=True))
 
-    def setdefault(self, key, default=None):
-        for k, v in self._items:
-            if key == k:
-                return v
-        self._items.append((key, default))
-        return default
+    ### Mapping interface ###
 
-    def pop(self, key, *args):
-        if len(args) > 1:
-            raise TypeError("pop expected at most 2 arguments, got %s"
-                             % repr(1 + len(args)))
-        for i in range(len(self._items)):
-            if self._items[i][0] == key:
-                v = self._items[i][1]
-                del self._items[i]
-                return v
-        if args:
-            return args[0]
-        else:
-            raise KeyError(key)
+    def __getitem__(self, key):
+        return self._items[key][0]
 
-    def popitem(self):
-        return self._items.pop()
-
-    def extend(self, other=None, **kwargs):
-        if other is None:
-            pass
-        elif hasattr(other, 'items'):
-            self._items.extend(other.items())
-        elif hasattr(other, 'keys'):
-            for k in other.keys():
-                self._items.append((k, other[k]))
-        else:
-            for k, v in other:
-                self._items.append((k, v))
-        if kwargs:
-            self.update(kwargs)
-
-    def __repr__(self):
-        return repr(self._items)
+    def __iter__(self):
+        return iter(self._items)
 
     def __len__(self):
         return len(self._items)
 
-    ##
-    ## All the iteration:
-    ##
+    def items(self, *, getall=False):
+        return _ItemsView(self._items, getall=getall)
+
+    def values(self, *, getall=False):
+        return _ValuesView(self._items, getall=getall)
+
+    def __eq__(self, other):
+        if not isinstance(other, abc.Mapping):
+            return NotImplemented
+        if isinstance(other, MultiDict):
+            return self._items == other._items
+        return dict(self.items()) == dict(other.items())
+
+    def __repr__(self):
+        return '<{} {!r}>'.format(self.__class__.__name__, self._items)
+
+
+class MutableMultiDict(abc.MutableMapping, MultiDict):
+    """An ordered dictionary that can have multiple values for each key.
+    """
+
+    def getall(self, key):
+        """Returns all values stored at key as list.
+
+        Raises KeyError if key doesn't exist.
+        """
+        return list(self._items[key])
+
+    def add(self, key, value):
+        """Adds value to a key.
+        """
+        if key in self._items:
+            self._items[key].append(value)
+        else:
+            self._items[key] = [value]
+
+    def extend(self, *args, **kwargs):
+        """Extends current MutableMultiDict with more values.
+
+        This method must be used instead of update.
+        """
+        if len(args) > 1:
+            raise TypeError("extend takes at most 2 positional arguments"
+                            " ({} given)".format(len(args) + 1))
+        if args:
+            if isinstance(args[0], MultiDict):
+                items = args[0].items(getall=True)
+            elif hasattr(args[0], 'items'):
+                items = args[0].items()
+            else:
+                items = args[0]
+        else:
+            items = []
+        for key, value in chain(items, kwargs.items()):
+            self.add(key, value)
+
+    def clear(self):
+        """Remove all items from MutableMultiDict
+        """
+        self._items.clear()
+
+    ### MutableMapping interface ###
+
+    def __setitem__(self, key, value):
+        self._items[key] = [value]
+
+    def __delitem__(self, key):
+        del self._items[key]
+
+    def pop(self, key, default=None):
+        """Method not allowed."""
+        raise NotImplementedError
+
+    def popitem(self):
+        """Method not allowed."""
+        raise NotImplementedError
+
+    def update(self, *args, **kw):
+        """Method not allowed."""
+        raise NotImplementedError("Use extend method instead")
+
+
+class _ItemsView(abc.ItemsView):
+
+    def __init__(self, mapping, *, getall=False):
+        super().__init__(mapping)
+        self._getall = getall
+
+    def __contains__(self, item):
+        key, value = item
+        try:
+            values = self._mapping[key]
+        except KeyError:
+            return False
+        else:
+            if self._getall:
+                return value in values
+            else:
+                return value == values[0]
 
     def __iter__(self):
-        return iter(k for k, v in self._items)
+        for key, values in self._mapping.items():
+            if self._getall:
+                for value in values:
+                    yield key, value
+            else:
+                yield key, values[0]
+
+
+class _ValuesView(abc.KeysView):
+
+    def __init__(self, mapping, *, getall=False):
+        super().__init__(mapping)
+        self._getall = getall
+
+    def __contains__(self, value):
+        for values in self._mapping.values():
+            if self._getall and value in values:
+                return True
+            elif value == values[0]:
+                return True
+        return False
+
+    def __iter__(self):
+        for values in self._mapping.values():
+            if self._getall:
+                yield from iter(values)
+            else:
+                yield values[0]
