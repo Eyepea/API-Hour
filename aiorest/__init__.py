@@ -16,8 +16,7 @@ from urllib.parse import urlsplit, parse_qsl
 from collections import namedtuple
 import sys
 
-from .multidict import MultiDict
-from .util import _ReadonlyDict
+from .multidict import MultiDict, MutableMultiDict
 
 
 
@@ -60,7 +59,7 @@ Entry = collections.namedtuple('Entry', 'regex method handler use_request')
 class Response:
 
     def __init__(self, *, loop=None):
-        self.headers = MultiDict()
+        self.headers = MutableMultiDict()
         self._cookies = http.cookies.SimpleCookie()
         self._deleted_cookies = set()
         self.on_send_headers = asyncio.Future(loop=loop)
@@ -158,7 +157,7 @@ class Request:
     def json_body(self):
         if self._json_body is None:
             if self._request_body:
-                # TODO: story generated exception and
+                # TODO: store generated exception and
                 # don't try to parse json next time
                 self._json_body = json.loads(self._request_body.decode('utf-8'))
             else:
@@ -178,8 +177,8 @@ class Request:
         if self._cookies is None:
             raw = self.headers.get('COOKIE', '')
             parsed = http.cookies.SimpleCookie(raw)
-            self._cookies = _ReadonlyDict({key: val.value
-                                           for key, val in parsed.items()})
+            self._cookies = MultiDict({key: val.value
+                                       for key, val in parsed.items()})
         return self._cookies
 
 
@@ -248,7 +247,7 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
         #self.log.debug("Start handle request %r at %d", message, now)
 
         try:
-            headers = MultiDict()
+            headers = MutableMultiDict()
             for hdr, val in message.headers:
                 headers.add(hdr, val)
 
@@ -293,9 +292,7 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             resp.on_send_headers.add_done_callback(waiter.set_result)
             resp.on_send_headers.set_result(None)
             yield from waiter
-            for header, values in resp.headers.dict_of_lists().items():
-                for value in values:
-                    resp_impl.add_header(header, value)
+            resp_impl.add_headers(*resp.headers.items(getall=True))
 
             resp_impl.send_headers()
             resp_impl.write(bbody)
