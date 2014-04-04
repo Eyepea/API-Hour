@@ -57,10 +57,8 @@ class Response:
         self.headers = MutableMultiDict()
         self._cookies = http.cookies.SimpleCookie()
         self._deleted_cookies = set()
-        self.on_send_headers = asyncio.Future(loop=loop)
-        self.on_send_headers.add_done_callback(self._copy_cookies)
 
-    def _copy_cookies(self, fut):
+    def _copy_cookies(self):
         for cookie in self._cookies.values():
             value = cookie.output(header='')[1:]
             self.headers.add('Set-Cookie', value)
@@ -129,24 +127,17 @@ class Request:
         self._request_body = req_body
         self._json_body = None
         self.headers = headers
-        self._response_fut = None
+        self._response = Response(loop=loop)
         self._cookies = None
+        # FIXME: sessions should be lazy
         self.session = None
+        self._on_response = []
 
     @property
     def response(self):
-        """Response property returns a future.
-
-        The reason is you can want to add a callback
-        on response object creation.
-
-        See also http://docs.pylonsproject.org/projects/pyramid/en/latest/api/ \
-        request.html#pyramid.request.Request.add_response_callback
+        """Response object.
         """
-        if self._response_fut is None:
-            self._response_fut = asyncio.Future(loop=self._loop)
-            self._response_fut.set_result(Response(loop=self._loop))
-        return self._response_fut
+        return self._response
 
     @property
     def json_body(self):
@@ -171,6 +162,21 @@ class Request:
             self._cookies = MultiDict({key: val.value
                                        for key, val in parsed.items()})
         return self._cookies
+
+    def add_response_callback(self, callback, *args, **kwargs):
+        """Add callback to be trigger when request is ready to be sent.
+        """
+        self._on_response.append((callback, args, kwargs))
+
+    @asyncio.coroutine
+    def _on_response_ready(self):
+        callbacks = self._on_response[:]
+        for callback, args, kwargs in callbacks:
+            if asyncio.iscoroutinefunction(callback):
+                yield from callback(self, *args, **kwargs)
+            else:
+                callback(self, *args, **kwargs)
+        self.response._copy_cookies()
 
 
 class RESTServer(aiohttp.server.ServerHttpProtocol):
@@ -212,6 +218,7 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
 
             request = Request(self.hostname, message, headers, req_body,
                               loop=self._loop)
+            # FIXME: sessions must be lazy
             if self.session_factory is not None:
                 sess = yield from self.session_factory(request)
                 assert sess is None or isinstance(sess, Session)
@@ -220,6 +227,8 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             resp_impl = aiohttp.Response(self.transport, 200)
             body = yield from self.dispatch(request)
             bbody = body.encode('utf-8')
+
+            yield from request._on_response_ready()
 
             resp_impl.add_header('Host', self.hostname)
             resp_impl.add_header('Content-Type', 'application/json')
@@ -239,14 +248,8 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             ## else:
             resp_impl.add_header('Content-Length', str(len(bbody)))
 
-            waiter = asyncio.Future(loop=self._loop)
-            resp = yield from request.response
-            # if sess is not None:
-            #     yield from sess.store()
-            resp.on_send_headers.add_done_callback(waiter.set_result)
-            resp.on_send_headers.set_result(None)
-            yield from waiter
-            resp_impl.add_headers(*resp.headers.items(getall=True))
+            headers = request.response.headers.items(getall=True)
+            resp_impl.add_headers(*headers)
 
             resp_impl.send_headers()
             resp_impl.write(bbody)

@@ -7,8 +7,7 @@ class Session(MutableMapping):
     """Session dict-like object.
     """
 
-    def __init__(self, data=None, *, storage_save):
-        self._storage_save = storage_save
+    def __init__(self, data=None):
         self._changed = False
         self._mapping = {}
         if data is not None:
@@ -16,6 +15,7 @@ class Session(MutableMapping):
 
     @property
     def created(self):
+        # TODO: implement
         return datetime.datetime.now()
 
     def changed(self):
@@ -24,9 +24,6 @@ class Session(MutableMapping):
     def invalidate(self):
         self._changed = True
         self._mapping = {}
-
-    def save(self):
-        return self._storage_save(self)
 
     def get_csrf_token(self):
         return "current_csrf_tocken or create new if not exists"
@@ -59,33 +56,23 @@ class CookieSessionFactory:
     """Cookie-based session factory.
     """
 
-    def __init__(self, dumps, loads, cookie_name='aiorest_sess', secret='secret'):
-        self._cookie_name = cookie_name
-        self._secret = secret
+    def __init__(self, dumps, loads, cookie_name, *, loop=None):
         self._dumps = dumps
         self._loads = loads
+        self._cookie_name = cookie_name
+        if loop is None:
+            loop = asyncio.get_event_loop()
+        self._loop = loop
 
     @asyncio.coroutine
     def __call__(self, request):
-        storage = CookieStorage(self._dumps, self._loads,
-                                self._cookie_name, request)
-        data = storage.load()
-        return Session(data, storage_save=storage.save)
+        sess = Session(self._load_data(request))
+        request.add_response_callback(self._save, session=sess)
+        return sess
         yield
 
-
-class CookieStorage:
-    """Cookie storage.
-    """
-
-    def __init__(self, dumps, loads, cookie_name, request):
-        self._dumps = dumps
-        self._loads = loads
-        self._cookie_name = cookie_name
-        self._request = request
-
-    def load(self):
-        packed = self._request.cookies.get(self._cookie_name)
+    def _load_data(self, request):
+        packed = request.cookies.get(self._cookie_name)
         if packed is not None:
             try:
                 data = self._loads(packed)
@@ -95,6 +82,7 @@ class CookieStorage:
                 return data
 
     @asyncio.coroutine
-    def save(self, session):
-        return
-        yield
+    def _save(self, request, session):
+        if session._changed:
+            data = self._dumps(dict(session))
+            request.response.set_cookie(self._cookie_name, data)

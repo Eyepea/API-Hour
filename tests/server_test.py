@@ -42,7 +42,7 @@ class REST:
 
     @asyncio.coroutine
     def coro_set_cookie(self, value:int, req):
-        response = yield from req.response
+        response = req.response
         response.set_cookie('test_cookie', value)
         return {'success': True}
 

@@ -21,6 +21,7 @@ class REST:
     def get_from_session(self, req):
         self.test.assertIsNotNone(req.session)
         self.test.assertEqual(dict(req.session), {'foo': 'bar'})
+        req.session['key'] = 'val'
 
 
 class CookieSessionTests(unittest.TestCase):
@@ -31,7 +32,8 @@ class CookieSessionTests(unittest.TestCase):
 
         session_factory = CookieSessionFactory(cookie_name='test_cookie',
                                                dumps=json.dumps,
-                                               loads=json.loads)
+                                               loads=json.loads,
+                                               loop=self.loop)
         self.server = RESTServer(debug=True, keep_alive=75,
                                  hostname='localhost',
                                  session_factory=session_factory,
@@ -47,20 +49,21 @@ class CookieSessionTests(unittest.TestCase):
         self.loop.close()
 
     @contextlib.contextmanager
-    def _run_server(self):
+    def run_server(self):
         host = 'localhost'
         port = find_unused_port()
         srv = self.loop.run_until_complete(self.loop.create_server(
             lambda: self.server,
             host, port))
         base_url = 'http://{}:{}'.format(host, port)
+
         yield (srv, base_url)
 
         srv.close()
         self.loop.run_until_complete(srv.wait_closed())
 
     def test_get_from_session(self):
-        with self._run_server() as (srv, base_url):
+        with self.run_server() as (srv, base_url):
 
             url = base_url + '/get'
 
@@ -70,6 +73,7 @@ class CookieSessionTests(unittest.TestCase):
                     cookies={'test_cookie': json.dumps({'foo': 'bar'})},
                     loop=self.loop)
                 yield from resp.read_and_close()
-                pass
+                self.assertEqual(resp.status, 200)
+                print(resp.cookies)
 
             self.loop.run_until_complete(query())
