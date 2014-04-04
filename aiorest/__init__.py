@@ -4,6 +4,7 @@ import json
 import re
 import time
 import http.cookies
+import sys
 
 import asyncio
 import aiohttp, aiohttp.server
@@ -11,9 +12,6 @@ import aiohttp, aiohttp.server
 from types import MethodType
 from datetime import datetime
 from urllib.parse import urlsplit, parse_qsl
-
-from collections import namedtuple
-import sys
 
 from .multidict import MultiDict, MutableMultiDict
 
@@ -24,8 +22,8 @@ __version__ = '0.0.1a0'
 version = __version__ + ' , Python ' + sys.version
 
 
-VersionInfo = namedtuple('VersionInfo',
-                         'major minor micro releaselevel serial')
+VersionInfo = collections.namedtuple('VersionInfo',
+                                     'major minor micro releaselevel serial')
 
 
 def _parse_version(ver):
@@ -405,12 +403,13 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             raise
         else:
             args = bargs.arguments
+            marker = object()
             for name, param in sig.parameters.items():
                 if param.annotation is param.empty:
                     continue
-                val = args.get(name, param.default)
-                # NOTE: default value always being passed through annotation
-                #       is it realy neccessary?
+                val = args.get(name, marker)
+                if val is marker:
+                    continue    # Skip default value
                 try:
                     args[name] = param.annotation(val)
                 except (TypeError, ValueError) as exc:
