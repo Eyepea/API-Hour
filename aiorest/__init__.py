@@ -10,7 +10,6 @@ import asyncio
 import aiohttp, aiohttp.server
 
 from types import MethodType
-from datetime import datetime
 from urllib.parse import urlsplit, parse_qsl
 
 from .multidict import MultiDict, MutableMultiDict

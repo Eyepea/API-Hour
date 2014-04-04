@@ -1,8 +1,6 @@
-import abc
 import asyncio
+from datetime import datetime
 from collections import MutableMapping
-from functools import partial
-from pickle import dumps, loads, HIGHEST_PROTOCOL
 
 
 class Session(MutableMapping):
