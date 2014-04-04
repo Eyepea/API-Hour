@@ -14,6 +14,7 @@ from datetime import datetime
 from urllib.parse import urlsplit, parse_qsl
 
 from .multidict import MultiDict, MutableMultiDict
+from .session import Session
 
 
 
@@ -46,8 +47,6 @@ def _parse_version(ver):
 
 
 version_info = _parse_version(__version__)
-
-
 
 
 Entry = collections.namedtuple('Entry', 'regex method handler use_request')
@@ -132,8 +131,8 @@ class Request:
         self._json_body = None
         self.headers = headers
         self._response_fut = None
-        self._session = None
         self._cookies = None
+        self.session = None
 
     @property
     def response(self):
@@ -162,10 +161,6 @@ class Request:
         return self._json_body
 
     @property
-    def session(self):
-        return self._session
-
-    @property
     def cookies(self):
         """Return request cookies.
 
@@ -179,52 +174,6 @@ class Request:
         return self._cookies
 
 
-class Session(collections.MutableMapping):
-
-    def __init__(self):
-        self._changed = False
-        self._mapping = {}
-
-    @property
-    def new(self):
-        return False
-
-    def __len__(self):
-        return len(self._mapping)
-
-    def __contains__(self, key):
-        return key in self._mapping
-
-    def __getitem__(self, key):
-        return self._mapping[key]
-
-    def __setitem__(self, key, value):
-        self._mapping[key] = value
-        self._changed = True
-
-    def __delitem__(self, key):
-        del self._mapping[key]
-        self._changed = True
-
-    @property
-    def created(self):
-        return datetime.datetime.now()
-
-    def changed(self):
-        self._changed = True
-
-    def invalidate(self):
-        #TODO: invalidate cookies
-        self._changed = True
-        self._mapping = {}
-
-    def get_csrf_token(self):
-        return "current_csrf_tocken or create new if not exists"
-
-    def new_csrf_token(self):
-        return 'new_csrf_token'
-
-
 class RESTServer(aiohttp.server.ServerHttpProtocol):
 
     DYN = re.compile(r'^\{[_a-zA-Z][_a-zA-Z0-9]*\}$')
@@ -233,10 +182,13 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
 
     METHODS = {'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'}
 
-    def __init__(self, *, hostname, **kwargs):
+    def __init__(self, *, hostname, session_factory=None, **kwargs):
         super().__init__(**kwargs)
         self.hostname = hostname
+        self.session_factory = session_factory
         self._urls = []
+        assert session_factory is None or callable(session_factory), \
+            "session_factory must be None or callable (coroutine) function"
 
     @asyncio.coroutine
     def handle_request(self, message, payload):
@@ -261,6 +213,10 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
 
             request = Request(self.hostname, message, headers, req_body,
                               loop=self._loop)
+            if self.session_factory is not None:
+                sess = yield from self.session_factory(request)
+                assert sess is None or isinstance(sess, Session)
+                request.session = sess
 
             resp_impl = aiohttp.Response(self.transport, 200)
             body = yield from self.dispatch(request)
@@ -286,6 +242,8 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
 
             waiter = asyncio.Future(loop=self._loop)
             resp = yield from request.response
+            # if sess is not None:
+            #     yield from sess.store()
             resp.on_send_headers.add_done_callback(waiter.set_result)
             resp.on_send_headers.set_result(None)
             yield from waiter

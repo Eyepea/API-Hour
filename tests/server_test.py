@@ -51,7 +51,7 @@ class REST:
                 'cookie': req.cookies['test_cookie']}
 
 
-class RouterTests(unittest.TestCase):
+class ServerTests(unittest.TestCase):
 
     def setUp(self):
         self.loop = asyncio.new_event_loop()
