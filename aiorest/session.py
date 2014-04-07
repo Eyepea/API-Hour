@@ -2,7 +2,6 @@ import asyncio
 import hmac
 import hashlib
 import time
-from datetime import datetime
 from collections import MutableMapping
 
 
@@ -10,16 +9,16 @@ class Session(MutableMapping):
     """Session dict-like object.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, new=False):
         self._changed = False
         self._mapping = {}
+        self._new = new
         if data is not None:
             self._mapping.update(data)
 
     @property
-    def created(self):
-        # TODO: implement
-        return datetime.datetime.now()
+    def new(self):
+        return self._new
 
     def changed(self):
         self._changed = True
@@ -27,12 +26,6 @@ class Session(MutableMapping):
     def invalidate(self):
         self._changed = True
         self._mapping = {}
-
-    def get_csrf_token(self):
-        return "current_csrf_tocken or create new if not exists"
-
-    def new_csrf_token(self):
-        return 'new_csrf_token'
 
     def __len__(self):
         return len(self._mapping)
@@ -87,8 +80,11 @@ class BaseSessionFactory:
         raw_value = request.cookies.get(name)
         try:
             cookie_value = self._decode_cookie(raw_value)
-            data = yield from self.load_session_data(cookie_value)
-            sess = Session(data)
+            if cookie_value is None:
+                sess = Session(new=True)
+            else:
+                data = yield from self.load_session_data(cookie_value)
+                sess = Session(data, new=(data is None))
         except Exception as exc:
             fut.set_exception(exc)
         else:
@@ -192,11 +188,10 @@ class CookieSessionFactory(BaseSessionFactory):
     def load_session_data(self, cookie_value):
         """Load session data from decoded and verified cookie value.
         """
-        if cookie_value is not None:
-            try:
-                return self._loads(cookie_value)
-            except (TypeError, ValueError):
-                pass
+        try:
+            return self._loads(cookie_value)
+        except (TypeError, ValueError):
+            pass
         return
         yield
 
