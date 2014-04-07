@@ -64,12 +64,10 @@ class CookieSessionFactory:
             loop = asyncio.get_event_loop()
         self._loop = loop
 
-    @asyncio.coroutine
-    def __call__(self, request):
+    def __call__(self, request, future):
         sess = Session(self._load_data(request))
         request.add_response_callback(self._save, session=sess)
-        return sess
-        yield
+        future.set_result(sess)
 
     def _load_data(self, request):
         packed = request.cookies.get(self._cookie_name)

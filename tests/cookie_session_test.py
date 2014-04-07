@@ -15,13 +15,17 @@ class REST:
     def __init__(self, test):
         self.test = test
 
+    @asyncio.coroutine
     def init_session(self, req):
-        self.test.assertIsNotNone(req.session)
+        sess = yield from req.session
+        self.test.assertIsNotNone(sess)
 
+    @asyncio.coroutine
     def get_from_session(self, req):
-        self.test.assertIsNotNone(req.session)
-        self.test.assertEqual(dict(req.session), {'foo': 'bar'})
-        req.session['key'] = 'val'
+        sess = yield from req.session
+        self.test.assertIsNotNone(sess)
+        self.test.assertEqual(dict(sess), {'foo': 'bar'})
+        sess['key'] = 'val'
 
 
 class CookieSessionTests(unittest.TestCase):
@@ -74,6 +78,5 @@ class CookieSessionTests(unittest.TestCase):
                     loop=self.loop)
                 yield from resp.read_and_close()
                 self.assertEqual(resp.status, 200)
-                print(resp.cookies)
 
             self.loop.run_until_complete(query())

@@ -109,35 +109,45 @@ class Response:
 
 class Request:
 
-    def __init__(self, host, message, headers, req_body, *, loop=None):
+    def __init__(self, host, message, headers, req_body, *,
+                 session_factory=None, loop=None):
         if loop is None:
             loop = asyncio.get_event_loop()
+        res = urlsplit(message.path)
         self._loop = loop
         self.version = message.version
         self.method = message.method.upper()
         self.host = headers.get('HOST', host)
         self.host_url = 'http://' + self.host
         self.path_qs = message.path
-        res = urlsplit(self.path_qs)
         self.path = res.path
         self.path_url = self.host_url + self.path
         self.url = self.host_url + self.path_qs
         self.query_string = res.query
-        self.args = MultiDict(parse_qsl(self.query_string))
-        self._request_body = req_body
-        self._json_body = None
+        self.args = MultiDict(parse_qsl(res.query))
         self.headers = headers
+        self._request_body = req_body
         self._response = Response(loop=loop)
+        self._session_factory = session_factory
+        self._session_fut = None
+        self._json_body = None
         self._cookies = None
-        # FIXME: sessions should be lazy
-        self.session = None
         self._on_response = []
 
     @property
     def response(self):
-        """Response object.
-        """
+        """Response object."""
         return self._response
+
+    @property
+    def session(self):
+        if self._session_fut is None:
+            self._session_fut = fut = asyncio.Future(loop=self._loop)
+            if self._session_factory is not None:
+                self._session_factory(self, fut)
+            else:
+                fut.set_result(None)
+        return self._session_fut
 
     @property
     def json_body(self):
@@ -169,7 +179,7 @@ class Request:
         self._on_response.append((callback, args, kwargs))
 
     @asyncio.coroutine
-    def _on_response_ready(self):
+    def _call_response_callbacks(self):
         callbacks = self._on_response[:]
         for callback, args, kwargs in callbacks:
             if asyncio.iscoroutinefunction(callback):
@@ -217,18 +227,14 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
                 req_body = None
 
             request = Request(self.hostname, message, headers, req_body,
+                              session_factory=self.session_factory,
                               loop=self._loop)
-            # FIXME: sessions must be lazy
-            if self.session_factory is not None:
-                sess = yield from self.session_factory(request)
-                assert sess is None or isinstance(sess, Session)
-                request.session = sess
 
             resp_impl = aiohttp.Response(self.transport, 200)
             body = yield from self.dispatch(request)
             bbody = body.encode('utf-8')
 
-            yield from request._on_response_ready()
+            yield from request._call_response_callbacks()
 
             resp_impl.add_header('Host', self.hostname)
             resp_impl.add_header('Content-Type', 'application/json')
