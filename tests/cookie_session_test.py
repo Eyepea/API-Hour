@@ -5,7 +5,6 @@ import json
 import contextlib
 import hashlib
 import hmac
-import base64
 
 from aiorest import RESTServer
 from aiorest.session import CookieSessionFactory

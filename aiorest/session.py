@@ -142,7 +142,7 @@ class BaseSessionFactory:
             return None
         try:
             return value
-        except Exception as exc:
+        except Exception:
             # TODO: log warning
             return None
 
