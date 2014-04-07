@@ -58,6 +58,7 @@ class Session(MutableMapping):
 class BaseSessionFactory:
 
     def __init__(self, secret_key, cookie_name, 
+                 session_max_age=None,
                  domain=None, max_age=None, path=None,
                  secure=None, httponly=None, *,
                  loop=None):
@@ -65,6 +66,7 @@ class BaseSessionFactory:
             loop = asyncio.get_event_loop()
         self._secret_key = secret_key
         self._cookie_name = cookie_name
+        self._session_max_age = session_max_age
         self._cookie_params = dict(domain=domain,
                                    max_age=max_age,
                                    path=path,
@@ -118,7 +120,7 @@ class BaseSessionFactory:
         """
         assert isinstance(value, str)
         name = self._cookie_name
-        timestamp = str(time.time())
+        timestamp = str(int(time.time()))
         singature = self._get_signature(name, value, timestamp)
         return '|'.join((value, timestamp, singature))
 
@@ -136,6 +138,11 @@ class BaseSessionFactory:
             return None
         name = self._cookie_name
         value, timestamp, sign = parts
+
+        if self._session_max_age is not None:
+            if int(timestamp) < int(time.time()) - self._session_max_age:
+                return None
+
         expected_sign = self._get_signature(name, value, timestamp)
         if not hmac.compare_digest(expected_sign, sign):
             # TODO: log warning
