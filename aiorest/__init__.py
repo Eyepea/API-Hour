@@ -13,8 +13,6 @@ from types import MethodType
 from urllib.parse import urlsplit, parse_qsl
 
 from .multidict import MultiDict, MutableMultiDict
-from .session import Session
-
 
 
 __version__ = '0.0.1a0'
