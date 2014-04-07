@@ -66,6 +66,10 @@ class CookieSessionFactory:
 
     def __call__(self, request, future):
         sess = Session(self._load_data(request))
+        # FIXME: there may be the following issue:
+        #   yield from request.session  # (response callback added)
+        #   request.add_response_callback(modify_session)
+        # this will cause session to be invalid
         request.add_response_callback(self._save, session=sess)
         future.set_result(sess)
 
