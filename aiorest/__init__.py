@@ -10,11 +10,9 @@ import asyncio
 import aiohttp, aiohttp.server
 
 from types import MethodType
-from datetime import datetime
 from urllib.parse import urlsplit, parse_qsl
 
 from .multidict import MultiDict, MutableMultiDict
-
 
 
 __version__ = '0.0.1a0'
@@ -48,8 +46,6 @@ def _parse_version(ver):
 version_info = _parse_version(__version__)
 
 
-
-
 Entry = collections.namedtuple('Entry', 'regex method handler use_request')
 
 
@@ -59,10 +55,8 @@ class Response:
         self.headers = MutableMultiDict()
         self._cookies = http.cookies.SimpleCookie()
         self._deleted_cookies = set()
-        self.on_send_headers = asyncio.Future(loop=loop)
-        self.on_send_headers.add_done_callback(self._copy_cookies)
 
-    def _copy_cookies(self, fut):
+    def _copy_cookies(self):
         for cookie in self._cookies.values():
             value = cookie.output(header='')[1:]
             self.headers.add('Set-Cookie', value)
@@ -113,42 +107,45 @@ class Response:
 
 class Request:
 
-    def __init__(self, host, message, headers, req_body, *, loop=None):
+    def __init__(self, host, message, headers, req_body, *,
+                 session_factory=None, loop=None):
         if loop is None:
             loop = asyncio.get_event_loop()
+        res = urlsplit(message.path)
         self._loop = loop
         self.version = message.version
         self.method = message.method.upper()
         self.host = headers.get('HOST', host)
         self.host_url = 'http://' + self.host
         self.path_qs = message.path
-        res = urlsplit(self.path_qs)
         self.path = res.path
         self.path_url = self.host_url + self.path
         self.url = self.host_url + self.path_qs
         self.query_string = res.query
-        self.args = MultiDict(parse_qsl(self.query_string))
-        self._request_body = req_body
-        self._json_body = None
+        self.args = MultiDict(parse_qsl(res.query))
         self.headers = headers
-        self._response_fut = None
-        self._session = None
+        self._request_body = req_body
+        self._response = Response(loop=loop)
+        self._session_factory = session_factory
+        self._session_fut = None
+        self._json_body = None
         self._cookies = None
+        self._on_response = []
 
     @property
     def response(self):
-        """Response property returns a future.
+        """Response object."""
+        return self._response
 
-        The reason is you can want to add a callback
-        on response object creation.
-
-        See also http://docs.pylonsproject.org/projects/pyramid/en/latest/api/ \
-        request.html#pyramid.request.Request.add_response_callback
-        """
-        if self._response_fut is None:
-            self._response_fut = asyncio.Future(loop=self._loop)
-            self._response_fut.set_result(Response(loop=self._loop))
-        return self._response_fut
+    @property
+    def session(self):
+        if self._session_fut is None:
+            self._session_fut = fut = asyncio.Future(loop=self._loop)
+            if self._session_factory is not None:
+                self._session_factory(self, fut)
+            else:
+                fut.set_result(None)
+        return self._session_fut
 
     @property
     def json_body(self):
@@ -160,10 +157,6 @@ class Request:
             else:
                 raise ValueError("Request has no a body")
         return self._json_body
-
-    @property
-    def session(self):
-        return self._session
 
     @property
     def cookies(self):
@@ -178,51 +171,20 @@ class Request:
                                        for key, val in parsed.items()})
         return self._cookies
 
+    def add_response_callback(self, callback, *args, **kwargs):
+        """Add callback to be trigger when request is ready to be sent.
+        """
+        self._on_response.append((callback, args, kwargs))
 
-class Session(collections.MutableMapping):
-
-    def __init__(self):
-        self._changed = False
-        self._mapping = {}
-
-    @property
-    def new(self):
-        return False
-
-    def __len__(self):
-        return len(self._mapping)
-
-    def __contains__(self, key):
-        return key in self._mapping
-
-    def __getitem__(self, key):
-        return self._mapping[key]
-
-    def __setitem__(self, key, value):
-        self._mapping[key] = value
-        self._changed = True
-
-    def __delitem__(self, key):
-        del self._mapping[key]
-        self._changed = True
-
-    @property
-    def created(self):
-        return datetime.datetime.now()
-
-    def changed(self):
-        self._changed = True
-
-    def invalidate(self):
-        #TODO: invalidate cookies
-        self._changed = True
-        self._mapping = {}
-
-    def get_csrf_token(self):
-        return "current_csrf_tocken or create new if not exists"
-
-    def new_csrf_token(self):
-        return 'new_csrf_token'
+    @asyncio.coroutine
+    def _call_response_callbacks(self):
+        callbacks = self._on_response[:]
+        for callback, args, kwargs in callbacks:
+            if asyncio.iscoroutinefunction(callback):
+                yield from callback(self, *args, **kwargs)
+            else:
+                callback(self, *args, **kwargs)
+        self.response._copy_cookies()
 
 
 class RESTServer(aiohttp.server.ServerHttpProtocol):
@@ -233,10 +195,13 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
 
     METHODS = {'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'}
 
-    def __init__(self, *, hostname, **kwargs):
+    def __init__(self, *, hostname, session_factory=None, **kwargs):
         super().__init__(**kwargs)
         self.hostname = hostname
+        self.session_factory = session_factory
         self._urls = []
+        assert session_factory is None or callable(session_factory), \
+            "session_factory must be None or callable (coroutine) function"
 
     @asyncio.coroutine
     def handle_request(self, message, payload):
@@ -260,11 +225,14 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
                 req_body = None
 
             request = Request(self.hostname, message, headers, req_body,
+                              session_factory=self.session_factory,
                               loop=self._loop)
 
             resp_impl = aiohttp.Response(self.transport, 200)
             body = yield from self.dispatch(request)
             bbody = body.encode('utf-8')
+
+            yield from request._call_response_callbacks()
 
             resp_impl.add_header('Host', self.hostname)
             resp_impl.add_header('Content-Type', 'application/json')
@@ -284,12 +252,8 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             ## else:
             resp_impl.add_header('Content-Length', str(len(bbody)))
 
-            waiter = asyncio.Future(loop=self._loop)
-            resp = yield from request.response
-            resp.on_send_headers.add_done_callback(waiter.set_result)
-            resp.on_send_headers.set_result(None)
-            yield from waiter
-            resp_impl.add_headers(*resp.headers.items(getall=True))
+            headers = request.response.headers.items(getall=True)
+            resp_impl.add_headers(*headers)
 
             resp_impl.send_headers()
             resp_impl.write(bbody)
