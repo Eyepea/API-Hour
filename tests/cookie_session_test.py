@@ -23,20 +23,26 @@ class REST:
         sess = yield from req.session
         self.test.assertIsNotNone(sess)
         self.test.assertEqual(dict(sess), {})
+        self.test.assertTrue(sess.new)
         sess['foo'] = 'bar'
 
     @asyncio.coroutine
     def get_from_session(self, req):
         sess = yield from req.session
         self.test.assertIsNotNone(sess)
+        self.test.assertFalse(sess.new)
+        self.test.assertIn('foo', sess)
         self.test.assertEqual(dict(sess), {'foo': 'bar'})
 
     @asyncio.coroutine
-    def del_session(self, req):
+    def counter(self, req, start:int=0):
         sess = yield from req.session
-        self.test.assertIsNotNone(sess)
-        self.test.assertEqual(dict(sess), {'foo': 'bar'})
-        sess.clear()
+        if sess.new:
+            sess['result'] = start
+        res = sess['result'] = sess['result'] + 1
+        if res >= 5:
+            sess.invalidate()
+        return {'result': res}
 
 
 def make_cookie(obj, timestamp):
@@ -70,7 +76,9 @@ class CookieSessionTests(unittest.TestCase):
                             use_request='req')
         self.server.add_url('GET', '/get', rest.get_from_session,
                             use_request='req')
-        self.server.add_url('GET', '/del', rest.del_session,
+        self.server.add_url('GET', '/counter', rest.counter,
+                            use_request='req')
+        self.server.add_url('GET', '/counter/{start}', rest.counter,
                             use_request='req')
 
     def tearDown(self):
@@ -126,29 +134,37 @@ class CookieSessionTests(unittest.TestCase):
 
     def test_full_cycle(self):
         with self.run_server() as (srv, base_url):
-
+            url = base_url + '/counter'
             session = aiohttp.Session()
+
             @asyncio.coroutine
             def queries():
-                resp = yield from aiohttp.request('GET', base_url + '/init',
+                # initiate session; set start value to 2
+                resp = yield from aiohttp.request('GET', url + "/2",
                     session=session, loop=self.loop)
-                yield from resp.read_and_close()
+                data = yield from resp.read_and_close(decode=True)
                 self.assertEqual(resp.status, 200)
-                self.assertIn('test_cookie', session.cookies)
+                self.assertEqual(data, {'result': 3})
 
-                resp = yield from aiohttp.request('GET', base_url + '/get',
+                # do increment
+                resp = yield from aiohttp.request('GET', url,
                     session=session, loop=self.loop)
-                yield from resp.read_and_close()
+                data = yield from resp.read_and_close(decode=True)
                 self.assertEqual(resp.status, 200)
-                self.assertIn('test_cookie', session.cookies)
-                self.assertNotIn('test_cookie', resp.cookies)
+                self.assertEqual(data, {'result': 4})
 
-                resp = yield from aiohttp.request('GET', base_url + '/del',
+                # try to override start value
+                resp = yield from aiohttp.request('GET', url + '/3',
                     session=session, loop=self.loop)
-                yield from resp.read_and_close()
+                data = yield from resp.read_and_close(decode=True)
                 self.assertEqual(resp.status, 200)
-                self.assertIn('test_cookie', session.cookies)
-                self.assertIn('test_cookie', resp.cookies)
-                self.assertEqual(resp.cookies['test_cookie'].value, '')
+                self.assertEqual(data, {'result': 5})
+
+                # session deleted; try count
+                resp = yield from aiohttp.request('GET', url,
+                    session=session, loop=self.loop)
+                data = yield from resp.read_and_close(decode=True)
+                self.assertEqual(resp.status, 200)
+                self.assertEqual(data, {'result': 1})
 
             self.loop.run_until_complete(queries())
