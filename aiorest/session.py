@@ -16,6 +16,11 @@ class Session(MutableMapping):
         if data is not None:
             self._mapping.update(data)
 
+    def __repr__(self):
+        return '<{} [new:{}, changed:{}] {!r}>'.format(
+            self.__class__.__name__, self.new, self._changed,
+            self._mapping)
+
     @property
     def new(self):
         return self._new
@@ -57,6 +62,8 @@ class BaseSessionFactory:
                  loop=None):
         if loop is None:
             loop = asyncio.get_event_loop()
+        if isinstance(secret_key, str):
+            secret_key = secret_key.encode('utf-8')
         self._secret_key = secret_key
         self._cookie_name = cookie_name
         self._session_max_age = session_max_age
@@ -70,7 +77,7 @@ class BaseSessionFactory:
     def __call__(self, request, fut):
         """Instantiate Session object.
         """
-        asyncio.Task(self._load(request, fut), loop=self._loop)
+        return asyncio.Task(self._load(request, fut), loop=self._loop)
 
     @asyncio.coroutine
     def _load(self, request, fut):
@@ -143,11 +150,7 @@ class BaseSessionFactory:
         if not hmac.compare_digest(expected_sign, sign):
             # TODO: log warning
             return None
-        try:
-            return value
-        except Exception:
-            # TODO: log warning
-            return None
+        return value
 
     def _get_signature(self, *parts):
         sign = hmac.new(self._secret_key, digestmod=hashlib.sha1)
@@ -191,9 +194,9 @@ class CookieSessionFactory(BaseSessionFactory):
         try:
             return self._loads(cookie_value)
         except (TypeError, ValueError):
+            # TODO: log warning
             pass
         return
-        yield
 
     @asyncio.coroutine
     def save_session_data(self, session):
@@ -202,4 +205,3 @@ class CookieSessionFactory(BaseSessionFactory):
         if not session:
             return
         return self._dumps(dict(session))
-        yield
