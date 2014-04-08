@@ -8,17 +8,20 @@ class SessionTests(unittest.TestCase):
     def test_create(self):
         s = Session()
         self.assertEqual(s, {})
-        self.assertFalse(s.new)
+        self.assertTrue(s.new)
+        self.assertIsNone(s.identity)
         self.assertFalse(s._changed)
 
         s = Session({'some': 'data'})
         self.assertEqual(s, {'some': 'data'})
-        self.assertFalse(s.new)
+        self.assertTrue(s.new)
+        self.assertIsNone(s.identity)
         self.assertFalse(s._changed)
 
-        s = Session(new=True)
+        s = Session(identity=1)
         self.assertEqual(s, {})
-        self.assertTrue(s.new)
+        self.assertFalse(s.new)
+        self.assertEqual(s.identity, 1)
         self.assertFalse(s._changed)
 
     def test_create_error(self):
@@ -31,36 +34,40 @@ class SessionTests(unittest.TestCase):
 
     def test__repr__(self):
         s = Session()
-        self.assertEqual(str(s), '<Session [new:False, changed:False] {}>')
+        self.assertEqual(str(s), '<Session [new:True, changed:False] {}>')
         s['foo'] = 'bar'
         self.assertEqual(str(s),
-            "<Session [new:False, changed:True] {'foo': 'bar'}>")
-        s = Session({'key': 123}, new=True)
+            "<Session [new:True, changed:True] {'foo': 'bar'}>")
+        s = Session({'key': 123}, identity=1)
         self.assertEqual(str(s),
-            "<Session [new:True, changed:False] {'key': 123}>")
+            "<Session [new:False, changed:False] {'key': 123}>")
         s.invalidate()
         self.assertEqual(str(s),
-            "<Session [new:True, changed:True] {}>")
+            "<Session [new:False, changed:True] {}>")
 
     def test_invalidate(self):
         s = Session({'foo': 'bar'})
         self.assertEqual(s, {'foo': 'bar'})
-        self.assertFalse(s.new)
+        self.assertTrue(s.new)
+        self.assertIsNone(s.identity)
         self.assertFalse(s._changed)
 
         s.invalidate()
         self.assertEqual(s, {})
-        self.assertFalse(s.new)
+        self.assertTrue(s.new)
+        self.assertIsNone(s.identity)
         self.assertTrue(s._changed)
 
-        s = Session({'foo': 'bar'}, new=True)
+        s = Session({'foo': 'bar'}, identity=1)
         self.assertEqual(s, {'foo': 'bar'})
-        self.assertTrue(s.new)
+        self.assertFalse(s.new)
+        self.assertEqual(s.identity, 1)
         self.assertFalse(s._changed)
 
         s.invalidate()
         self.assertEqual(s, {})
-        self.assertTrue(s.new)
+        self.assertFalse(s.new)
+        self.assertEqual(s.identity, 1)
         self.assertTrue(s._changed)
 
     def test_operations(self):

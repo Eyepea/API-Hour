@@ -9,10 +9,10 @@ class Session(MutableMapping):
     """Session dict-like object.
     """
 
-    def __init__(self, data=None, new=False):
+    def __init__(self, data=None, identity=None):
         self._changed = False
         self._mapping = {}
-        self._new = new
+        self._identity = identity
         if data is not None:
             self._mapping.update(data)
 
@@ -23,7 +23,11 @@ class Session(MutableMapping):
 
     @property
     def new(self):
-        return self._new
+        return self._identity is None
+
+    @property
+    def identity(self):
+        return self._identity
 
     def changed(self):
         self._changed = True
@@ -66,12 +70,12 @@ class BaseSessionFactory:
             secret_key = secret_key.encode('utf-8')
         self._secret_key = secret_key
         self._cookie_name = cookie_name
-        self._session_max_age = session_max_age
         self._cookie_params = dict(domain=domain,
                                    max_age=max_age,
                                    path=path,
                                    secure=secure,
                                    httponly=httponly)
+        self.session_max_age = session_max_age
         self._loop = loop
 
     def __call__(self, request, fut):
@@ -88,10 +92,10 @@ class BaseSessionFactory:
         try:
             cookie_value = self._decode_cookie(raw_value)
             if cookie_value is None:
-                sess = Session(new=True)
+                sess = Session()
             else:
-                data = yield from self.load_session_data(cookie_value)
-                sess = Session(data, new=(data is None))
+                data, ident = yield from self.load_session_data(cookie_value)
+                sess = Session(data, identity=ident)
         except Exception as exc:
             fut.set_exception(exc)
         else:
@@ -142,8 +146,8 @@ class BaseSessionFactory:
         name = self._cookie_name
         value, timestamp, sign = parts
 
-        if self._session_max_age is not None:
-            if int(timestamp) < int(time.time()) - self._session_max_age:
+        if self.session_max_age is not None:
+            if int(timestamp) < int(time.time()) - self.session_max_age:
                 return None
 
         expected_sign = self._get_signature(name, value, timestamp)
@@ -162,7 +166,10 @@ class BaseSessionFactory:
         """Loads session data based on value of session cookie.
 
         Must be implemented in child class.
-        Returns session dict or None
+        Returns tuple session dict and session id
+        session dict may be None
+        session id may be None identifing new session
+        otherwise may anything
         """
         raise NotImplementedError
 
@@ -190,13 +197,15 @@ class CookieSessionFactory(BaseSessionFactory):
     @asyncio.coroutine
     def load_session_data(self, cookie_value):
         """Load session data from decoded and verified cookie value.
+
+        Returns session dict or None and empty string as session id
         """
         try:
-            return self._loads(cookie_value)
+            return self._loads(cookie_value), ''
         except (TypeError, ValueError):
             # TODO: log warning
             pass
-        return
+        return None, None
 
     @asyncio.coroutine
     def save_session_data(self, session):

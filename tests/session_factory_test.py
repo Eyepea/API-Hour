@@ -169,8 +169,9 @@ class BaseSessionFactoryTests(unittest.TestCase):
 
         @asyncio.coroutine
         def run():
-            ret = yield from factory.load_session_data('some value')
-            self.assertEqual(ret, 'some value')
+            data, id = yield from factory.load_session_data('some value')
+            self.assertEqual(data, 'some value')
+            self.assertEqual(id, '')
 
         self.loop.run_until_complete(run())
 
@@ -186,10 +187,12 @@ class BaseSessionFactoryTests(unittest.TestCase):
 
         @asyncio.coroutine
         def run():
-            ret = yield from factory.load_session_data(None)
-            self.assertIsNone(ret)
-            ret = yield from factory.load_session_data('[not json value]')
-            self.assertIsNone(ret)
+            data, id = yield from factory.load_session_data(None)
+            self.assertIsNone(data)
+            self.assertIsNone(id)
+            data, id = yield from factory.load_session_data('[not json value]')
+            self.assertIsNone(data)
+            self.assertIsNone(id)
         self.loop.run_until_complete(run())
         self.assertEqual(dumps_mock.call_count, 0)
 
