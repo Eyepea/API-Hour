@@ -5,7 +5,10 @@ import aiohttp
 from aiorest import RESTServer
 import json
 
-from test.support import find_unused_port
+
+def server_port(srv):
+    sock = next(iter(srv.sockets))
+    return sock.getsockname()[1]
 
 
 class REST:
@@ -74,11 +77,10 @@ class ServerTests(unittest.TestCase):
         self.loop.close()
 
     def test_simple_POST(self):
-        port = find_unused_port()
-
         srv = self.loop.run_until_complete(self.loop.create_server(
             lambda: self.server,
-            'localhost', port))
+            'localhost', '*'))
+        port = server_port(srv)
         url = 'http://localhost:{}/post/123'.format(port)
 
         def query():
@@ -97,11 +99,10 @@ class ServerTests(unittest.TestCase):
         self.loop.run_until_complete(srv.wait_closed())
 
     def test_simple_GET(self):
-        port = find_unused_port()
-
         srv = self.loop.run_until_complete(self.loop.create_server(
             lambda: self.server,
-            'localhost', port))
+            'localhost', '*'))
+        port = server_port(srv)
         url = 'http://localhost:{}/post/123'.format(port)
 
         def query():
@@ -116,11 +117,10 @@ class ServerTests(unittest.TestCase):
         self.loop.run_until_complete(srv.wait_closed())
 
     def test_GET_with_query_string(self):
-        port = find_unused_port()
-
         srv = self.loop.run_until_complete(self.loop.create_server(
             lambda: self.server,
-            'localhost', port))
+            'localhost', '*'))
+        port = server_port(srv)
         url = 'http://localhost:{}/post/123/2?a=1&b=2'.format(port)
 
         def query():
@@ -138,11 +138,10 @@ class ServerTests(unittest.TestCase):
         self.loop.run_until_complete(srv.wait_closed())
 
     def test_set_cookie(self):
-        port = find_unused_port()
-
         srv = self.loop.run_until_complete(self.loop.create_server(
             lambda: self.server,
-            'localhost', port))
+            'localhost', '*'))
+        port = server_port(srv)
         url = 'http://localhost:{}/cookie/123'.format(port)
 
         @asyncio.coroutine
@@ -159,11 +158,10 @@ class ServerTests(unittest.TestCase):
         self.loop.run_until_complete(srv.wait_closed())
 
     def test_get_cookie(self):
-        port = find_unused_port()
-
         srv = self.loop.run_until_complete(self.loop.create_server(
             lambda: self.server,
-            'localhost', port))
+            'localhost', '*'))
+        port = server_port(srv)
         url = 'http://localhost:{}/get_cookie/'.format(port)
 
         @asyncio.coroutine

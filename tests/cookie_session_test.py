@@ -10,7 +10,6 @@ from aiorest import RESTServer
 from aiorest.session import CookieSessionFactory
 
 from unittest import mock
-from test.support import find_unused_port
 
 
 class REST:
@@ -86,12 +85,12 @@ class CookieSessionTests(unittest.TestCase):
 
     @contextlib.contextmanager
     def run_server(self):
-        host = 'localhost'
-        port = find_unused_port()
         srv = self.loop.run_until_complete(self.loop.create_server(
             lambda: self.server,
-            host, port))
-        base_url = 'http://{}:{}'.format(host, port)
+            'localhost', '*'))
+        sock = next(iter(srv.sockets))
+        port = sock.getsockname()[1]
+        base_url = 'http://localhost:{}'.format(port)
 
         yield (srv, base_url)
 

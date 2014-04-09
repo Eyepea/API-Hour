@@ -6,6 +6,7 @@ python:
 install:
   - python setup.py install
   - pip install pyflakes
+  - pip install asyncio-redis
 
 script:
   - pyflakes .
