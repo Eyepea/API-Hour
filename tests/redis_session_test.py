@@ -13,8 +13,7 @@ class RedisSessionTests(unittest.TestCase):
 
     def setUp(self):
         self.loop = asyncio.new_event_loop()
-        # FIXME: asyncio_redis doesn't like to pass loop explicitly
-        asyncio.set_event_loop(self.loop)
+        asyncio.set_event_loop(None)
 
         self.redis = self.loop.run_until_complete(
             Connection.create(db=0, encoder=BytesEncoder(),
