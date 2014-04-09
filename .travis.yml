@@ -11,3 +11,6 @@ install:
 script:
   - pyflakes .
   - python runtests.py -v
+
+services:
+  - redis-server
