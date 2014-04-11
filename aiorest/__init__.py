@@ -187,21 +187,13 @@ class Request:
         self.response._copy_cookies()
 
 
-class RESTServer(aiohttp.server.ServerHttpProtocol):
+class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
 
-    DYN = re.compile(r'^\{[_a-zA-Z][_a-zA-Z0-9]*\}$')
-    GOOD = r'[^{}/]+'
-    PLAIN = re.compile('^'+GOOD+'$')
-
-    METHODS = {'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'}
-
-    def __init__(self, *, hostname, session_factory=None, **kwargs):
+    def __init__(self,  server, *, hostname, session_factory=None, **kwargs):
         super().__init__(**kwargs)
+        self.server = server
         self.hostname = hostname
         self.session_factory = session_factory
-        self._urls = []
-        assert session_factory is None or callable(session_factory), \
-            "session_factory must be None or callable (coroutine) function"
 
     @asyncio.coroutine
     def handle_request(self, message, payload):
@@ -228,8 +220,9 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
                               session_factory=self.session_factory,
                               loop=self._loop)
 
-            resp_impl = aiohttp.Response(self.transport, 200)
-            body = yield from self.dispatch(request)
+            resp_impl = aiohttp.Response(self.writer, 200,
+                                         http_version=message.version)
+            body = yield from self.server.dispatch(request)
             bbody = body.encode('utf-8')
 
             yield from request._call_response_callbacks()
@@ -253,13 +246,15 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
             resp_impl.add_header('Content-Length', str(len(bbody)))
 
             headers = request.response.headers.items(getall=True)
-            resp_impl.add_headers(*headers)
+            for key, val in headers:
+                resp_impl.add_header(key, val)
 
             resp_impl.send_headers()
             resp_impl.write(bbody)
             resp_impl.write_eof()
-            if resp_impl.keep_alive():
-                self.keep_alive(True)
+            ## if resp_impl.keep_alive():
+            ##     print("KEEP ALIVE")
+            ##     self.keep_alive(True)
 
             #self.log.debug("Fihish handle request %r at %d -> %s",
             #               message, time.time(), body)
@@ -267,6 +262,33 @@ class RESTServer(aiohttp.server.ServerHttpProtocol):
         except Exception:
             #self.log.exception("Cannot handle request %r", message)
             raise
+
+
+class RESTServer:
+
+    DYN = re.compile(r'^\{[_a-zA-Z][_a-zA-Z0-9]*\}$')
+    GOOD = r'[^{}/]+'
+    PLAIN = re.compile('^'+GOOD+'$')
+
+    METHODS = {'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'}
+
+    def __init__(self, *, hostname, session_factory=None, loop=None, **kwargs):
+        assert session_factory is None or callable(session_factory), \
+            "session_factory must be None or callable (coroutine) function"
+        if loop is None:
+            loop = asyncio.get_event_loop()
+        self._loop = loop
+        super().__init__()
+        self.hostname = hostname
+        self.session_factory = session_factory
+        self._kwargs = kwargs
+        self._urls = []
+
+    def make_handler(self):
+        return RESTRequestHandler(self, hostname=self.hostname,
+                                  session_factory=self.session_factory,
+                                  loop=self._loop,
+                                  **self._kwargs)
 
     def add_url(self, method, path, handler, use_request=False):
         """XXX"""

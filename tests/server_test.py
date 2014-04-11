@@ -78,7 +78,7 @@ class ServerTests(unittest.TestCase):
 
     def test_simple_POST(self):
         srv = self.loop.run_until_complete(self.loop.create_server(
-            lambda: self.server,
+            self.server.make_handler,
             'localhost', '*'))
         port = server_port(srv)
         url = 'http://localhost:{}/post/123'.format(port)
@@ -100,7 +100,7 @@ class ServerTests(unittest.TestCase):
 
     def test_simple_GET(self):
         srv = self.loop.run_until_complete(self.loop.create_server(
-            lambda: self.server,
+             self.server.make_handler,
             'localhost', '*'))
         port = server_port(srv)
         url = 'http://localhost:{}/post/123'.format(port)
@@ -118,7 +118,7 @@ class ServerTests(unittest.TestCase):
 
     def test_GET_with_query_string(self):
         srv = self.loop.run_until_complete(self.loop.create_server(
-            lambda: self.server,
+            self.server.make_handler,
             'localhost', '*'))
         port = server_port(srv)
         url = 'http://localhost:{}/post/123/2?a=1&b=2'.format(port)
@@ -139,7 +139,7 @@ class ServerTests(unittest.TestCase):
 
     def test_set_cookie(self):
         srv = self.loop.run_until_complete(self.loop.create_server(
-            lambda: self.server,
+            self.server.make_handler,
             'localhost', '*'))
         port = server_port(srv)
         url = 'http://localhost:{}/cookie/123'.format(port)
@@ -159,7 +159,7 @@ class ServerTests(unittest.TestCase):
 
     def test_get_cookie(self):
         srv = self.loop.run_until_complete(self.loop.create_server(
-            lambda: self.server,
+            self.server.make_handler,
             'localhost', '*'))
         port = server_port(srv)
         url = 'http://localhost:{}/get_cookie/'.format(port)
