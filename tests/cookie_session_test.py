@@ -150,7 +150,7 @@ class CookieSessionTests(unittest.TestCase):
                 # do increment
                 resp = yield from aiohttp.request('GET', url,
                     connector=connector, loop=self.loop)
-                data = yield from resp.read_and_close(decode=False)
+                data = yield from resp.read_and_close(decode=True)
                 self.assertEqual(resp.status, 200)
                 self.assertEqual(data, {'result': 4})
 
