@@ -138,35 +138,32 @@ class CookieSessionTests(unittest.TestCase):
 
             @asyncio.coroutine
             def queries():
-                session = aiohttp.Session(loop=self.loop)
+                connector = aiohttp.SocketConnector(share_cookies=True,
+                                                    loop=self.loop)
                 # initiate session; set start value to 2
-                print('1111111111111111111111111')
                 resp = yield from aiohttp.request('GET', url + "/2",
-                    session=session, loop=self.loop)
+                    connector=connector, loop=self.loop)
                 data = yield from resp.read_and_close(decode=True)
                 self.assertEqual(resp.status, 200)
                 self.assertEqual(data, {'result': 3})
 
                 # do increment
-                print('aaaaaaaaaaaaaaaaaaaa')
                 resp = yield from aiohttp.request('GET', url,
-                    session=session, loop=self.loop)
-                data = yield from resp.read_and_close(decode=True)
+                    connector=connector, loop=self.loop)
+                data = yield from resp.read_and_close(decode=False)
                 self.assertEqual(resp.status, 200)
                 self.assertEqual(data, {'result': 4})
 
                 # try to override start value
-                print('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
                 resp = yield from aiohttp.request('GET', url + '/3',
-                    session=session, loop=self.loop)
+                    connector=connector, loop=self.loop)
                 data = yield from resp.read_and_close(decode=True)
                 self.assertEqual(resp.status, 200)
                 self.assertEqual(data, {'result': 5})
 
                 # session deleted; try count
-                print('cccccccccccccccccccccccccccccccccccccccc')
                 resp = yield from aiohttp.request('GET', url,
-                    session=session, loop=self.loop)
+                    connector=connector, loop=self.loop)
                 data = yield from resp.read_and_close(decode=True)
                 self.assertEqual(resp.status, 200)
                 self.assertEqual(data, {'result': 1})
