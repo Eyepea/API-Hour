@@ -231,19 +231,19 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
             resp_impl.add_header('Content-Type', 'application/json')
 
             # content encoding
-            ## accept_encoding = headers.get('accept-encoding', '').lower()
-            ## if 'deflate' in accept_encoding:
-            ##     resp_impl.add_header('Transfer-Encoding', 'chunked')
-            ##     resp_impl.add_chunking_filter(1025)
-            ##     resp_impl.add_header('Content-Encoding', 'deflate')
-            ##     resp_impl.add_compression_filter('deflate')
-            ## elif 'gzip' in accept_encoding:
-            ##     resp_impl.add_header('Transfer-Encoding', 'chunked')
-            ##     resp_impl.add_chunking_filter(1025)
-            ##     resp_impl.add_header('Content-Encoding', 'gzip')
-            ##     resp_impl.add_compression_filter('gzip')
-            ## else:
-            resp_impl.add_header('Content-Length', str(len(bbody)))
+            accept_encoding = headers.get('accept-encoding', '').lower()
+            if 'deflate' in accept_encoding:
+                resp_impl.add_header('Transfer-Encoding', 'chunked')
+                resp_impl.add_header('Content-Encoding', 'deflate')
+                resp_impl.add_compression_filter('deflate')
+                resp_impl.add_chunking_filter(1025)
+            elif 'gzip' in accept_encoding:
+                resp_impl.add_header('Transfer-Encoding', 'chunked')
+                resp_impl.add_header('Transfer-Encoding', 'chunked')
+                resp_impl.add_compression_filter('gzip')
+                resp_impl.add_chunking_filter(1025)
+            else:
+                resp_impl.add_header('Content-Length', str(len(bbody)))
 
             headers = request.response.headers.items(getall=True)
             for key, val in headers:
