@@ -14,6 +14,7 @@ elif PY_VER >= (3, 3):
 else:
     raise RuntimeError("aiorest doesn't suppport Python earllier than 3.3")
 
+extras_require = {'redis_session': ['asyncio-redis>=0.12.3'],}
 
 def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
@@ -54,9 +55,10 @@ setup(name='aiorest',
       download_url='https://pypi.python.org/pypi/aiorest',
       license='BSD',
       packages=find_packages(),
-      install_requires = install_requires,
+      install_requires=install_requires,
+      extras_require=extras_require,
       #tests_require = tests_require,
       #test_suite = 'nose.collector',
-      provides = ['aiorest'],
-      requires = ['aiohttp'],
-      include_package_data = True)
+      provides=['aiorest'],
+      requires=['aiohttp'],
+      include_package_data=True)
