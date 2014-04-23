@@ -5,7 +5,7 @@ FLAKE=pyflakes3
 
 
 pep:
-	$(FLAKE) ./
+	$(FLAKE) aiorest tests
 
 test:
 	$(PYTHON) runtests.py
