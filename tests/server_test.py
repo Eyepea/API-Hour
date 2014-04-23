@@ -48,6 +48,7 @@ class REST:
         response = req.response
         response.set_cookie('test_cookie', value)
         return {'success': True}
+        yield
 
     def func_get_cookie(self, req):
         return {'success': True,
@@ -90,7 +91,7 @@ class ServerTests(unittest.TestCase):
                 headers={'Content-Type': 'application/json'},
                 loop=self.loop)
             self.assertEqual(200, response.status)
-            data = yield from response.read()
+            data = yield from response.read_and_close()
             self.assertEqual(b'{"success": true}', data)
 
         self.loop.run_until_complete(query())
@@ -108,7 +109,7 @@ class ServerTests(unittest.TestCase):
         def query():
             response = yield from aiohttp.request('GET', url, loop=self.loop)
             self.assertEqual(200, response.status)
-            data = yield from response.read()
+            data = yield from response.read_and_close()
             self.assertEqual(b'{"success": true}', data)
 
         self.loop.run_until_complete(query())
@@ -126,7 +127,7 @@ class ServerTests(unittest.TestCase):
         def query():
             response = yield from aiohttp.request('GET', url, loop=self.loop)
             self.assertEqual(200, response.status)
-            data = yield from response.read()
+            data = yield from response.read_and_close()
             dct = json.loads(data.decode('utf-8'))
             self.assertEqual({'success': True,
                               'args': ['a', 'b'],
