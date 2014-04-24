@@ -50,6 +50,17 @@ Entry = collections.namedtuple('Entry', 'regex method handler use_request'
                                         ' check_cors cors_options')
 
 
+class HttpCorsOptions(aiohttp.HttpException):
+    """Http exception to handle CORS preflight requests.
+
+    Raised in RESTServer.dispatch.
+    """
+    code = 200
+
+    def __init__(self, headers):
+        self.headers = headers
+
+
 class Response:
 
     def __init__(self, *, loop=None):
@@ -263,6 +274,25 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
             #self.log.exception("Cannot handle request %r", message)
             raise
 
+    def handle_error(self, status=500, message=None, payload=None,
+                     exc=None, headers=None):
+        if isinstance(exc, HttpCorsOptions):
+            now = time.time()
+            resp_impl = aiohttp.Response(self.writer, status, close=True)
+            resp_impl.add_headers(
+                ('Host', self.hostname),
+                ('Content-Type', 'text/plain'),
+                ('Content-Length', '0'),
+                )
+            if headers:
+                resp_impl.add_headers(*headers)
+            resp_impl.send_headers()
+            resp_impl.write_eof()
+            self.log_access(message, None, response, time.time() - now)
+            self.keep_alive(False)
+        else:
+            super().handle_error(status, message, payload, exc, headers)
+
 
 class RESTServer:
 
@@ -273,7 +303,7 @@ class RESTServer:
     METHODS = {'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'}
 
     CORS_OPTIONS = {
-        'allow-origin': lambda req: req.headers.get('ORIGIN', '*'),
+        'allow-origin': '*',
         'allow-credentials': False,
         'allow-headers': None,
         'expose-headers': None,
@@ -352,6 +382,7 @@ class RESTServer:
             compiled = re.compile('^' + pattern + '$')
         except re.error:
             raise ValueError("Invalid path '{}'".format(path))
+        cors_options = collections.ChainMap(cors_options, self.CORS_OPTIONS)
         self._urls.append(Entry(compiled, method, handler, use_request,
                                 check_cors, cors_options))
 
@@ -371,8 +402,9 @@ class RESTServer:
             if entry.method != method:
                 allowed_methods.add(entry.method)
             elif check_cors and entry.check_cors:
-                # yield from self._handle_cors_check(request, entry.cors_options)
-                return
+                headers = tuple(self._make_cors_headers(request,
+                                                        entry.cors_options))
+                raise HttpCorsOptions(headers)
             else:
                 break
         else:
@@ -384,6 +416,10 @@ class RESTServer:
             else:
                 # add log
                 raise aiohttp.HttpErrorException(404, "Not Found")
+        if self.cors_enabled and entry.check_cors:
+            headers = tuple(self._make_cors_headers(request,
+                                                    entry.cors_options))
+            request.response.headers.extend(headers)
 
         handler = entry.handler
         sig = inspect.signature(handler)
@@ -431,3 +467,22 @@ class RESTServer:
             if sig.return_annotation is not sig.empty:
                 return bargs.args, bargs.kwargs, sig.return_annotation
             return bargs.args, bargs.kwargs, None
+
+    def _make_cors_headers(self, request, cors_options):
+        option = cors_options.get
+        header = request.headers.get
+
+        allow_origin = option('allow-origin')
+        allow_creds = option('allow-credentials')
+        allow_headers = option('allow-headers')
+
+        # TODO: implement real CORS check
+        origin = header('ORIGIN')
+        if origin:
+            yield ('Access-Control-Allow-Origin', allow_origin)
+
+        method = header('ACCESS-CONTROL-REQUEST-METHOD', request.method)
+        if method:
+            yield ('Access-Control-Allow-Methods', method)
+        yield ('Access-Control-Allow-Headers', allow_headers)
+        yield ('Access-Control-Allow-Credentials', allow_creds)
