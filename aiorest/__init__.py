@@ -46,7 +46,19 @@ def _parse_version(ver):
 version_info = _parse_version(__version__)
 
 
-Entry = collections.namedtuple('Entry', 'regex method handler use_request')
+Entry = collections.namedtuple('Entry', 'regex method handler use_request'
+                                        ' check_cors cors_options')
+
+
+class HttpCorsOptions(aiohttp.HttpException):
+    """Http exception to handle CORS preflight requests.
+
+    Raised in RESTServer.dispatch.
+    """
+    code = 200
+
+    def __init__(self, headers):
+        self.headers = headers
 
 
 class Response:
@@ -252,9 +264,8 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
             resp_impl.send_headers()
             resp_impl.write(bbody)
             resp_impl.write_eof()
-            ## if resp_impl.keep_alive():
-            ##     print("KEEP ALIVE")
-            ##     self.keep_alive(True)
+            if resp_impl.keep_alive():
+                self.keep_alive(True)
 
             #self.log.debug("Fihish handle request %r at %d -> %s",
             #               message, time.time(), body)
@@ -262,6 +273,25 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
         except Exception:
             #self.log.exception("Cannot handle request %r", message)
             raise
+
+    def handle_error(self, status=500, message=None, payload=None,
+                     exc=None, headers=None):
+        if isinstance(exc, HttpCorsOptions):
+            now = time.time()
+            resp_impl = aiohttp.Response(self.writer, status, close=True)
+            resp_impl.add_headers(
+                ('Host', self.hostname),
+                ('Content-Type', 'text/plain'),
+                ('Content-Length', '0'),
+                )
+            if headers:
+                resp_impl.add_headers(*headers)
+            resp_impl.send_headers()
+            resp_impl.write_eof()
+            self.log_access(message, None, response, time.time() - now)
+            self.keep_alive(False)
+        else:
+            super().handle_error(status, message, payload, exc, headers)
 
 
 class RESTServer:
@@ -272,7 +302,16 @@ class RESTServer:
 
     METHODS = {'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'}
 
-    def __init__(self, *, hostname, session_factory=None, loop=None, **kwargs):
+    CORS_OPTIONS = {
+        'allow-origin': '*',
+        'allow-credentials': False,
+        'allow-headers': None,
+        'expose-headers': None,
+        'max-age': 86400,
+    }
+
+    def __init__(self, *, hostname, session_factory=None,
+                 enable_cors=False, loop=None, **kwargs):
         assert session_factory is None or callable(session_factory), \
             "session_factory must be None or callable (coroutine) function"
         if loop is None:
@@ -281,6 +320,7 @@ class RESTServer:
         super().__init__()
         self.hostname = hostname
         self.session_factory = session_factory
+        self._enable_cors = enable_cors
         self._kwargs = kwargs
         self._urls = []
 
@@ -290,9 +330,17 @@ class RESTServer:
                                   loop=self._loop,
                                   **self._kwargs)
 
-    def add_url(self, method, path, handler, use_request=False):
+    @property
+    def cors_enabled(self):
+        return self._enable_cors
+
+    def add_url(self, method, path, handler, use_request=False,
+                check_cors=True, cors_options={}):
         """XXX"""
         assert callable(handler), handler
+        assert not set(cors_options) - set(self.CORS_OPTIONS), \
+            'Got bad CORS options: {}'.format(
+             set(cors_options) - set(self.CORS_OPTIONS))
         if isinstance(handler, MethodType):
             holder = handler.__func__
         else:
@@ -334,19 +382,31 @@ class RESTServer:
             compiled = re.compile('^' + pattern + '$')
         except re.error:
             raise ValueError("Invalid path '{}'".format(path))
-        self._urls.append(Entry(compiled, method, handler, use_request))
+        cors_options = collections.ChainMap(cors_options, self.CORS_OPTIONS)
+        self._urls.append(Entry(compiled, method, handler, use_request,
+                                check_cors, cors_options))
 
     @asyncio.coroutine
     def dispatch(self, request):
         path = request.path
         method = request.method
         allowed_methods = set()
+        check_cors = False
+        if method == 'OPTIONS' and self.cors_enabled:
+            check_cors = True
+            method = request.headers.get('ACCESS-CONTROL-REQUEST-METHOD')
+            if not method:
+                raise aiohttp.HttpErrorException(404, "Not Found")
         for entry in self._urls:
             match = entry.regex.match(path)
             if match is None:
                 continue
             if entry.method != method:
                 allowed_methods.add(entry.method)
+            elif check_cors and entry.check_cors:
+                headers = tuple(self._make_cors_headers(request,
+                                                        entry.cors_options))
+                raise HttpCorsOptions(headers)
             else:
                 break
         else:
@@ -358,6 +418,10 @@ class RESTServer:
             else:
                 # add log
                 raise aiohttp.HttpErrorException(404, "Not Found")
+        if self.cors_enabled and entry.check_cors:
+            headers = tuple(self._make_cors_headers(request,
+                                                    entry.cors_options))
+            request.response.headers.extend(headers)
 
         handler = entry.handler
         sig = inspect.signature(handler)
@@ -405,3 +469,23 @@ class RESTServer:
             if sig.return_annotation is not sig.empty:
                 return bargs.args, bargs.kwargs, sig.return_annotation
             return bargs.args, bargs.kwargs, None
+
+    def _make_cors_headers(self, request, cors_options):
+        option = cors_options.get
+        header = request.headers.get
+
+        # TODO: implement real CORS check
+
+        allow_origin = option('allow-origin')
+        yield ('Access-Control-Allow-Origin', allow_origin)
+
+        method = header('ACCESS-CONTROL-REQUEST-METHOD', request.method)
+        if method:
+            yield ('Access-Control-Allow-Methods', method)
+
+        allow_headers = option('allow-headers')
+        if allow_headers:
+            yield ('Access-Control-Allow-Headers', allow_headers)
+        allow_creds = option('allow-credentials')
+        if allow_creds:
+            yield ('Access-Control-Allow-Credentials', allow_creds and 'true')
