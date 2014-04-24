@@ -4,7 +4,6 @@ import aiohttp
 import contextlib
 
 from aiorest import RESTServer
-from unittest import mock
 
 
 class REST:

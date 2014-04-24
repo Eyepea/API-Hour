@@ -288,7 +288,7 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
                 resp_impl.add_headers(*headers)
             resp_impl.send_headers()
             resp_impl.write_eof()
-            self.log_access(message, None, response, time.time() - now)
+            self.log_access(message, None, resp_impl, time.time() - now)
             self.keep_alive(False)
         else:
             super().handle_error(status, message, payload, exc, headers)
