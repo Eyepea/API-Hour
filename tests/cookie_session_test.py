@@ -131,7 +131,6 @@ class CookieSessionTests(unittest.TestCase):
 
             self.loop.run_until_complete(query())
 
-    @unittest.expectedFailure
     def test_full_cycle(self):
         with self.run_server() as (srv, base_url):
             url = base_url + '/counter'

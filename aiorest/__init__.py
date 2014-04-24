@@ -394,7 +394,9 @@ class RESTServer:
         check_cors = False
         if method == 'OPTIONS' and self.cors_enabled:
             check_cors = True
-            method = request.headers['ACCESS-CONTROL-REQUEST-METHOD']
+            method = request.headers.get('ACCESS-CONTROL-REQUEST-METHOD')
+            if not method:
+                raise aiohttp.HttpErrorException(404, "Not Found")
         for entry in self._urls:
             match = entry.regex.match(path)
             if match is None:
@@ -472,17 +474,18 @@ class RESTServer:
         option = cors_options.get
         header = request.headers.get
 
-        allow_origin = option('allow-origin')
-        allow_creds = option('allow-credentials')
-        allow_headers = option('allow-headers')
-
         # TODO: implement real CORS check
-        origin = header('ORIGIN')
-        if origin:
-            yield ('Access-Control-Allow-Origin', allow_origin)
+
+        allow_origin = option('allow-origin')
+        yield ('Access-Control-Allow-Origin', allow_origin)
 
         method = header('ACCESS-CONTROL-REQUEST-METHOD', request.method)
         if method:
             yield ('Access-Control-Allow-Methods', method)
-        yield ('Access-Control-Allow-Headers', allow_headers)
-        yield ('Access-Control-Allow-Credentials', allow_creds)
+
+        allow_headers = option('allow-headers')
+        if allow_headers:
+            yield ('Access-Control-Allow-Headers', allow_headers)
+        allow_creds = option('allow-credentials')
+        if allow_creds:
+            yield ('Access-Control-Allow-Credentials', allow_creds and 'true')
