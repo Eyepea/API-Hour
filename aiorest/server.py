@@ -122,7 +122,7 @@ class RESTServer:
             check_cors = True
             method = request.headers.get('ACCESS-CONTROL-REQUEST-METHOD')
             if not method:
-                raise aiohttp.HttpErrorException(404, "Not Found")
+                raise errors.RESTError(404, "Not Found")
         for entry in self._urls:
             match = entry.regex.match(path)
             if match is None:
@@ -139,11 +139,12 @@ class RESTServer:
             if allowed_methods:
                 allow = ', '.join(sorted(allowed_methods))
                 # add log
-                raise aiohttp.HttpErrorException(405,
-                                                 headers=(('Allow', allow),))
+                raise errors.RESTError(405, "Not Allowed",
+                                       json_body={'allowed_methods': allow},
+                                       headers=(('Allow', allow),))
             else:
                 # add log
-                raise aiohttp.HttpErrorException(404, "Not Found")
+                raise errors.RESTError(404, "Not Found")
         if self.cors_enabled and entry.check_cors:
             headers = tuple(self._make_cors_headers(request,
                                                     entry.cors_options))

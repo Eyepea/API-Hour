@@ -90,18 +90,11 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
 
     def handle_error(self, status=500, message=None, payload=None,
                      exc=None, headers=None):
-        if isinstance(exc, errors.HttpCorsOptions):
+        if isinstance(exc, errors.RESTError):
             now = time.time()
             resp_impl = aiohttp.Response(self.writer, status, close=True)
-            resp_impl.add_headers(
-                ('Host', self.hostname),
-                ('Content-Type', 'text/plain'),
-                ('Content-Length', '0'),
-                )
-            if headers:
-                resp_impl.add_headers(*headers)
-            resp_impl.send_headers()
-            resp_impl.write_eof()
+            resp_impl.add_header('Host', self.hostname)
+            exc.write_response(resp_impl)
             self.log_access(payload, None, resp_impl, time.time() - now)
             self.keep_alive(False)
         else:
