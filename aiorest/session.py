@@ -5,6 +5,13 @@ import time
 from collections import MutableMapping
 
 
+__all__ = [
+    'Session',
+    'BaseSessionFactory',
+    'CookieSessionFactory',
+    ]
+
+
 class Session(MutableMapping):
     """Session dict-like object.
     """
@@ -59,7 +66,7 @@ class Session(MutableMapping):
 
 class BaseSessionFactory:
 
-    def __init__(self, secret_key, cookie_name, 
+    def __init__(self, secret_key, cookie_name,
                  session_max_age=None,
                  domain=None, max_age=None, path=None,
                  secure=None, httponly=None, *,
