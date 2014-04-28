@@ -44,34 +44,13 @@ class CorsTests(unittest.TestCase):
         self.assertEqual('127.0.0.1', host)
         self.assertGreater(port, 0)
         url = 'http://{}:{}'.format(host, port)
-
-        yield url, port
+        yield url
 
         srv.close()
         self.loop.run_until_complete(srv.wait_closed())
 
-    def test_simple_client(self):
-        with self.run_server() as (url, port):
-            @asyncio.coroutine
-            def query():
-                rd, wr = yield from asyncio.open_connection(
-                    '127.0.0.1', port,
-                    loop=self.loop)
-                wr.write(b'GET / HTTP/1.1\r\n')
-                wr.write(b'Connection: close\r\n\r\n')
-                wr.write_eof()
-                yield from wr.drain()
-
-                fut = rd.read()
-                data = yield from asyncio.wait_for(fut, timeout=5,
-                                                   loop=self.loop)
-                lines = data.splitlines()
-                self.assertEqual(lines[0], b'HTTP/1.1 200 OK')
-
-            self.loop.run_until_complete(query())
-
     def test_simple_GET(self):
-        with self.run_server() as (url, port):
+        with self.run_server() as url:
 
             @asyncio.coroutine
             def query():
@@ -86,7 +65,7 @@ class CorsTests(unittest.TestCase):
             self.loop.run_until_complete(query())
 
     def test_preflight(self):
-        with self.run_server() as (url, port):
+        with self.run_server() as url:
 
             @asyncio.coroutine
             def query():
@@ -104,7 +83,7 @@ class CorsTests(unittest.TestCase):
             self.loop.run_until_complete(query())
 
     def test_preflight_404(self):
-        with self.run_server() as (url, port):
+        with self.run_server() as url:
 
             @asyncio.coroutine
             def query():
