@@ -37,7 +37,7 @@ class CorsTests(unittest.TestCase):
 
         srv = self.loop.run_until_complete(self.loop.create_server(
             self.server.make_handler,
-            'localhost', '*'))
+            'localhost', 0))
         sock = next(iter(srv.sockets))
         port = sock.getsockname()[1]
         url = 'http://localhost:{}'.format(port)
@@ -89,3 +89,5 @@ class CorsTests(unittest.TestCase):
                 yield from resp.read_and_close()
                 self.assertEqual(resp.status, 404)
                 self.assertNotIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp)
+
+            self.loop.run_until_complete(query())
