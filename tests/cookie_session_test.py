@@ -87,7 +87,7 @@ class CookieSessionTests(unittest.TestCase):
     def run_server(self):
         srv = self.loop.run_until_complete(self.loop.create_server(
             self.server.make_handler,
-            'localhost', '*'))
+            'localhost', 0))
         sock = next(iter(srv.sockets))
         port = sock.getsockname()[1]
         base_url = 'http://localhost:{}'.format(port)
