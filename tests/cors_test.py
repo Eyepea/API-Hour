@@ -37,10 +37,13 @@ class CorsTests(unittest.TestCase):
 
         srv = self.loop.run_until_complete(self.loop.create_server(
             self.server.make_handler,
-            'localhost', 0))
+            '127.0.0.1', 0))
+        self.assertEqual(len(srv.sockets), 1)
         sock = next(iter(srv.sockets))
-        port = sock.getsockname()[1]
-        url = 'http://localhost:{}'.format(port)
+        host, port = sock.getsockname()
+        self.assertEqual('127.0.0.1', host)
+        self.assertGreater(port, 0)
+        url = 'http://{}:{}'.format(host, port)
         yield url
 
         srv.close()
