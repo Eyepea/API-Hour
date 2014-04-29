@@ -109,6 +109,11 @@ class RESTServer:
         except re.error:
             raise ValueError("Invalid path '{}'".format(path))
         cors_options = collections.ChainMap(cors_options, self.CORS_OPTIONS)
+        allow_origin = cors_options.get('allow-origin')
+        if allow_origin is not None:
+            assert callable(allow_origin) \
+                or isinstance(allow_origin, (collections.Sequence, str)), \
+                "Invalid 'allow-origin' option {!r}".format(allow_origin)
         self._urls.append(Entry(compiled, method, handler, use_request,
                                 check_cors, cors_options))
 
@@ -202,17 +207,37 @@ class RESTServer:
         header = request.headers.get
 
         # TODO: implement real CORS check
-
+        origin = header('ORIGIN')
         allow_origin = option('allow-origin')
-        yield ('Access-Control-Allow-Origin', allow_origin)
+        method = header('ACCESS-CONTROL-REQUEST-METHOD')
 
-        method = header('ACCESS-CONTROL-REQUEST-METHOD', request.method)
+        # check bad request cases
+        if origin is None or origin == '*' or not allow_origin:
+            return
+        if request.method == 'OPTIONS' and not method:
+            return
+
+        allow_creds = option('allow-credentials')
+        if callable(allow_origin):
+            allow_origin = allow_origin(request, cors_options)
+        if isinstance(allow_origin, str):
+            allow_origin = (allow_origin,)
+        if '*' in allow_origin:
+            if allow_creds:
+                yield ('Access-Control-Allow-Origin', origin)
+            else:
+                yield ('Access-Control-Allow-Origin', '*')
+        elif origin in allow_origin:
+            yield ('Access-Control-Allow-Origin', origin)
+
         if method:
             yield ('Access-Control-Allow-Methods', method)
 
         allow_headers = option('allow-headers')
         if allow_headers:
+            assert isinstance(allow_headers, (str, collections.Sequence))
+            if not isinstance(allow_headers, str):
+                allow_headers = ', '.join(allow_headers)
             yield ('Access-Control-Allow-Headers', allow_headers)
-        allow_creds = option('allow-credentials')
         if allow_creds:
             yield ('Access-Control-Allow-Credentials', allow_creds and 'true')

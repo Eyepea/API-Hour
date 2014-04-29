@@ -12,7 +12,10 @@ class REST:
         self.test = test
 
     def index(self):
-        return 'ok'
+        return {'status': 'ok'}
+
+    def check_origin(self):
+        return {'status': 'ok'}
 
 
 class CorsTests(unittest.TestCase):
@@ -27,6 +30,8 @@ class CorsTests(unittest.TestCase):
 
         rest = REST(self)
         add_url('GET', '/', rest.index)
+        add_url('GET', '/check_origin', rest.check_origin,
+                cors_options={'allow-origin': 'http://example.com/'})
 
     def tearDown(self):
         self.loop.close()
@@ -54,11 +59,14 @@ class CorsTests(unittest.TestCase):
 
             @asyncio.coroutine
             def query():
-                resp = yield from aiohttp.request('GET', url, loop=self.loop)
+                headers = {
+                    'ORIGIN': 'localhost',
+                    }
+                resp = yield from aiohttp.request('GET', url,
+                                                  headers=headers,
+                                                  loop=self.loop)
                 yield from resp.read_and_close()
                 self.assertEqual(resp.status, 200)
-                self.assertIn('ACCESS-CONTROL-ALLOW-METHODS', resp)
-                self.assertEqual(resp['ACCESS-CONTROL-ALLOW-METHODS'], 'GET')
                 self.assertIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp)
                 self.assertEqual(resp['ACCESS-CONTROL-ALLOW-ORIGIN'], '*')
 
@@ -71,6 +79,7 @@ class CorsTests(unittest.TestCase):
             def query():
                 headers = {
                     'ACCESS-CONTROL-REQUEST-METHOD': 'GET',
+                    'ORIGIN': 'localhost',
                     }
                 resp = yield from aiohttp.request('OPTIONS', url,
                                                   headers=headers,
@@ -92,5 +101,45 @@ class CorsTests(unittest.TestCase):
                 yield from resp.read_and_close()
                 self.assertEqual(resp.status, 404)
                 self.assertNotIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp)
+
+            self.loop.run_until_complete(query())
+
+    def test_check_origin(self):
+        with self.run_server() as url:
+
+            @asyncio.coroutine
+            def query():
+                resp = yield from aiohttp.request('GET', url + '/check_origin',
+                                                  headers={},
+                                                  loop=self.loop)
+                yield from resp.read_and_close()
+                self.assertEqual(resp.status, 200)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-METHOD', resp)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-HEADERS', resp)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-CREDENTIALS', resp)
+
+                headers = {
+                    'ORIGIN': 'localhost',
+                    }
+                resp = yield from aiohttp.request('GET', url + '/check_origin',
+                                                  headers=headers,
+                                                  loop=self.loop)
+                yield from resp.read_and_close()
+                self.assertEqual(resp.status, 200)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-METHOD', resp)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-HEADERS', resp)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-CREDENTIALS', resp)
+
+                headers = {
+                    'ORIGIN': 'http://example.com/',
+                    }
+                resp = yield from aiohttp.request('GET', url + '/check_origin',
+                                                  headers=headers,
+                                                  loop=self.loop)
+                yield from resp.read_and_close()
+                self.assertEqual(resp.status, 200)
+                self.assertIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp)
 
             self.loop.run_until_complete(query())
