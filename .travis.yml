@@ -7,10 +7,12 @@ install:
   - python setup.py install
   - pip install pyflakes
   - pip install asyncio-redis
+  - pip install docutils
 
 script:
   - pyflakes .
   - python runtests.py -v
+  - python setup.py check -rms
 
 services:
   - redis-server
