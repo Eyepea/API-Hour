@@ -87,10 +87,10 @@ class CookieSessionTests(unittest.TestCase):
     def run_server(self):
         srv = self.loop.run_until_complete(self.loop.create_server(
             self.server.make_handler,
-            'localhost', '*'))
+            '127.0.0.1', 0))
         sock = next(iter(srv.sockets))
-        port = sock.getsockname()[1]
-        base_url = 'http://localhost:{}'.format(port)
+        host, port = sock.getsockname()
+        base_url = 'http://{}:{}'.format(host, port)
 
         yield (srv, base_url)
 
@@ -131,7 +131,6 @@ class CookieSessionTests(unittest.TestCase):
 
             self.loop.run_until_complete(query())
 
-    @unittest.expectedFailure
     def test_full_cycle(self):
         with self.run_server() as (srv, base_url):
             url = base_url + '/counter'

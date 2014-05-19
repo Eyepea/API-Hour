@@ -1,11 +1,11 @@
 # Some simple testing tasks (sorry, UNIX only).
 
-PYTHON=python3.3
+PYTHON ?= python3.3
 FLAKE=pyflakes3
 
 
 pep:
-	$(FLAKE) ./
+	$(FLAKE) aiorest tests
 
 test:
 	$(PYTHON) runtests.py
