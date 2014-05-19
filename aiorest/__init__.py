@@ -15,7 +15,7 @@ from urllib.parse import urlsplit, parse_qsl
 from .multidict import MultiDict, MutableMultiDict
 
 
-__version__ = '0.0.1a0'
+__version__ = '0.0.1'
 
 version = __version__ + ' , Python ' + sys.version
 
