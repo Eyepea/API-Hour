@@ -63,8 +63,8 @@ Requirements
 
 - aiohttp http://github.com/KeepSafe/aiohttp
 
-- optional module ``aiorest.redis_session`` requires asyncio_redis \
-    https://github.com/jonathanslenders/asyncio-redis
+- optional module ``aiorest.redis_session`` requires asyncio_redis
+  https://github.com/jonathanslenders/asyncio-redis
 
 License
 -------
