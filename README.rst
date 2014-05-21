@@ -1,7 +1,7 @@
 aiorest
 =======
 
-JSON REST framework based on aiohttp (an asyncio (PEP 3156) http server)
+JSON REST framework based on aiohttp (an asyncio (PEP 3156) http server).
 
 .. image:: https://travis-ci.org/aio-libs/aiorest.svg?branch=master
    :target: https://travis-ci.org/aio-libs/aiorest
@@ -63,6 +63,8 @@ Requirements
 
 - aiohttp http://github.com/KeepSafe/aiohttp
 
+- optional module ``aiorest.redis_session`` requires asyncio_redis \
+    https://github.com/jonathanslenders/asyncio-redis
 
 License
 -------
