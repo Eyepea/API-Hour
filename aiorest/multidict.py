@@ -24,7 +24,7 @@ class MultiDict(abc.Mapping):
             else:
                 self._items[key] = [value]
 
-    ### multidict interface suitable for wtforms ###
+    # multidict interface suitable for wtforms #
 
     def getall(self, key):
         """Returns all values stored at key as a tuple.
@@ -38,7 +38,7 @@ class MultiDict(abc.Mapping):
         """
         return self._items[key][0]
 
-    ### extra methods ###
+    # extra methods #
 
     def copy(self):
         """Returns a copy itself.
@@ -46,7 +46,7 @@ class MultiDict(abc.Mapping):
         cls = self.__class__
         return cls(self.items(getall=True))
 
-    ### Mapping interface ###
+    # Mapping interface #
 
     def __getitem__(self, key):
         return self._items[key][0]
@@ -118,7 +118,7 @@ class MutableMultiDict(abc.MutableMapping, MultiDict):
         """
         self._items.clear()
 
-    ### MutableMapping interface ###
+    # MutableMapping interface #
 
     def __setitem__(self, key, value):
         self._items[key] = [value]

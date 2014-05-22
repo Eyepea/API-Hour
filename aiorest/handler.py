@@ -24,7 +24,7 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
     @asyncio.coroutine
     def handle_request(self, message, payload):
         now = time.time()
-        #self.log.debug("Start handle request %r at %d", message, now)
+        # self.log.debug("Start handle request %r at %d", message, now)
 
         try:
             headers = MutableMultiDict()
@@ -81,11 +81,11 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
             if resp_impl.keep_alive():
                 self.keep_alive(True)
 
-            #self.log.debug("Fihish handle request %r at %d -> %s",
+            # self.log.debug("Fihish handle request %r at %d -> %s",
             #               message, time.time(), body)
             self.log_access(message, None, resp_impl, time.time() - now)
         except Exception:
-            #self.log.exception("Cannot handle request %r", message)
+            # self.log.exception("Cannot handle request %r", message)
             raise
 
     def handle_error(self, status=500, message=None, payload=None,
