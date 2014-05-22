@@ -2,10 +2,16 @@
 
 PYTHON ?= python3.3
 FLAKE=pyflakes3
+PEP=pep8
 
+
+doc:
+	make -C docs html
+	echo "open file://`pwd`/docs/_build/html/index.html"
 
 pep:
-	$(FLAKE) aiorest tests
+	$(FLAKE) aiorest tests examples
+	$(PEP) aiorest tests examples
 
 test:
 	$(PYTHON) runtests.py
@@ -31,4 +37,4 @@ clean:
 	rm -f .coverage
 	rm -rf coverage
 
-.PHONY: all pep test vtest testloop cov clean
+.PHONY: all doc pep test vtest testloop cov clean
