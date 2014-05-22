@@ -54,6 +54,9 @@ class RedisSessionFactory(BaseSessionFactory):
         else:
             sid = session.identity
         key = self._make_key(sid)
+        if not session and sid:
+            yield from self._redis.delete([key])
+            return None
         data = self._dumps(dict(session))
         if self.session_max_age is not None:
             yield from self._redis.setex(key, self.session_max_age, data)
