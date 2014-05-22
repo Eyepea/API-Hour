@@ -37,13 +37,12 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(str(s), '<Session [new:True, changed:False] {}>')
         s['foo'] = 'bar'
         self.assertEqual(str(s),
-            "<Session [new:True, changed:True] {'foo': 'bar'}>")
+                         "<Session [new:True, changed:True] {'foo': 'bar'}>")
         s = Session({'key': 123}, identity=1)
         self.assertEqual(str(s),
-            "<Session [new:False, changed:False] {'key': 123}>")
+                         "<Session [new:False, changed:False] {'key': 123}>")
         s.invalidate()
-        self.assertEqual(str(s),
-            "<Session [new:False, changed:True] {}>")
+        self.assertEqual(str(s), "<Session [new:False, changed:True] {}>")
 
     def test_invalidate(self):
         s = Session({'foo': 'bar'})

@@ -34,7 +34,7 @@ class REST:
         self.test.assertEqual(dict(sess), {'foo': 'bar'})
 
     @asyncio.coroutine
-    def counter(self, req, start:int=0):
+    def counter(self, req, start: int=0):
         sess = yield from req.session
         if sess.new:
             sess['result'] = start
@@ -123,7 +123,8 @@ class CookieSessionTests(unittest.TestCase):
 
             @asyncio.coroutine
             def query():
-                resp = yield from aiohttp.request('GET', url,
+                resp = yield from aiohttp.request(
+                    'GET', url,
                     cookies={'test_cookie': make_cookie({'foo': 'bar'}, 1)},
                     loop=self.loop)
                 yield from resp.read_and_close()
@@ -141,28 +142,32 @@ class CookieSessionTests(unittest.TestCase):
                                                     loop=self.loop)
                 # initiate session; set start value to 2
                 resp = yield from aiohttp.request('GET', url + "/2",
-                    connector=connector, loop=self.loop)
+                                                  connector=connector,
+                                                  loop=self.loop)
                 data = yield from resp.read_and_close(decode=True)
                 self.assertEqual(resp.status, 200)
                 self.assertEqual(data, {'result': 3})
 
                 # do increment
                 resp = yield from aiohttp.request('GET', url,
-                    connector=connector, loop=self.loop)
+                                                  connector=connector,
+                                                  loop=self.loop)
                 data = yield from resp.read_and_close(decode=True)
                 self.assertEqual(resp.status, 200)
                 self.assertEqual(data, {'result': 4})
 
                 # try to override start value
                 resp = yield from aiohttp.request('GET', url + '/3',
-                    connector=connector, loop=self.loop)
+                                                  connector=connector,
+                                                  loop=self.loop)
                 data = yield from resp.read_and_close(decode=True)
                 self.assertEqual(resp.status, 200)
                 self.assertEqual(data, {'result': 5})
 
                 # session deleted; try count
                 resp = yield from aiohttp.request('GET', url,
-                    connector=connector, loop=self.loop)
+                                                  connector=connector,
+                                                  loop=self.loop)
                 data = yield from resp.read_and_close(decode=True)
                 self.assertEqual(resp.status, 200)
                 self.assertEqual(data, {'result': 1})

@@ -44,7 +44,7 @@ class REST:
         return {'success': True, 'args': list(req.args)}
 
     @asyncio.coroutine
-    def coro_set_cookie(self, value:int, req):
+    def coro_set_cookie(self, value: int, req):
         response = req.response
         response.set_cookie('test_cookie', value)
         return {'success': True}
@@ -101,8 +101,8 @@ class ServerTests(unittest.TestCase):
 
     def test_simple_GET(self):
         srv = self.loop.run_until_complete(self.loop.create_server(
-             self.server.make_handler,
-            '127.0.0.1', 0))
+                                           self.server.make_handler,
+                                           '127.0.0.1', 0))
         port = server_port(srv)
         url = 'http://127.0.0.1:{}/post/123'.format(port)
 
@@ -167,8 +167,10 @@ class ServerTests(unittest.TestCase):
 
         @asyncio.coroutine
         def query():
-            response = yield from aiohttp.request('GET', url,
-                cookies={'test_cookie': 'value'}, loop=self.loop)
+            response = yield from aiohttp.request(
+                'GET', url,
+                cookies={'test_cookie': 'value'},
+                loop=self.loop)
             self.assertEqual(200, response.status)
             data = yield from response.read_and_close()
             dct = json.loads(data.decode('utf-8'))

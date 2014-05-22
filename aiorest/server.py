@@ -74,7 +74,7 @@ class RESTServer:
         sig = holder.__signature__ = inspect.signature(holder)
 
         if use_request:
-            if use_request == True:
+            if use_request is True:
                 use_request = 'request'
             try:
                 p = sig.parameters[use_request]

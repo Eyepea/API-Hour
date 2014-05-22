@@ -36,7 +36,7 @@ class CookiesTests(unittest.TestCase):
 
     def test_request_cookie__set_item(self):
         headers = email.message.Message()
-        headers['COOKIE'] = 'name=value';
+        headers['COOKIE'] = 'name=value'
 
         req = Request('host', self._REQUEST, headers, None, loop=self.loop)
         self.assertEqual(req.cookies, {'name': 'value'})
@@ -58,14 +58,14 @@ class CookiesTests(unittest.TestCase):
         resp.cookies['name'] = 'another_other_value'
         resp.cookies['name']['max-age'] = 10
         self.assertEqual(str(resp.cookies),
-            'Set-Cookie: name=another_other_value; Max-Age=10')
+                         'Set-Cookie: name=another_other_value; Max-Age=10')
 
         resp.del_cookie('name')
         self.assertEqual(str(resp.cookies), 'Set-Cookie: name=; Max-Age=0')
 
         resp.set_cookie('name', 'value', domain='local.host')
         self.assertEqual(str(resp.cookies),
-            'Set-Cookie: name=value; Domain=local.host')
+                         'Set-Cookie: name=value; Domain=local.host')
 
     def test_response_cookie__issue_del_cookie(self):
         resp = Response(loop=self.loop)
