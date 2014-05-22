@@ -50,8 +50,7 @@ Simple REST server can be run like this::
 
 this will print ``{'hello': 'world'}`` json
 
-.. note::
-   For more examples please see tests.
+See `examples <https://github.com/aio-libs/aiorest/tree/master/examples>`_ for more.
 
 
 Requirements
