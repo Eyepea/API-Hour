@@ -6,6 +6,7 @@ python:
 install:
   - python setup.py install
   - pip install pyflakes
+  - pip install pep8
   - pip install asyncio-redis
   - pip install docutils
 
