@@ -36,6 +36,7 @@ version_info = _parse_version(__version__)
 
 from .server import RESTServer
 from .request import Request, Response
+from .errors import RESTError
 
 # make pyflakes happy
-(RESTServer, Request, Response)
+(RESTServer, Request, Response, RESTError)
