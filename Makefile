@@ -1,6 +1,6 @@
 # Some simple testing tasks (sorry, UNIX only).
 
-PYTHON ?= python3.3
+PYTHON ?= python3
 FLAKE=pyflakes3
 PEP=pep8
 
