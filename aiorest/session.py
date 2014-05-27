@@ -66,24 +66,11 @@ class Session(MutableMapping):
 
 class BaseSessionFactory:
 
-    def __init__(self, secret_key, cookie_name,
-                 session_max_age=None,
-                 domain=None, max_age=None, path=None,
-                 secure=None, httponly=None, *,
-                 loop=None):
+    def __init__(self, *, loop=None):
         if loop is None:
             loop = asyncio.get_event_loop()
-        if isinstance(secret_key, str):
-            secret_key = secret_key.encode('utf-8')
-        self._secret_key = secret_key
-        self._cookie_name = cookie_name
-        self._cookie_params = dict(domain=domain,
-                                   max_age=max_age,
-                                   path=path,
-                                   secure=secure,
-                                   httponly=httponly)
-        self.session_max_age = session_max_age
         self._loop = loop
+        self._backend_store = None
 
     def __call__(self, request, fut):
         """Instantiate Session object.
@@ -94,14 +81,12 @@ class BaseSessionFactory:
     def _load(self, request, fut):
         """Load or creates new session.
         """
-        name = self._cookie_name
-        raw_value = request.cookies.get(name)
         try:
-            cookie_value = self._decode_cookie(raw_value)
-            if cookie_value is None:
+            session_id = self.load_session_id(request)
+            if session_id is None:
                 sess = Session()
             else:
-                data, ident = yield from self.load_session_data(cookie_value)
+                data, ident = yield from self.load_session_data(session_id)
                 sess = Session(data, identity=ident)
         except Exception as exc:
             fut.set_exception(exc)
@@ -119,7 +104,124 @@ class BaseSessionFactory:
         """
         if not session._changed:
             return
-        cookie_value = yield from self.save_session_data(session)
+        session_id = yield from self.save_session_data(session)
+        self.save_session_id(session_id)
+
+    def adopt_session_backed(self, backend):
+        """Adopts session backend store.
+
+        backend must expose two coroutine methods:
+        load_session_data and save_session_data
+        """
+        assert self._backend_store is None, ("backend already set",
+                                             self._backend_store, backend)
+        assert hasattr(backend, 'load_session_data')
+        assert hasattr(backend, 'save_session_data')
+        assert asyncio.iscoroutinefunction(backend.load_session_data)
+        assert asyncio.iscoroutinefunction(backend.save_session_data)
+        self._backend_store = backend
+
+    def load_session_id(self, request):
+        """Loads session id from request.
+        """
+        raise NotImplementedError
+
+    def save_session_id(self, session_id):
+        """Stores session id in request cookies or elsewhere in request.
+        """
+        raise NotImplementedError
+
+    @asyncio.coroutine
+    def load_session_data(self, value):
+        """Loads session data based on value of session cookie.
+
+        Must be implemented in child class.
+        Returns tuple session dict and session id
+        session dict may be None
+        session id may be None identifing new session
+        otherwise may anything
+        """
+        if self._backend_store is not None:
+            ret = yield from self._backend_store.load_session_data(value)
+            return ret
+        else:
+            raise NotImplementedError
+
+    @asyncio.coroutine
+    def save_session_data(self, session):
+        """Stores session data and returns session cookie value.
+
+        Must be implemented in child class.
+        Returns session cookie value or None if should be deleted.
+        """
+        if self._backend_store is not None:
+            ret = yield from self._backend_store.save_session_data(session)
+            return ret
+        else:
+            raise NotImplementedError
+
+
+class CookieBackend:
+
+    def __init__(self, loads, dumps):
+        self._loads = loads
+        self._dumps = dumps
+
+    @asyncio.coroutine
+    def load_session_data(self, cookie_value):
+        """Load session data from decoded and verified cookie value.
+
+        Returns session dict or None and empty string as session id
+        """
+        try:
+            return self._loads(cookie_value), ''
+        except (TypeError, ValueError):
+            # TODO: log warning
+            pass
+        return None, None
+
+    @asyncio.coroutine
+    def save_session_data(self, session):
+        """Save session and return bytes value to be stored in cookie.
+        """
+        if not session:
+            return
+        return self._dumps(dict(session))
+
+
+class CookieSessionFactory(CookieBackend, BaseSessionFactory):
+    """Cookie-based session factory.
+
+    Stores session in cookies.
+    """
+
+    def __init__(self, loads, dumps, 
+                 secret_key, cookie_name,
+                 session_max_age=None,
+                 domain=None, max_age=None, path=None,
+                 secure=None, httponly=None,
+                 *, loop=None, **kwargs):
+        super().__init__(loop=loop, **kwargs)
+        self._loads = loads
+        self._dumps = dumps
+        if isinstance(secret_key, str):
+            secret_key = secret_key.encode('utf-8')
+        self._secret_key = secret_key
+        self._cookie_name = cookie_name
+        self._cookie_params = dict(domain=domain,
+                                   max_age=max_age,
+                                   path=path,
+                                   secure=secure,
+                                   httponly=httponly)
+        self.session_max_age = session_max_age
+        self.adopt_session_backed(self)
+
+    def load_session_id(self, request):
+        name = self._cookie_name
+        raw_value = request.cookies.get(name)
+        return self._decode_cookie(raw_value)
+
+    def save_session_id(self, cookie_value):
         if cookie_value is None:
             request.response.del_cookie(self._cookie_name)
         else:
@@ -167,57 +269,3 @@ class BaseSessionFactory:
         sign = hmac.new(self._secret_key, digestmod=hashlib.sha1)
         sign.update(('|'.join(parts)).encode('utf-8'))
         return sign.hexdigest()
-
-    @asyncio.coroutine
-    def load_session_data(self, value):
-        """Loads session data based on value of session cookie.
-
-        Must be implemented in child class.
-        Returns tuple session dict and session id
-        session dict may be None
-        session id may be None identifing new session
-        otherwise may anything
-        """
-        raise NotImplementedError
-
-    @asyncio.coroutine
-    def save_session_data(self, session):
-        """Stores session data and returns session cookie value.
-
-        Must be implemented in child class.
-        Returns session cookie value or None if should be deleted.
-        """
-        raise NotImplementedError
-
-
-class CookieSessionFactory(BaseSessionFactory):
-    """Cookie-based session factory.
-
-    Stores session in cookies.
-    """
-
-    def __init__(self, loads, dumps, *, loop=None, **kwargs):
-        super().__init__(loop=loop, **kwargs)
-        self._loads = loads
-        self._dumps = dumps
-
-    @asyncio.coroutine
-    def load_session_data(self, cookie_value):
-        """Load session data from decoded and verified cookie value.
-
-        Returns session dict or None and empty string as session id
-        """
-        try:
-            return self._loads(cookie_value), ''
-        except (TypeError, ValueError):
-            # TODO: log warning
-            pass
-        return None, None
-
-    @asyncio.coroutine
-    def save_session_data(self, session):
-        """Save session and return bytes value to be stored in cookie.
-        """
-        if not session:
-            return
-        return self._dumps(dict(session))
