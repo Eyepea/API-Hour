@@ -33,11 +33,12 @@ class RedisBackend(SessionBackendStore):
     """
 
     def __init__(self, redis, *, loads=_loads, dumps=_dumps,
-                 key_prefix='session:'):
+                 key_prefix='session:', session_max_age=None):
         self._redis = redis
         self._loads = loads
         self._dumps = dumps
         self._key_prefix = key_prefix
+        self.session_max_age = session_max_age
 
     @asyncio.coroutine
     def load_session_data(self, cookie_value):
