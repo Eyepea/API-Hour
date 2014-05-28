@@ -66,8 +66,8 @@ class _SessionFactory:
         if loop is None:
             loop = asyncio.get_event_loop()
         self._loop = loop
-        assert isinstance(session_id_store, SessionIdStore)
-        assert isinstance(backend_store, SessionBackendStore)
+        assert isinstance(session_id_store, SessionIdStore), session_id_store
+        assert isinstance(backend_store, SessionBackendStore), backend_store
         self._sid_store = session_id_store
         self._backend = backend_store
 
