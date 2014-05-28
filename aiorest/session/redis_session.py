@@ -20,9 +20,12 @@ _dumps = partial(pickle.dumps, protocol=pickle.HIGHEST_PROTOCOL)
 
 def RedisSessionFactory(redis, secret_key, cookie_name, *,
                         loads=_loads, dumps=_dumps, key_prefix='session:',
-                        loop=None, **kwargs):
-    cookie_store = SecureCookie(secret_key, cookie_name, **kwargs)
-    backend = RedisBackend(redis, loads=loads, dumps=dumps)
+                        session_max_age=None, loop=None, **kwargs):
+    cookie_store = SecureCookie(secret_key, cookie_name,
+                                session_max_age=session_max_age,
+                                **kwargs)
+    backend = RedisBackend(redis, loads=loads, dumps=dumps,
+                           session_max_age=session_max_age)
     return create_session_factory(session_id_store=cookie_store,
                                   backend_store=backend,
                                   loop=loop)
