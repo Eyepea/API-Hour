@@ -20,14 +20,14 @@ class BaseSessionFactoryTests(unittest.TestCase):
     def tearDown(self):
         self.loop.close()
 
-    def test_default_event_loop(self):
+    def _test_default_event_loop(self):
         asyncio.set_event_loop(self.loop)
 
         factory = BaseSessionFactory('secret', 'test')
         self.assertIsNotNone(factory._loop)
         self.assertIs(factory._loop, self.loop)
 
-    def test_simple(self):
+    def _test_simple(self):
         req = mock.Mock()
         req.cookies.get.return_value = ''
         fut = asyncio.Future(loop=self.loop)
@@ -55,8 +55,8 @@ class BaseSessionFactoryTests(unittest.TestCase):
 
         self.loop.run_until_complete(run())
 
-    @mock.patch('aiorest.session.hmac')
-    def test_load_exception(self, hmac_mock):
+    @mock.patch('aiorest.session.cookie_session.hmac')
+    def _test_load_exception(self, hmac_mock):
         req = mock.Mock()
         req.cookies.get.return_value = '[bad json]|1|sign'
         hmac_mock.compare_digest.return_value = True
@@ -82,9 +82,9 @@ class BaseSessionFactoryTests(unittest.TestCase):
 
         self.loop.run_until_complete(run())
 
-    @mock.patch('aiorest.session.time')
-    @mock.patch('aiorest.session.hmac')
-    def test__encode_cookie(self, hmac_mock, time_mock):
+    @mock.patch('aiorest.session.cookie_session.time')
+    @mock.patch('aiorest.session.cookie_session.hmac')
+    def _test__encode_cookie(self, hmac_mock, time_mock):
         time_mock.time.return_value = 1
         hmac_mock.new.return_value = sign_mock = mock.Mock()
         sign_mock.hexdigest.return_value = 'code'
@@ -96,8 +96,8 @@ class BaseSessionFactoryTests(unittest.TestCase):
 
         sign_mock.update.assert_called_with(b'test|123|1')
 
-    @mock.patch('aiorest.session.hmac')
-    def test__decode_cookie(self, hmac_mock):
+    @mock.patch('aiorest.session.cookie_session.hmac')
+    def _test__decode_cookie(self, hmac_mock):
         hmac_mock.new.return_value = sign_mock = mock.Mock()
         sign_mock.hexdigest.return_value = 'code'
 
@@ -125,8 +125,8 @@ class BaseSessionFactoryTests(unittest.TestCase):
         hmac_mock.compare_digest.assert_called_with('code', 'code')
         sign_mock.update.assert_called_with(b'test|foo|1')
 
-    @mock.patch('aiorest.session.hmac')
-    def test__decode_cookie__signature_mismatch(self, hmac_mock):
+    @mock.patch('aiorest.session.cookie_session.hmac')
+    def _test__decode_cookie__signature_mismatch(self, hmac_mock):
         hmac_mock.new.return_value = sign_mock = mock.Mock()
 
         def compare(a, b):
@@ -142,9 +142,9 @@ class BaseSessionFactoryTests(unittest.TestCase):
         self.assertIsNone(ret)
         hmac_mock.compare_digest.assert_called_with('code', 'bad_sign')
 
-    @mock.patch('aiorest.session.time')
-    @mock.patch('aiorest.session.hmac')
-    def test__decode_cookie__expire(self, hmac_mock, time_mock):
+    @mock.patch('aiorest.session.cookie_session.time')
+    @mock.patch('aiorest.session.cookie_session.hmac')
+    def _test__decode_cookie__expire(self, hmac_mock, time_mock):
         time_mock.time.return_value = 100
         hmac_mock.new.return_value = sign_mock = mock.Mock()
         sign_mock.hexdigest.return_value = 'code'

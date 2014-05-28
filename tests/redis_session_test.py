@@ -6,7 +6,7 @@ from unittest import mock
 from asyncio_redis import Connection
 from asyncio_redis.encoders import BytesEncoder
 
-from aiorest.redis_session import RedisSessionFactory
+from aiorest.session import RedisSessionFactory
 
 
 class RedisSessionTests(unittest.TestCase):
@@ -27,8 +27,9 @@ class RedisSessionTests(unittest.TestCase):
         factory = RedisSessionFactory(self.redis, 'secret', 'test',
                                       loop=self.loop)
 
+        sid_store = factory._sid_store
         req = mock.Mock()
-        req.cookies.get.return_value = factory._encode_cookie('123')
+        req.cookies.get.return_value = sid_store._encode_cookie('123')
 
         @asyncio.coroutine
         def run():
@@ -43,8 +44,9 @@ class RedisSessionTests(unittest.TestCase):
     def test_load_existent(self):
         factory = RedisSessionFactory(self.redis, 'secret', 'test',
                                       loop=self.loop)
+        sid_store = factory._sid_store
         req = mock.Mock()
-        req.cookies.get.return_value = factory._encode_cookie('123')
+        req.cookies.get.return_value = sid_store._encode_cookie('123')
 
         key = b'session:123'
         data = pickle.dumps({'foo': 'bar'}, protocol=pickle.HIGHEST_PROTOCOL)

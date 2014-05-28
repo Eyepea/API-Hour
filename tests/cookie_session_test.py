@@ -97,7 +97,7 @@ class CookieSessionTests(unittest.TestCase):
         srv.close()
         self.loop.run_until_complete(srv.wait_closed())
 
-    @mock.patch('aiorest.session.time')
+    @mock.patch('aiorest.session.cookie_session.time')
     def test_init_session(self, time_mock):
         time_mock.time.return_value = 1
         with self.run_server() as (srv, base_url):
@@ -114,7 +114,7 @@ class CookieSessionTests(unittest.TestCase):
 
             self.loop.run_until_complete(query())
 
-    @mock.patch('aiorest.session.time')
+    @mock.patch('aiorest.session.cookie_session.time')
     def test_get_from_session(self, time_mock):
         time_mock.time.return_value = 1
         with self.run_server() as (srv, base_url):
