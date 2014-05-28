@@ -4,30 +4,40 @@ import pickle
 
 from functools import partial
 
-from .session import BaseSessionFactory
+from .base import create_session_factory
+from .cookie_session import SecureCookie, SessionBackendStore
+
+
+__all__ = [
+    'RedisBackend',
+    'RedisSessionFactory',
+    ]
 
 
 _loads = partial(pickle.loads)
 _dumps = partial(pickle.dumps, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-class RedisSessionFactory(BaseSessionFactory):
-    """Redis-based session storage.
+def RedisSessionFactory(redis, secret_key, cookie_name, *,
+                        loads=_loads, dumps=_dumps, key_prefix='session:',
+                        loop=None, **kwargs):
+    cookie_store = SecureCookie(secret_key, cookie_name, **kwargs)
+    backend = RedisBackend(redis, loads=loads, dumps=dumps)
+    return create_session_factory(session_id_store=cookie_store,
+                                  backend_store=backend,
+                                  loop=loop)
+
+
+class RedisBackend(SessionBackendStore):
+    """Redis session store backend.
     """
 
-    def __init__(self, redis, secret_key, cookie_name, *,
-                 loads=_loads, dumps=_dumps, key_prefix='session:',
-                 loop=None, **kwargs):
-        super().__init__(secret_key, cookie_name, loop=loop, **kwargs)
-        if loop is None:
-            loop = asyncio.get_event_loop()
+    def __init__(self, redis, *, loads=_loads, dumps=_dumps,
+                 key_prefix='session:'):
         self._redis = redis
         self._loads = loads
         self._dumps = dumps
         self._key_prefix = key_prefix
-        self._loop = loop
-        assert callable(loads), "loads argument must be callable"
-        assert callable(dumps), "dumps argument must be callable"
 
     @asyncio.coroutine
     def load_session_data(self, cookie_value):
