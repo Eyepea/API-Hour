@@ -24,3 +24,8 @@ Cookie-based session
 --------------------
 
 .. literalinclude:: ../examples/cookie_session.py
+
+Redis-based session
+-------------------
+
+.. literalinclude:: ../examples/redis_session.py
