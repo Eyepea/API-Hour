@@ -5,7 +5,7 @@ import aiorest
 from asyncio_redis import Connection
 from asyncio_redis.encoders import BytesEncoder
 
-from aiorest.redis_session import RedisSessionFactory
+from aiorest.session import RedisSessionFactory
 
 
 class Handler:

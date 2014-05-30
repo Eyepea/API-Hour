@@ -181,3 +181,47 @@ class ServerTests(unittest.TestCase):
 
         srv.close()
         self.loop.run_until_complete(srv.wait_closed())
+
+    def test_accept_encoding__deflate(self):
+        srv = self.loop.run_until_complete(self.loop.create_server(
+            self.server.make_handler,
+            '127.0.0.1', 0))
+        port = server_port(srv)
+        url = 'http://127.0.0.1:{}/post/123'.format(port)
+
+        @asyncio.coroutine
+        def query():
+            response = yield from aiohttp.request(
+                'GET', url, headers={'ACCEPT-ENCODING': 'deflate'},
+                loop=self.loop)
+            self.assertEqual(200, response.status)
+            data = yield from response.read_and_close()
+            dct = json.loads(data.decode('utf-8'))
+            self.assertEqual({'success': True}, dct)
+            headers = response.message.headers
+            enc = next(iter(v for h, v in headers
+                            if h.lower() == 'content-encoding'))
+            self.assertEqual('deflate', enc)
+        self.loop.run_until_complete(query())
+
+    def test_accept_encoding__gzip(self):
+        srv = self.loop.run_until_complete(self.loop.create_server(
+            self.server.make_handler,
+            '127.0.0.1', 0))
+        port = server_port(srv)
+        url = 'http://127.0.0.1:{}/post/123'.format(port)
+
+        @asyncio.coroutine
+        def query():
+            response = yield from aiohttp.request(
+                'GET', url, headers={'ACCEPT-ENCODING': 'gzip'},
+                loop=self.loop)
+            self.assertEqual(200, response.status)
+            data = yield from response.read_and_close()
+            # dct = json.loads(data.decode('utf-8'))
+            # self.assertEqual({'success': True}, dct)
+            headers = response.message.headers
+            enc = next(iter(v for h, v in headers
+                            if h.lower() == 'content-encoding'))
+            self.assertEqual('gzip', enc)
+        self.loop.run_until_complete(query())
