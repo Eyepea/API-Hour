@@ -3,7 +3,7 @@ import re
 import sys
 
 
-__version__ = '0.0.3a'
+__version__ = '0.0.3'
 
 version = __version__ + ' , Python ' + sys.version
 
