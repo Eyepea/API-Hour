@@ -217,7 +217,7 @@ class ServerTests(unittest.TestCase):
                 'GET', url, headers={'ACCEPT-ENCODING': 'gzip'},
                 loop=self.loop)
             self.assertEqual(200, response.status)
-            data = yield from response.read_and_close()
+            yield from response.read_and_close()
             # dct = json.loads(data.decode('utf-8'))
             # self.assertEqual({'success': True}, dct)
             headers = response.message.headers

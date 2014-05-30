@@ -14,7 +14,7 @@ __all__ = [
 
 class Response:
 
-    def __init__(self, *, loop=None):
+    def __init__(self):
         self.headers = MutableMultiDict()
         self._cookies = http.cookies.SimpleCookie()
         self._deleted_cookies = set()
@@ -88,7 +88,7 @@ class Request:
         self.args = MultiDict(parse_qsl(res.query))
         self.headers = headers
         self._request_body = req_body
-        self._response = Response(loop=loop)
+        self._response = Response()
         self._session_factory = session_factory
         self._session_fut = None
         self._json_body = None
