@@ -1,5 +1,4 @@
 import unittest
-import email
 import aiohttp
 import asyncio
 

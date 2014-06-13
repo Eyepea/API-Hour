@@ -4,7 +4,6 @@ import aiohttp.server
 import time
 
 from . import errors
-from .multidict import MutableMultiDict
 from .request import Request
 
 

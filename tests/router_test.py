@@ -3,7 +3,6 @@ from unittest import mock
 
 import asyncio
 import aiohttp
-import email
 from aiorest import RESTServer, Request
 import json
 
