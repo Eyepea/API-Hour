@@ -17,7 +17,8 @@ class CookiesTests(unittest.TestCase):
 
     def test_no_request_cookies(self):
         req = Request('host', aiohttp.RawRequestMessage(
-            'GET', '/some/path', '1.1', CaseInsensitiveMultiDict(), True, None),
+            'GET', '/some/path', '1.1', CaseInsensitiveMultiDict(),
+            True, None),
             None, loop=self.loop)
 
         self.assertEqual(req.cookies, {})
