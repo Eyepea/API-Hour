@@ -27,10 +27,6 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
         # self.log.debug("Start handle request %r at %d", message, now)
 
         try:
-            headers = MutableMultiDict()
-            for hdr, val in message.headers:
-                headers.add(hdr, val)
-
             if payload is not None:
                 req_body = bytearray()
                 try:
@@ -42,7 +38,7 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
             else:
                 req_body = None
 
-            request = Request(self.hostname, message, headers, req_body,
+            request = Request(self.hostname, message, req_body,
                               session_factory=self.session_factory,
                               loop=self._loop)
 
@@ -57,7 +53,7 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
             resp_impl.add_header('Content-Type', 'application/json')
 
             # content encoding
-            accept_encoding = headers.get('ACCEPT-ENCODING', '').lower()
+            accept_encoding = message.headers.get('ACCEPT-ENCODING', '').lower()
             if 'deflate' in accept_encoding:
                 resp_impl.add_header('Transfer-Encoding', 'chunked')
                 resp_impl.add_header('Content-Encoding', 'deflate')
@@ -65,7 +61,7 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
                 resp_impl.add_chunking_filter(1025)
             elif 'gzip' in accept_encoding:
                 resp_impl.add_header('Transfer-Encoding', 'chunked')
-                resp_impl.add_header('Transfer-Encoding', 'chunked')
+                resp_impl.add_header('Content-Encoding', 'gzip')
                 resp_impl.add_compression_filter('gzip')
                 resp_impl.add_chunking_filter(1025)
             else:

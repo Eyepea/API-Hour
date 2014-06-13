@@ -67,8 +67,9 @@ class CorsTests(unittest.TestCase):
                                                   loop=self.loop)
                 yield from resp.read_and_close()
                 self.assertEqual(resp.status, 200)
-                self.assertIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp)
-                self.assertEqual(resp['ACCESS-CONTROL-ALLOW-ORIGIN'], '*')
+                self.assertIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp.headers)
+                self.assertEqual(resp.headers['ACCESS-CONTROL-ALLOW-ORIGIN'],
+                                 '*')
 
             self.loop.run_until_complete(query())
 
@@ -86,8 +87,9 @@ class CorsTests(unittest.TestCase):
                                                   loop=self.loop)
                 yield from resp.read_and_close()
                 self.assertEqual(resp.status, 200)
-                self.assertIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp)
-                self.assertEqual(resp['ACCESS-CONTROL-ALLOW-ORIGIN'], '*')
+                self.assertIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp.headers)
+                self.assertEqual(resp.headers['ACCESS-CONTROL-ALLOW-ORIGIN'],
+                                 '*')
 
             self.loop.run_until_complete(query())
 
@@ -100,7 +102,7 @@ class CorsTests(unittest.TestCase):
                                                   loop=self.loop)
                 yield from resp.read_and_close()
                 self.assertEqual(resp.status, 404)
-                self.assertNotIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp.headers)
 
             self.loop.run_until_complete(query())
 
@@ -114,10 +116,11 @@ class CorsTests(unittest.TestCase):
                                                   loop=self.loop)
                 yield from resp.read_and_close()
                 self.assertEqual(resp.status, 200)
-                self.assertNotIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp)
-                self.assertNotIn('ACCESS-CONTROL-ALLOW-METHOD', resp)
-                self.assertNotIn('ACCESS-CONTROL-ALLOW-HEADERS', resp)
-                self.assertNotIn('ACCESS-CONTROL-ALLOW-CREDENTIALS', resp)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp.headers)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-METHOD', resp.headers)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-HEADERS', resp.headers)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-CREDENTIALS',
+                                 resp.headers)
 
                 headers = {
                     'ORIGIN': 'localhost',
@@ -127,10 +130,11 @@ class CorsTests(unittest.TestCase):
                                                   loop=self.loop)
                 yield from resp.read_and_close()
                 self.assertEqual(resp.status, 200)
-                self.assertNotIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp)
-                self.assertNotIn('ACCESS-CONTROL-ALLOW-METHOD', resp)
-                self.assertNotIn('ACCESS-CONTROL-ALLOW-HEADERS', resp)
-                self.assertNotIn('ACCESS-CONTROL-ALLOW-CREDENTIALS', resp)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp.headers)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-METHOD', resp.headers)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-HEADERS', resp.headers)
+                self.assertNotIn('ACCESS-CONTROL-ALLOW-CREDENTIALS',
+                                 resp.headers)
 
                 headers = {
                     'ORIGIN': 'http://example.com/',
@@ -140,6 +144,6 @@ class CorsTests(unittest.TestCase):
                                                   loop=self.loop)
                 yield from resp.read_and_close()
                 self.assertEqual(resp.status, 200)
-                self.assertIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp)
+                self.assertIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp.headers)
 
             self.loop.run_until_complete(query())

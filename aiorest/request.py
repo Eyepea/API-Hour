@@ -70,7 +70,7 @@ class Response:
 
 class Request:
 
-    def __init__(self, host, message, headers, req_body, *,
+    def __init__(self, host, message, req_body, *,
                  session_factory=None, loop=None):
         if loop is None:
             loop = asyncio.get_event_loop()
@@ -78,7 +78,7 @@ class Request:
         self._loop = loop
         self.version = message.version
         self.method = message.method.upper()
-        self.host = headers.get('HOST', host)
+        self.host = message.headers.get('HOST', host)
         self.host_url = 'http://' + self.host
         self.path_qs = message.path
         self.path = res.path
@@ -86,7 +86,7 @@ class Request:
         self.url = self.host_url + self.path_qs
         self.query_string = res.query
         self.args = MultiDict(parse_qsl(res.query))
-        self.headers = headers
+        self.headers = message.headers
         self._request_body = req_body
         self._response = Response()
         self._session_factory = session_factory

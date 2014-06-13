@@ -32,12 +32,16 @@ class REST:
             req.json_body
         self.case.assertEqual((1, 1), req.version)
         self.case.assertEqual('GET', req.method)
-        self.case.assertEqual('127.0.0.1', req.host)
-        self.case.assertEqual('http://127.0.0.1', req.host_url)
+        self.case.assertRegex('127.0.0.1:{}'.format(self.case.port), req.host)
+        self.case.assertRegex('http://127.0.0.1:{}'.format(self.case.port),
+                              req.host_url)
         self.case.assertEqual('/post/123/2?a=1&b=2', req.path_qs)
         self.case.assertEqual('/post/123/2', req.path)
-        self.case.assertEqual('http://127.0.0.1/post/123/2', req.path_url)
-        self.case.assertEqual('http://127.0.0.1/post/123/2?a=1&b=2', req.url)
+        self.case.assertEqual('http://127.0.0.1:{}/post/123/2'
+                              .format(self.case.port),
+                              req.path_url)
+        self.case.assertEqual('http://127.0.0.1:{}/post/123/2?a=1&b=2'
+                              .format(self.case.port), req.url)
         self.case.assertEqual('a=1&b=2', req.query_string)
         self.case.assertEqual('1', req.args['a'])
         self.case.assertEqual('2', req.args['b'])
@@ -62,6 +66,7 @@ class ServerTests(unittest.TestCase):
         asyncio.set_event_loop(None)
         self.server = RESTServer(debug=True, keep_alive=75,
                                  hostname='127.0.0.1', loop=self.loop)
+        self.port = None
         rest = REST(self)
         self.server.add_url('POST', '/post/{id}', rest.func_POST,
                             use_request=True)
@@ -81,7 +86,7 @@ class ServerTests(unittest.TestCase):
         srv = self.loop.run_until_complete(self.loop.create_server(
             self.server.make_handler,
             '127.0.0.1', 0))
-        port = server_port(srv)
+        self.port = port = server_port(srv)
         url = 'http://127.0.0.1:{}/post/123'.format(port)
 
         def query():
@@ -103,7 +108,7 @@ class ServerTests(unittest.TestCase):
         srv = self.loop.run_until_complete(self.loop.create_server(
                                            self.server.make_handler,
                                            '127.0.0.1', 0))
-        port = server_port(srv)
+        self.port = port = server_port(srv)
         url = 'http://127.0.0.1:{}/post/123'.format(port)
 
         def query():
@@ -121,7 +126,7 @@ class ServerTests(unittest.TestCase):
         srv = self.loop.run_until_complete(self.loop.create_server(
             self.server.make_handler,
             '127.0.0.1', 0))
-        port = server_port(srv)
+        self.port = port = server_port(srv)
         url = 'http://127.0.0.1:{}/post/123/2?a=1&b=2'.format(port)
 
         def query():
@@ -142,7 +147,7 @@ class ServerTests(unittest.TestCase):
         srv = self.loop.run_until_complete(self.loop.create_server(
             self.server.make_handler,
             '127.0.0.1', 0))
-        port = server_port(srv)
+        self.port = port = server_port(srv)
         url = 'http://127.0.0.1:{}/cookie/123'.format(port)
 
         @asyncio.coroutine
@@ -162,7 +167,7 @@ class ServerTests(unittest.TestCase):
         srv = self.loop.run_until_complete(self.loop.create_server(
             self.server.make_handler,
             '127.0.0.1', 0))
-        port = server_port(srv)
+        self.port = port = server_port(srv)
         url = 'http://127.0.0.1:{}/get_cookie/'.format(port)
 
         @asyncio.coroutine
@@ -186,7 +191,7 @@ class ServerTests(unittest.TestCase):
         srv = self.loop.run_until_complete(self.loop.create_server(
             self.server.make_handler,
             '127.0.0.1', 0))
-        port = server_port(srv)
+        self.port = port = server_port(srv)
         url = 'http://127.0.0.1:{}/post/123'.format(port)
 
         @asyncio.coroutine
@@ -199,8 +204,7 @@ class ServerTests(unittest.TestCase):
             dct = json.loads(data.decode('utf-8'))
             self.assertEqual({'success': True}, dct)
             headers = response.message.headers
-            enc = next(iter(v for h, v in headers
-                            if h.lower() == 'content-encoding'))
+            enc = headers['CONTENT-ENCODING']
             self.assertEqual('deflate', enc)
         self.loop.run_until_complete(query())
 
@@ -208,7 +212,7 @@ class ServerTests(unittest.TestCase):
         srv = self.loop.run_until_complete(self.loop.create_server(
             self.server.make_handler,
             '127.0.0.1', 0))
-        port = server_port(srv)
+        self.port = port = server_port(srv)
         url = 'http://127.0.0.1:{}/post/123'.format(port)
 
         @asyncio.coroutine
@@ -221,7 +225,6 @@ class ServerTests(unittest.TestCase):
             # dct = json.loads(data.decode('utf-8'))
             # self.assertEqual({'success': True}, dct)
             headers = response.message.headers
-            enc = next(iter(v for h, v in headers
-                            if h.lower() == 'content-encoding'))
+            enc = headers['CONTENT-ENCODING']
             self.assertEqual('gzip', enc)
         self.loop.run_until_complete(query())

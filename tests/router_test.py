@@ -56,8 +56,8 @@ class RouterTests(unittest.TestCase):
         def go():
             with self.assertRaises(aiohttp.HttpException) as ctx:
                 request = Request('host', aiohttp.RawRequestMessage(
-                    'POST', '/not/found', '1.1', (), True, None),
-                    email.message.Message(), None, loop=self.loop)
+                    'POST', '/not/found', '1.1', {}, True, None),
+                    None, loop=self.loop)
                 yield from self.server.dispatch(request)
             self.assertEqual(404, ctx.exception.code)
 
@@ -73,8 +73,8 @@ class RouterTests(unittest.TestCase):
         def go():
             with self.assertRaises(aiohttp.HttpException) as ctx:
                 request = Request('host', aiohttp.RawRequestMessage(
-                    'DELETE', '/post/123', '1.1', (), True, None),
-                    email.message.Message(), None, loop=self.loop)
+                    'DELETE', '/post/123', '1.1', {}, True, None),
+                    None, loop=self.loop)
                 yield from self.server.dispatch(request)
             self.assertEqual(405, ctx.exception.code)
             self.assertEqual((('Allow', 'GET, POST'),), ctx.exception.headers)
@@ -88,8 +88,8 @@ class RouterTests(unittest.TestCase):
         self.server.add_url('get', '/post/{id}', f)
 
         request = Request('host', aiohttp.RawRequestMessage(
-            'GET', '/post/123', '1.1', (), True, None),
-            email.message.Message(), None, loop=self.loop)
+            'GET', '/post/123', '1.1', {}, True, None),
+            None, loop=self.loop)
         ret = self.loop.run_until_complete(self.server.dispatch(request))
         # json.loads is required to avoid items order in dict
         self.assertEqual({"b": 2, "a": 1}, json.loads(ret))
@@ -100,8 +100,8 @@ class RouterTests(unittest.TestCase):
         self.server.add_url('get', '/post/{id}/', f)
 
         request = Request('host', aiohttp.RawRequestMessage(
-            'GET', '/post/123/', '1.1', (), True, None),
-            email.message.Message(), None, loop=self.loop)
+            'GET', '/post/123/', '1.1', {}, True, None),
+            None, loop=self.loop)
         ret = self.loop.run_until_complete(self.server.dispatch(request))
         # json.loads is required to avoid items order in dict
         self.assertEqual({"b": 2, "a": 1}, json.loads(ret))
@@ -112,8 +112,8 @@ class RouterTests(unittest.TestCase):
         self.server.add_url('get', '/post/{id}/', f)
 
         request = Request('host', aiohttp.RawRequestMessage(
-            'GET', '/post/123', '1.1', (), True, None),
-            email.message.Message(), None, loop=self.loop)
+            'GET', '/post/123', '1.1', {}, True, None),
+            None, loop=self.loop)
 
         with self.assertRaises(aiohttp.HttpException) as ctx:
             self.loop.run_until_complete(self.server.dispatch(request))
@@ -125,8 +125,8 @@ class RouterTests(unittest.TestCase):
         self.server.add_url('get', '/post/{id}/', f)
 
         request = Request('host', aiohttp.RawRequestMessage(
-            'GET', '/po/123', '1.1', (), True, None),
-            email.message.Message(), None, loop=self.loop)
+            'GET', '/po/123', '1.1', {}, True, None),
+            None, loop=self.loop)
 
         with self.assertRaises(aiohttp.HttpException) as ctx:
             self.loop.run_until_complete(self.server.dispatch(request))
@@ -138,8 +138,8 @@ class RouterTests(unittest.TestCase):
         self.server.add_url('get', '/post/{id}', f)
 
         request = Request('host', aiohttp.RawRequestMessage(
-            'GET', '/post/123', '1.1', (), True, None),
-            email.message.Message(), None, loop=self.loop)
+            'GET', '/post/123', '1.1', {}, True, None),
+            None, loop=self.loop)
 
         @asyncio.coroutine
         def go():
@@ -155,8 +155,8 @@ class RouterTests(unittest.TestCase):
         self.server.add_url('get', '/post/{id}', f)
 
         request = Request('host', aiohttp.RawRequestMessage(
-            'GET', '/post/123', '1.1', (), True, None),
-            email.message.Message(), None, loop=self.loop)
+            'GET', '/post/123', '1.1', {}, True, None),
+            None, loop=self.loop)
 
         @asyncio.coroutine
         def go():
@@ -174,8 +174,8 @@ class RouterTests(unittest.TestCase):
         self.server.add_url('get', '/post/{id}', f)
 
         request = Request('host', aiohttp.RawRequestMessage(
-            'GET', '/post/123', '1.1', (), True, None),
-            email.message.Message(), None, loop=self.loop)
+            'GET', '/post/123', '1.1', {}, True, None),
+            None, loop=self.loop)
 
         @asyncio.coroutine
         def go():
@@ -196,8 +196,8 @@ class RouterTests(unittest.TestCase):
         self.server.add_url('get', '/post/{id}', f, use_request='req')
 
         request = Request('host', aiohttp.RawRequestMessage(
-            'GET', '/post/123', '1.1', (), True, None),
-            email.message.Message(), None, loop=self.loop)
+            'GET', '/post/123', '1.1', {}, True, None),
+            None, loop=self.loop)
 
         ret = self.loop.run_until_complete(self.server.dispatch(request))
         # json.loads is required to avoid items order in dict
