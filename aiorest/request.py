@@ -4,7 +4,7 @@ import http.cookies
 
 from urllib.parse import urlsplit, parse_qsl
 
-from .multidict import MultiDict, MutableMultiDict
+from aiohttp.multidict import MultiDict, MutableMultiDict
 
 __all__ = [
     'Request',
