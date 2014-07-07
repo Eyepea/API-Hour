@@ -91,7 +91,7 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
             resp_impl = aiohttp.Response(self.writer, status, close=True)
             resp_impl.add_header('Host', self.hostname)
             exc.write_response(resp_impl)
-            self.log_access(payload, None, resp_impl, time.time() - now)
+            self.log_access(message, None, resp_impl, time.time() - now)
             self.keep_alive(False)
         else:
             super().handle_error(status, payload, message, exc, headers)
