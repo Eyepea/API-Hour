@@ -1,7 +1,13 @@
 CHANGES
 -------
 
-0.1.0 (XXXX-XX-XX)
+0.1.1 (XXXX-XX-XX)
 ^^^^^^^^^^^^^^^^^^
 
-Basic REST API
+* Switched to aiohttp v0.9.0
+
+
+0.1.0 (2014-07-07)
+^^^^^^^^^^^^^^^^^^
+
+* Basic REST API

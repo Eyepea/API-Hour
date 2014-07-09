@@ -96,7 +96,7 @@ class ServerTests(unittest.TestCase):
                 headers={'Content-Type': 'application/json'},
                 loop=self.loop)
             self.assertEqual(200, response.status)
-            data = yield from response.read_and_close()
+            data = yield from response.read()
             self.assertEqual(b'{"success": true}', data)
 
         self.loop.run_until_complete(query())
@@ -114,7 +114,7 @@ class ServerTests(unittest.TestCase):
         def query():
             response = yield from aiohttp.request('GET', url, loop=self.loop)
             self.assertEqual(200, response.status)
-            data = yield from response.read_and_close()
+            data = yield from response.read()
             self.assertEqual(b'{"success": true}', data)
 
         self.loop.run_until_complete(query())
@@ -132,7 +132,7 @@ class ServerTests(unittest.TestCase):
         def query():
             response = yield from aiohttp.request('GET', url, loop=self.loop)
             self.assertEqual(200, response.status)
-            data = yield from response.read_and_close()
+            data = yield from response.read()
             dct = json.loads(data.decode('utf-8'))
             self.assertEqual({'success': True,
                               'args': ['a', 'b'],
@@ -153,7 +153,7 @@ class ServerTests(unittest.TestCase):
         @asyncio.coroutine
         def query():
             response = yield from aiohttp.request('GET', url, loop=self.loop)
-            yield from response.read_and_close()
+            yield from response.read()
             self.assertEqual(200, response.status)
             self.assertIn('test_cookie', response.cookies)
             self.assertEqual(response.cookies['test_cookie'].value, '123')
@@ -177,7 +177,7 @@ class ServerTests(unittest.TestCase):
                 cookies={'test_cookie': 'value'},
                 loop=self.loop)
             self.assertEqual(200, response.status)
-            data = yield from response.read_and_close()
+            data = yield from response.read()
             dct = json.loads(data.decode('utf-8'))
             self.assertEqual({'success': True,
                               'cookie': 'value',
@@ -200,7 +200,7 @@ class ServerTests(unittest.TestCase):
                 'GET', url, headers={'ACCEPT-ENCODING': 'deflate'},
                 loop=self.loop)
             self.assertEqual(200, response.status)
-            data = yield from response.read_and_close()
+            data = yield from response.read()
             dct = json.loads(data.decode('utf-8'))
             self.assertEqual({'success': True}, dct)
             headers = response.message.headers
@@ -221,7 +221,7 @@ class ServerTests(unittest.TestCase):
                 'GET', url, headers={'ACCEPT-ENCODING': 'gzip'},
                 loop=self.loop)
             self.assertEqual(200, response.status)
-            yield from response.read_and_close()
+            yield from response.read()
             # dct = json.loads(data.decode('utf-8'))
             # self.assertEqual({'success': True}, dct)
             headers = response.message.headers

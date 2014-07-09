@@ -106,7 +106,7 @@ class CookieSessionTests(unittest.TestCase):
             @asyncio.coroutine
             def query():
                 resp = yield from aiohttp.request('GET', url, loop=self.loop)
-                yield from resp.read_and_close()
+                yield from resp.read()
                 self.assertEqual(resp.status, 200)
                 cookies = {k: v.value for k, v in resp.cookies.items()}
                 value = make_cookie({'foo': 'bar'}, 1)
@@ -127,7 +127,7 @@ class CookieSessionTests(unittest.TestCase):
                     'GET', url,
                     cookies={'test_cookie': make_cookie({'foo': 'bar'}, 1)},
                     loop=self.loop)
-                yield from resp.read_and_close()
+                yield from resp.read()
                 self.assertEqual(resp.status, 200)
 
             self.loop.run_until_complete(query())
@@ -144,7 +144,7 @@ class CookieSessionTests(unittest.TestCase):
                 resp = yield from aiohttp.request('GET', url + "/2",
                                                   connector=connector,
                                                   loop=self.loop)
-                data = yield from resp.read_and_close(decode=True)
+                data = yield from resp.json()
                 self.assertEqual(resp.status, 200)
                 self.assertEqual(data, {'result': 3})
 
@@ -152,7 +152,7 @@ class CookieSessionTests(unittest.TestCase):
                 resp = yield from aiohttp.request('GET', url,
                                                   connector=connector,
                                                   loop=self.loop)
-                data = yield from resp.read_and_close(decode=True)
+                data = yield from resp.json()
                 self.assertEqual(resp.status, 200)
                 self.assertEqual(data, {'result': 4})
 
@@ -160,7 +160,7 @@ class CookieSessionTests(unittest.TestCase):
                 resp = yield from aiohttp.request('GET', url + '/3',
                                                   connector=connector,
                                                   loop=self.loop)
-                data = yield from resp.read_and_close(decode=True)
+                data = yield from resp.json()
                 self.assertEqual(resp.status, 200)
                 self.assertEqual(data, {'result': 5})
 
@@ -168,7 +168,7 @@ class CookieSessionTests(unittest.TestCase):
                 resp = yield from aiohttp.request('GET', url,
                                                   connector=connector,
                                                   loop=self.loop)
-                data = yield from resp.read_and_close(decode=True)
+                data = yield from resp.json()
                 self.assertEqual(resp.status, 200)
                 self.assertEqual(data, {'result': 1})
 
