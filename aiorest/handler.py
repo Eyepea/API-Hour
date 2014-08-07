@@ -73,7 +73,7 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
 
             resp_impl.send_headers()
             resp_impl.write(bbody)
-            resp_impl.write_eof()
+            yield from resp_impl.write_eof()
             if resp_impl.keep_alive():
                 self.keep_alive(True)
 

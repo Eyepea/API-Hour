@@ -3,7 +3,7 @@ import re
 import sys
 from setuptools import setup, find_packages
 
-install_requires = ['aiohttp>=0.8.0']
+install_requires = ['aiohttp>=0.9.0']
 
 PY_VER = sys.version_info
 
@@ -14,7 +14,8 @@ elif PY_VER >= (3, 3):
 else:
     raise RuntimeError("aiorest doesn't suppport Python earllier than 3.3")
 
-extras_require = {'redis_session': ['asyncio-redis>=0.12.3'],}
+extras_require = {'redis_session': ['asyncio-redis>=0.12.3']}
+
 
 def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
@@ -32,7 +33,7 @@ def read_version():
             raise RuntimeError('Cannot find version in aiorest/__init__.py')
 
 
-classifiers=[
+classifiers = [
     'License :: OSI Approved :: BSD License',
     'Intended Audience :: Developers',
     'Programming Language :: Python',
@@ -57,8 +58,8 @@ setup(name='aiorest',
       packages=find_packages(),
       install_requires=install_requires,
       extras_require=extras_require,
-      #tests_require = tests_require,
-      #test_suite = 'nose.collector',
+      # tests_require = tests_require,
+      # test_suite = 'nose.collector',
       provides=['aiorest'],
       requires=['aiohttp'],
       include_package_data=True)
