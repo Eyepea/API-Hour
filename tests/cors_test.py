@@ -65,7 +65,7 @@ class CorsTests(unittest.TestCase):
                 resp = yield from aiohttp.request('GET', url,
                                                   headers=headers,
                                                   loop=self.loop)
-                yield from resp.read_and_close()
+                yield from resp.read()
                 self.assertEqual(resp.status, 200)
                 self.assertIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp.headers)
                 self.assertEqual(resp.headers['ACCESS-CONTROL-ALLOW-ORIGIN'],
@@ -85,7 +85,7 @@ class CorsTests(unittest.TestCase):
                 resp = yield from aiohttp.request('OPTIONS', url,
                                                   headers=headers,
                                                   loop=self.loop)
-                yield from resp.read_and_close()
+                yield from resp.read()
                 self.assertEqual(resp.status, 200)
                 self.assertIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp.headers)
                 self.assertEqual(resp.headers['ACCESS-CONTROL-ALLOW-ORIGIN'],
@@ -100,7 +100,7 @@ class CorsTests(unittest.TestCase):
             def query():
                 resp = yield from aiohttp.request('OPTIONS', url,
                                                   loop=self.loop)
-                yield from resp.read_and_close()
+                yield from resp.read()
                 self.assertEqual(resp.status, 404)
                 self.assertNotIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp.headers)
 
@@ -114,7 +114,7 @@ class CorsTests(unittest.TestCase):
                 resp = yield from aiohttp.request('GET', url + '/check_origin',
                                                   headers={},
                                                   loop=self.loop)
-                yield from resp.read_and_close()
+                yield from resp.read()
                 self.assertEqual(resp.status, 200)
                 self.assertNotIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp.headers)
                 self.assertNotIn('ACCESS-CONTROL-ALLOW-METHOD', resp.headers)
@@ -128,7 +128,7 @@ class CorsTests(unittest.TestCase):
                 resp = yield from aiohttp.request('GET', url + '/check_origin',
                                                   headers=headers,
                                                   loop=self.loop)
-                yield from resp.read_and_close()
+                yield from resp.read()
                 self.assertEqual(resp.status, 200)
                 self.assertNotIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp.headers)
                 self.assertNotIn('ACCESS-CONTROL-ALLOW-METHOD', resp.headers)
@@ -142,7 +142,7 @@ class CorsTests(unittest.TestCase):
                 resp = yield from aiohttp.request('GET', url + '/check_origin',
                                                   headers=headers,
                                                   loop=self.loop)
-                yield from resp.read_and_close()
+                yield from resp.read()
                 self.assertEqual(resp.status, 200)
                 self.assertIn('ACCESS-CONTROL-ALLOW-ORIGIN', resp.headers)
 

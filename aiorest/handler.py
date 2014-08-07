@@ -3,6 +3,8 @@ import aiohttp
 import aiohttp.server
 import time
 
+from aiohttp.streams import EOF_MARKER
+
 from . import errors
 from .request import Request
 
@@ -28,12 +30,11 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
         try:
             if payload is not None:
                 req_body = bytearray()
-                try:
-                    while True:
-                        chunk = yield from payload.read()
-                        req_body.extend(chunk)
-                except aiohttp.EofStream:
-                    pass
+                while True:
+                    chunk = yield from payload.readany()
+                    req_body.extend(chunk)
+                    if chunk is EOF_MARKER:
+                        break
             else:
                 req_body = None
 
@@ -86,12 +87,13 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
 
     def handle_error(self, status=500, message=None, payload=None,
                      exc=None, headers=None):
+        now = time.time()
         if isinstance(exc, errors.RESTError):
-            now = time.time()
             resp_impl = aiohttp.Response(self.writer, status, close=True)
             resp_impl.add_header('Host', self.hostname)
             exc.write_response(resp_impl)
-            self.log_access(payload, None, resp_impl, time.time() - now)
+            self.log_access(message, None, resp_impl, time.time() - now)
             self.keep_alive(False)
         else:
-            super().handle_error(status, payload, message, exc, headers)
+            super().handle_error(status, message, payload,
+                                 exc=exc, headers=headers)

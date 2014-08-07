@@ -50,7 +50,7 @@ def main():
             resp = yield from aiohttp.request(
                 'GET', 'http://127.0.0.1:8080/count',
                 connector=connector, loop=loop)
-            data = yield from resp.read_and_close(decode=True)
+            data = yield from resp.json()
             print('Count is', data)
 
     loop.run_until_complete(query())
