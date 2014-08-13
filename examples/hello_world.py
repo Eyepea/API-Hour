@@ -4,7 +4,7 @@ import aiohttp
 import aiorest
 
 
-def handler():
+def handler(request):
     return {'hello': 'world'}
 
 
@@ -17,7 +17,7 @@ def main():
 
     server = aiorest.RESTServer(hostname='127.0.0.1', loop=loop)
     server.add_url('GET', '/hello-world', handler)
-    server.add_url('GET', '/hello/{name}', say_hello, use_request=True)
+    server.add_url('GET', '/hello/{name}', say_hello)
 
     srv = loop.run_until_complete(loop.create_server(
         server.make_handler, '127.0.0.1', 8080))

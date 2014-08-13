@@ -16,7 +16,7 @@ __all__ = [
     ]
 
 
-Entry = collections.namedtuple('Entry', 'regex method handler use_request'
+Entry = collections.namedtuple('Entry', 'regex method handler'
                                         ' check_cors cors_options')
 
 
@@ -60,7 +60,7 @@ class RESTServer:
     def cors_enabled(self):
         return self._enable_cors
 
-    def add_url(self, method, path, handler, use_request=False,
+    def add_url(self, method, path, handler,
                 check_cors=True, cors_options={}):
         """XXX"""
         assert callable(handler), handler
@@ -73,20 +73,6 @@ class RESTServer:
             holder = handler
         sig = holder.__signature__ = inspect.signature(holder)
 
-        if use_request:
-            if use_request is True:
-                use_request = 'request'
-            try:
-                p = sig.parameters[use_request]
-            except KeyError:
-                raise TypeError('handler {!r} has no argument {}'
-                                .format(handler, use_request))
-            assert p.annotation is p.empty, ("handler's arg {} "
-                                             "for request name "
-                                             "should not have "
-                                             "annotation").format(use_request)
-        else:
-            use_request = None
         assert path.startswith('/')
         assert callable(handler), handler
         method = method.upper()
@@ -114,7 +100,7 @@ class RESTServer:
             assert callable(allow_origin) \
                 or isinstance(allow_origin, (collections.Sequence, str)), \
                 "Invalid 'allow-origin' option {!r}".format(allow_origin)
-        self._urls.append(Entry(compiled, method, handler, use_request,
+        self._urls.append(Entry(compiled, method, handler,
                                 check_cors, cors_options))
 
     @asyncio.coroutine
@@ -162,16 +148,11 @@ class RESTServer:
         ret_ann = None
         if sig.return_annotation is not sig.empty:
             ret_ann = sig.return_annotation
-        
-        kwargs = {}
-        if entry.use_request:
-            assert entry.use_request not in kwargs, (entry.use_request, kwargs)
-            kwargs[entry.use_request] = request
         try:
             if asyncio.iscoroutinefunction(handler):
-                ret = yield from handler(**kwargs)
+                ret = yield from handler(request)
             else:
-                ret = handler(**kwargs)
+                ret = handler(request)
             if ret_ann is not None:
                 ret = ret_ann(ret)
         except aiohttp.HttpException as exc:
