@@ -8,8 +8,8 @@ def handler():
     return {'hello': 'world'}
 
 
-def say_hello(name: str):
-    return 'Hello, {}!'.format(name)
+def say_hello(request):
+    return 'Hello, {}!'.format(request.matchdict['name'])
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
 
     server = aiorest.RESTServer(hostname='127.0.0.1', loop=loop)
     server.add_url('GET', '/hello-world', handler)
-    server.add_url('GET', '/hello/{name}', say_hello)
+    server.add_url('GET', '/hello/{name}', say_hello, use_request=True)
 
     srv = loop.run_until_complete(loop.create_server(
         server.make_handler, '127.0.0.1', 8080))
@@ -33,6 +33,7 @@ def main():
         name = os.environ.get('USER', 'John')
         resp = yield from aiohttp.request(
             'GET', 'http://127.0.0.1:8080/hello/{}'.format(name))
+
         json_data = yield from resp.json()
         print(json_data)
 

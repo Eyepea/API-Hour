@@ -156,17 +156,22 @@ class RESTServer:
             request.response.headers.extend(headers)
 
         handler = entry.handler
+        request.matchdict = match.groupdict()
+
         sig = inspect.signature(handler)
-        kwargs = match.groupdict()
+        ret_ann = None
+        if sig.return_annotation is not sig.empty:
+            ret_ann = sig.return_annotation
+        
+        kwargs = {}
         if entry.use_request:
             assert entry.use_request not in kwargs, (entry.use_request, kwargs)
             kwargs[entry.use_request] = request
         try:
-            args, kwargs, ret_ann = self.construct_args(sig, kwargs)
             if asyncio.iscoroutinefunction(handler):
-                ret = yield from handler(*args, **kwargs)
+                ret = yield from handler(**kwargs)
             else:
-                ret = handler(*args, **kwargs)
+                ret = handler(**kwargs)
             if ret_ann is not None:
                 ret = ret_ann(ret)
         except aiohttp.HttpException as exc:
@@ -177,30 +182,6 @@ class RESTServer:
                                              "Internal Server Error") from exc
         else:
             return json.dumps(ret)
-
-    def construct_args(self, sig, kwargs):
-        try:
-            bargs = sig.bind(**kwargs)
-        except TypeError:
-            raise
-        else:
-            args = bargs.arguments
-            marker = object()
-            for name, param in sig.parameters.items():
-                if param.annotation is param.empty:
-                    continue
-                val = args.get(name, marker)
-                if val is marker:
-                    continue    # Skip default value
-                try:
-                    args[name] = param.annotation(val)
-                except (TypeError, ValueError) as exc:
-                    raise ValueError(
-                        'Invalid value for argument {!r}: {!r}'
-                        .format(name, exc)) from exc
-            if sig.return_annotation is not sig.empty:
-                return bargs.args, bargs.kwargs, sig.return_annotation
-            return bargs.args, bargs.kwargs, None
 
     def _make_cors_headers(self, request, cors_options):
         option = cors_options.get
