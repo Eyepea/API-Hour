@@ -6,6 +6,9 @@ from urllib.parse import urlsplit, parse_qsl
 
 from aiohttp.multidict import MultiDict, MutableMultiDict
 
+from .errors import JsonLoadError, JsonDecodeError
+
+
 __all__ = [
     'Request',
     'Response',
@@ -116,10 +119,23 @@ class Request:
             if self._request_body:
                 # TODO: store generated exception and
                 # don't try to parse json next time
-                self._json_body = json.loads(self._request_body
-                                                 .decode('utf-8'))
+                try:
+                    decoded = self._request_body.decode('utf-8')
+                except UnicodeDecodeError as exc:
+                    raise JsonDecodeError(exc.encoding,
+                                          exc.object,
+                                          exc.start,
+                                          exc.end,
+                                          "Json body is not utf-8 encoded",
+                                          )
+                else:
+                    try:
+                        self._json_body = json.loads(decoded)
+                    except (ValueError):
+                        raise JsonLoadError("Json body cannot be decoded",
+                                            decoded)
             else:
-                raise ValueError("Request has no a body")
+                raise JsonLoadError("Request hasn't a body")
         return self._json_body
 
     @property

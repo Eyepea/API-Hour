@@ -228,3 +228,78 @@ class ServerTests(unittest.TestCase):
             enc = headers['CONTENT-ENCODING']
             self.assertEqual('gzip', enc)
         self.loop.run_until_complete(query())
+
+    def test_POST_without_body(self):
+        srv = self.loop.run_until_complete(self.loop.create_server(
+            self.server.make_handler,
+            '127.0.0.1', 0))
+        self.port = port = server_port(srv)
+        url = 'http://127.0.0.1:{}/post/123'.format(port)
+
+        def query():
+            response = yield from aiohttp.request(
+                'POST', url,
+                data='',
+                headers={'Content-Type': 'application/json'},
+                loop=self.loop)
+            self.assertEqual(400, response.status)
+            data = yield from response.read()
+            j = json.loads(data.decode('utf-8'))
+            self.assertEqual({"error_code": 400,
+                              "error_reason": "Request hasn\'t a body",
+                              "error": {}}, j)
+
+        self.loop.run_until_complete(query())
+
+        srv.close()
+        self.loop.run_until_complete(srv.wait_closed())
+
+    def test_POST_malformed_json(self):
+        srv = self.loop.run_until_complete(self.loop.create_server(
+            self.server.make_handler,
+            '127.0.0.1', 0))
+        self.port = port = server_port(srv)
+        url = 'http://127.0.0.1:{}/post/123'.format(port)
+
+        def query():
+            response = yield from aiohttp.request(
+                'POST', url,
+                data='{dfsdf}2',
+                headers={'Content-Type': 'application/json'},
+                loop=self.loop)
+            self.assertEqual(400, response.status)
+            data = yield from response.read()
+            j = json.loads(data.decode('utf-8'))
+            self.assertEqual({"error_code": 400,
+                              "error_reason": "Json body cannot be decoded",
+                              "error": {}}, j)
+
+        self.loop.run_until_complete(query())
+
+        srv.close()
+        self.loop.run_until_complete(srv.wait_closed())
+
+    def test_POST_nonutf8_json(self):
+        srv = self.loop.run_until_complete(self.loop.create_server(
+            self.server.make_handler,
+            '127.0.0.1', 0))
+        self.port = port = server_port(srv)
+        url = 'http://127.0.0.1:{}/post/123'.format(port)
+
+        def query():
+            response = yield from aiohttp.request(
+                'POST', url,
+                data='{"русский": "текст"}'.encode('1251'),
+                headers={'Content-Type': 'application/json'},
+                loop=self.loop)
+            self.assertEqual(400, response.status)
+            data = yield from response.read()
+            j = json.loads(data.decode('utf-8'))
+            self.assertEqual({"error_code": 400,
+                              "error_reason": "Json body is not utf-8 encoded",
+                              "error": {}}, j)
+
+        self.loop.run_until_complete(query())
+
+        srv.close()
+        self.loop.run_until_complete(srv.wait_closed())

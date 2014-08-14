@@ -10,7 +10,6 @@ from types import MethodType
 from . import errors
 from .handler import RESTRequestHandler
 
-
 __all__ = [
     'RESTServer',
     ]
@@ -169,6 +168,10 @@ class RESTServer:
                 ret = handler(*args, **kwargs)
             if ret_ann is not None:
                 ret = ret_ann(ret)
+        except errors.JsonDecodeError as exc:
+            raise errors.RESTError(400, exc.reason)
+        except errors.JsonLoadError as exc:
+            raise errors.RESTError(400, exc.args[0])
         except aiohttp.HttpException as exc:
             raise
         except Exception as exc:

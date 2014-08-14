@@ -2,6 +2,14 @@ import aiohttp
 import json
 
 
+class JsonLoadError(ValueError):
+    pass
+
+
+class JsonDecodeError(UnicodeDecodeError):
+    pass
+
+
 class RESTError(aiohttp.HttpException):
     """REST server error.
 
