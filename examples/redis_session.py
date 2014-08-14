@@ -14,10 +14,10 @@ class Handler:
         self.limit = limit
 
     @asyncio.coroutine
-    def counter(self, req, start: int=0):
+    def counter(self, req):
         session = yield from req.session
         if session.new:
-            session['count'] = start
+            session['count'] = int(req.matchdict.get('start', 0))
         count = session['count'] + 1
         session['count'] = count
         if count >= self.limit:
@@ -42,7 +42,7 @@ def main():
                                 session_factory=session_factory,
                                 loop=loop)
 
-    server.add_url('GET', '/count', handler.counter, use_request='req')
+    server.add_url('GET', '/count', handler.counter)
 
     srv = loop.run_until_complete(loop.create_server(
         server.make_handler, '127.0.0.1', 8080))
