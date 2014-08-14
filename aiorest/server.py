@@ -5,8 +5,6 @@ import json
 import re
 import aiohttp
 
-from types import MethodType
-
 from . import errors
 from .handler import RESTRequestHandler
 
@@ -67,11 +65,6 @@ class RESTServer:
         assert not set(cors_options) - set(self.CORS_OPTIONS), \
             'Got bad CORS options: {}'.format(
                 set(cors_options) - set(self.CORS_OPTIONS))
-        if isinstance(handler, MethodType):
-            holder = handler.__func__
-        else:
-            holder = handler
-        sig = holder.__signature__ = inspect.signature(holder)
 
         assert path.startswith('/')
         assert callable(handler), handler
