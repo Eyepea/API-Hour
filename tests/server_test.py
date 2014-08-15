@@ -20,6 +20,10 @@ class REST:
         self.case.assertEqual({'q': 'val'}, request.json_body)
         return {'success': True}
 
+    def create(self, request):
+        request.set_status_code(201)
+        return {'created': True}
+
     def func_GET(self, request):
         self.case.assertEqual('123', request.matchdict['id'])
         with self.case.assertRaises(ValueError):
@@ -69,6 +73,7 @@ class ServerTests(unittest.TestCase):
         self.port = None
         rest = REST(self)
         self.server.add_url('POST', '/post/{id}', rest.func_POST)
+        self.server.add_url('POST', '/create', rest.create)
         self.server.add_url('GET', '/post/{id}', rest.func_GET)
         self.server.add_url('GET', '/post/{id}/2', rest.func_GET2)
         self.server.add_url('GET', '/cookie/{value}', rest.coro_set_cookie)
@@ -293,6 +298,27 @@ class ServerTests(unittest.TestCase):
             self.assertEqual({"error_code": 400,
                               "error_reason": "Json body is not utf-8 encoded",
                               "error": {}}, j)
+
+        self.loop.run_until_complete(query())
+
+        srv.close()
+        self.loop.run_until_complete(srv.wait_closed())
+
+    def test_status_code(self):
+        srv = self.loop.run_until_complete(self.loop.create_server(
+            self.server.make_handler,
+            '127.0.0.1', 0))
+        self.port = port = server_port(srv)
+        url = 'http://127.0.0.1:{}/create'.format(port)
+
+        def query():
+            response = yield from aiohttp.request(
+                'POST', url,
+                headers={'Content-Type': 'application/json'},
+                loop=self.loop)
+            self.assertEqual(201, response.status)
+            data = yield from response.read()
+            self.assertEqual(b'{"created": true}', data)
 
         self.loop.run_until_complete(query())
 
