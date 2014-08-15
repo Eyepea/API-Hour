@@ -73,6 +73,8 @@ class Response:
 
 class Request:
 
+    _status_code = 200
+
     def __init__(self, host, message, req_body, *,
                  session_factory=None, loop=None):
         if loop is None:
@@ -98,6 +100,14 @@ class Request:
         self._json_body = None
         self._cookies = None
         self._on_response = []
+
+    @property
+    def status_code(self):
+        return self._status_code
+
+    def set_status_code(self, code):
+        assert isinstance(code, int), 'Only `int` codes accepted'
+        self._status_code = code
 
     @property
     def response(self):
