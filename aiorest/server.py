@@ -5,8 +5,6 @@ import json
 import re
 import aiohttp
 
-from types import MethodType
-
 from . import errors
 from .handler import RESTRequestHandler
 
@@ -15,7 +13,7 @@ __all__ = [
     ]
 
 
-Entry = collections.namedtuple('Entry', 'regex method handler use_request'
+Entry = collections.namedtuple('Entry', 'regex method handler'
                                         ' check_cors cors_options')
 
 
@@ -59,33 +57,14 @@ class RESTServer:
     def cors_enabled(self):
         return self._enable_cors
 
-    def add_url(self, method, path, handler, use_request=False,
+    def add_url(self, method, path, handler,
                 check_cors=True, cors_options={}):
         """XXX"""
         assert callable(handler), handler
         assert not set(cors_options) - set(self.CORS_OPTIONS), \
             'Got bad CORS options: {}'.format(
                 set(cors_options) - set(self.CORS_OPTIONS))
-        if isinstance(handler, MethodType):
-            holder = handler.__func__
-        else:
-            holder = handler
-        sig = holder.__signature__ = inspect.signature(holder)
 
-        if use_request:
-            if use_request is True:
-                use_request = 'request'
-            try:
-                p = sig.parameters[use_request]
-            except KeyError:
-                raise TypeError('handler {!r} has no argument {}'
-                                .format(handler, use_request))
-            assert p.annotation is p.empty, ("handler's arg {} "
-                                             "for request name "
-                                             "should not have "
-                                             "annotation").format(use_request)
-        else:
-            use_request = None
         assert path.startswith('/')
         assert callable(handler), handler
         method = method.upper()
@@ -113,7 +92,7 @@ class RESTServer:
             assert callable(allow_origin) \
                 or isinstance(allow_origin, (collections.Sequence, str)), \
                 "Invalid 'allow-origin' option {!r}".format(allow_origin)
-        self._urls.append(Entry(compiled, method, handler, use_request,
+        self._urls.append(Entry(compiled, method, handler,
                                 check_cors, cors_options))
 
     @asyncio.coroutine
@@ -155,17 +134,17 @@ class RESTServer:
             request.response.headers.extend(headers)
 
         handler = entry.handler
+        request.matchdict = match.groupdict()
+
         sig = inspect.signature(handler)
-        kwargs = match.groupdict()
-        if entry.use_request:
-            assert entry.use_request not in kwargs, (entry.use_request, kwargs)
-            kwargs[entry.use_request] = request
+        ret_ann = None
+        if sig.return_annotation is not sig.empty:
+            ret_ann = sig.return_annotation
         try:
-            args, kwargs, ret_ann = self.construct_args(sig, kwargs)
             if asyncio.iscoroutinefunction(handler):
-                ret = yield from handler(*args, **kwargs)
+                ret = yield from handler(request)
             else:
-                ret = handler(*args, **kwargs)
+                ret = handler(request)
             if ret_ann is not None:
                 ret = ret_ann(ret)
         except errors.JsonDecodeError as exc:
@@ -180,30 +159,6 @@ class RESTServer:
                                              "Internal Server Error") from exc
         else:
             return json.dumps(ret)
-
-    def construct_args(self, sig, kwargs):
-        try:
-            bargs = sig.bind(**kwargs)
-        except TypeError:
-            raise
-        else:
-            args = bargs.arguments
-            marker = object()
-            for name, param in sig.parameters.items():
-                if param.annotation is param.empty:
-                    continue
-                val = args.get(name, marker)
-                if val is marker:
-                    continue    # Skip default value
-                try:
-                    args[name] = param.annotation(val)
-                except (TypeError, ValueError) as exc:
-                    raise ValueError(
-                        'Invalid value for argument {!r}: {!r}'
-                        .format(name, exc)) from exc
-            if sig.return_annotation is not sig.empty:
-                return bargs.args, bargs.kwargs, sig.return_annotation
-            return bargs.args, bargs.kwargs, None
 
     def _make_cors_headers(self, request, cors_options):
         option = cors_options.get

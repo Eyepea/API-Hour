@@ -11,10 +11,10 @@ class REST:
     def __init__(self, test):
         self.test = test
 
-    def index(self):
+    def index(self, request):
         return {'status': 'ok'}
 
-    def check_origin(self):
+    def check_origin(self, request):
         return {'status': 'ok'}
 
 

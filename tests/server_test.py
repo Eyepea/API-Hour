@@ -15,19 +15,19 @@ class REST:
     def __init__(self, case):
         self.case = case
 
-    def func_POST(self, id, request):
-        self.case.assertEqual('123', id)
+    def func_POST(self, request):
+        self.case.assertEqual('123', request.matchdict['id'])
         self.case.assertEqual({'q': 'val'}, request.json_body)
         return {'success': True}
 
-    def func_GET(self, id: int, req):
-        self.case.assertEqual(123, id)
+    def func_GET(self, request):
+        self.case.assertEqual('123', request.matchdict['id'])
         with self.case.assertRaises(ValueError):
-            req.json_body
+            request.json_body
         return {'success': True}
 
-    def func_GET2(self, id: int, req):
-        self.case.assertEqual(123, id)
+    def func_GET2(self, req):
+        self.case.assertEqual('123', req.matchdict['id'])
         with self.case.assertRaises(ValueError):
             req.json_body
         self.case.assertEqual((1, 1), req.version)
@@ -48,9 +48,9 @@ class REST:
         return {'success': True, 'args': list(req.args)}
 
     @asyncio.coroutine
-    def coro_set_cookie(self, value: int, req):
+    def coro_set_cookie(self, req):
         response = req.response
-        response.set_cookie('test_cookie', value)
+        response.set_cookie('test_cookie', req.matchdict['value'])
         return {'success': True}
         yield
 
@@ -68,16 +68,11 @@ class ServerTests(unittest.TestCase):
                                  hostname='127.0.0.1', loop=self.loop)
         self.port = None
         rest = REST(self)
-        self.server.add_url('POST', '/post/{id}', rest.func_POST,
-                            use_request=True)
-        self.server.add_url('GET', '/post/{id}', rest.func_GET,
-                            use_request='req')
-        self.server.add_url('GET', '/post/{id}/2', rest.func_GET2,
-                            use_request='req')
-        self.server.add_url('GET', '/cookie/{value}', rest.coro_set_cookie,
-                            use_request='req')
-        self.server.add_url('GET', '/get_cookie/', rest.func_get_cookie,
-                            use_request='req')
+        self.server.add_url('POST', '/post/{id}', rest.func_POST)
+        self.server.add_url('GET', '/post/{id}', rest.func_GET)
+        self.server.add_url('GET', '/post/{id}/2', rest.func_GET2)
+        self.server.add_url('GET', '/cookie/{value}', rest.coro_set_cookie)
+        self.server.add_url('GET', '/get_cookie/', rest.func_get_cookie)
 
     def tearDown(self):
         self.loop.close()

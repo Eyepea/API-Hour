@@ -82,7 +82,7 @@ class RouterTests(unittest.TestCase):
         self.loop.run_until_complete(go())
 
     def test_dispatch(self):
-        def f(id):
+        def f(request):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}', f)
 
@@ -94,7 +94,7 @@ class RouterTests(unittest.TestCase):
         self.assertEqual({"b": 2, "a": 1}, json.loads(ret))
 
     def test_dispatch_with_ending_slash(self):
-        def f(id):
+        def f(request):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}/', f)
 
@@ -106,7 +106,7 @@ class RouterTests(unittest.TestCase):
         self.assertEqual({"b": 2, "a": 1}, json.loads(ret))
 
     def test_dispatch_with_ending_slash_not_found1(self):
-        def f(id):
+        def f(request):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}/', f)
 
@@ -119,7 +119,7 @@ class RouterTests(unittest.TestCase):
         self.assertEqual(404, ctx.exception.code)
 
     def test_dispatch_with_ending_slash_not_found2(self):
-        def f(id):
+        def f(request):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}/', f)
 
@@ -148,25 +148,8 @@ class RouterTests(unittest.TestCase):
 
         self.loop.run_until_complete(go())
 
-    def test_dispatch_bad_signature2(self):
-        def f(unknown_argname):
-            return {'a': 1, 'b': 2}
-        self.server.add_url('get', '/post/{id}', f)
-
-        request = Request('host', aiohttp.RawRequestMessage(
-            'GET', '/post/123', '1.1', {}, True, None),
-            None, loop=self.loop)
-
-        @asyncio.coroutine
-        def go():
-            with self.assertRaises(aiohttp.HttpException) as ctx:
-                yield from self.server.dispatch(request)
-            self.assertEqual(500, ctx.exception.code)
-
-        self.loop.run_until_complete(go())
-
     def test_dispatch_http_exception_from_handler(self):
-        def f(id):
+        def f(request):
             raise aiohttp.HttpErrorException(
                 401,
                 headers=(('WWW-Authenticate', 'Basic'),))
@@ -187,12 +170,12 @@ class RouterTests(unittest.TestCase):
         self.loop.run_until_complete(go())
 
     def test_dispatch_with_request(self):
-        def f(id, req):
+        def f(req):
             self.assertIsInstance(req, Request)
             self.assertEqual('GET', req.method)
             self.assertEqual('/post/123', req.path)
             return {'a': 1, 'b': 2}
-        self.server.add_url('get', '/post/{id}', f, use_request='req')
+        self.server.add_url('get', '/post/{id}', f)
 
         request = Request('host', aiohttp.RawRequestMessage(
             'GET', '/post/123', '1.1', {}, True, None),

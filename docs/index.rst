@@ -56,7 +56,7 @@ Simple "hello world" REST server would look like this::
     import asyncio
     import aiorest
 
-    def hello():
+    def hello(request):
         return {'hello': 'world'}
 
     loop = asyncio.get_event_loop()
