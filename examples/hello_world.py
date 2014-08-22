@@ -4,12 +4,12 @@ import aiohttp
 import aiorest
 
 
-def handler():
+def handler(request):
     return {'hello': 'world'}
 
 
-def say_hello(name: str):
-    return 'Hello, {}!'.format(name)
+def say_hello(request):
+    return 'Hello, {}!'.format(request.matchdict['name'])
 
 
 def main():
@@ -33,6 +33,7 @@ def main():
         name = os.environ.get('USER', 'John')
         resp = yield from aiohttp.request(
             'GET', 'http://127.0.0.1:8080/hello/{}'.format(name))
+
         json_data = yield from resp.json()
         print(json_data)
 

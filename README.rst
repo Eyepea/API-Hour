@@ -20,7 +20,7 @@ Simple REST server can be run like this::
     # define a simple request handler
     # which accept no arguments
     # and responds with json
-    def hello():
+    def hello(request):
         return {'hello': 'world'}
 
 

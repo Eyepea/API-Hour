@@ -34,10 +34,10 @@ class REST:
         self.test.assertEqual(dict(sess), {'foo': 'bar'})
 
     @asyncio.coroutine
-    def counter(self, req, start: int=0):
+    def counter(self, req):
         sess = yield from req.session
         if sess.new:
-            sess['result'] = start
+            sess['result'] = int(req.matchdict.get('start', 0))
         res = sess['result'] = sess['result'] + 1
         if res >= 5:
             sess.invalidate()
@@ -71,14 +71,10 @@ class CookieSessionTests(unittest.TestCase):
                                  loop=self.loop)
         rest = REST(self)
 
-        self.server.add_url('GET', '/init', rest.init_session,
-                            use_request='req')
-        self.server.add_url('GET', '/get', rest.get_from_session,
-                            use_request='req')
-        self.server.add_url('GET', '/counter', rest.counter,
-                            use_request='req')
-        self.server.add_url('GET', '/counter/{start}', rest.counter,
-                            use_request='req')
+        self.server.add_url('GET', '/init', rest.init_session)
+        self.server.add_url('GET', '/get', rest.get_from_session)
+        self.server.add_url('GET', '/counter', rest.counter)
+        self.server.add_url('GET', '/counter/{start}', rest.counter)
 
     def tearDown(self):
         self.loop.close()

@@ -15,19 +15,23 @@ class REST:
     def __init__(self, case):
         self.case = case
 
-    def func_POST(self, id, request):
-        self.case.assertEqual('123', id)
+    def func_POST(self, request):
+        self.case.assertEqual('123', request.matchdict['id'])
         self.case.assertEqual({'q': 'val'}, request.json_body)
         return {'success': True}
 
-    def func_GET(self, id: int, req):
-        self.case.assertEqual(123, id)
+    def create(self, request):
+        request.set_status_code(201)
+        return {'created': True}
+
+    def func_GET(self, request):
+        self.case.assertEqual('123', request.matchdict['id'])
         with self.case.assertRaises(ValueError):
-            req.json_body
+            request.json_body
         return {'success': True}
 
-    def func_GET2(self, id: int, req):
-        self.case.assertEqual(123, id)
+    def func_GET2(self, req):
+        self.case.assertEqual('123', req.matchdict['id'])
         with self.case.assertRaises(ValueError):
             req.json_body
         self.case.assertEqual((1, 1), req.version)
@@ -48,9 +52,9 @@ class REST:
         return {'success': True, 'args': list(req.args)}
 
     @asyncio.coroutine
-    def coro_set_cookie(self, value: int, req):
+    def coro_set_cookie(self, req):
         response = req.response
-        response.set_cookie('test_cookie', value)
+        response.set_cookie('test_cookie', req.matchdict['value'])
         return {'success': True}
         yield
 
@@ -68,16 +72,12 @@ class ServerTests(unittest.TestCase):
                                  hostname='127.0.0.1', loop=self.loop)
         self.port = None
         rest = REST(self)
-        self.server.add_url('POST', '/post/{id}', rest.func_POST,
-                            use_request=True)
-        self.server.add_url('GET', '/post/{id}', rest.func_GET,
-                            use_request='req')
-        self.server.add_url('GET', '/post/{id}/2', rest.func_GET2,
-                            use_request='req')
-        self.server.add_url('GET', '/cookie/{value}', rest.coro_set_cookie,
-                            use_request='req')
-        self.server.add_url('GET', '/get_cookie/', rest.func_get_cookie,
-                            use_request='req')
+        self.server.add_url('POST', '/post/{id}', rest.func_POST)
+        self.server.add_url('POST', '/create', rest.create)
+        self.server.add_url('GET', '/post/{id}', rest.func_GET)
+        self.server.add_url('GET', '/post/{id}/2', rest.func_GET2)
+        self.server.add_url('GET', '/cookie/{value}', rest.coro_set_cookie)
+        self.server.add_url('GET', '/get_cookie/', rest.func_get_cookie)
 
     def tearDown(self):
         self.loop.close()
@@ -298,6 +298,27 @@ class ServerTests(unittest.TestCase):
             self.assertEqual({"error_code": 400,
                               "error_reason": "Json body is not utf-8 encoded",
                               "error": {}}, j)
+
+        self.loop.run_until_complete(query())
+
+        srv.close()
+        self.loop.run_until_complete(srv.wait_closed())
+
+    def test_status_code(self):
+        srv = self.loop.run_until_complete(self.loop.create_server(
+            self.server.make_handler,
+            '127.0.0.1', 0))
+        self.port = port = server_port(srv)
+        url = 'http://127.0.0.1:{}/create'.format(port)
+
+        def query():
+            response = yield from aiohttp.request(
+                'POST', url,
+                headers={'Content-Type': 'application/json'},
+                loop=self.loop)
+            self.assertEqual(201, response.status)
+            data = yield from response.read()
+            self.assertEqual(b'{"created": true}', data)
 
         self.loop.run_until_complete(query())
 
