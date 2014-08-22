@@ -16,7 +16,7 @@ class DictionaryAuthorizationPolicy(AbstractAuthorizationPolicy):
         self.data = data
 
     @asyncio.coroutine
-    def permits(self, identity, permission, context):
+    def permits(self, identity, permission, context=None):
         record = self.data.get(identity)
         if record is not None:
             # TODO: implement actual permission checker
@@ -43,7 +43,7 @@ class REST:
 
         asked_permission = request.matchdict['permission']
         resp = yield from request.auth_policy.permits(
-            identity, asked_permission, None
+            identity, asked_permission
         )
         return {'allowed': resp}
 

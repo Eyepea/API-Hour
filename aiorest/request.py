@@ -183,11 +183,11 @@ class Request:
     @property
     def identity_policy(self):
         if not self._identity_policy:
-            raise ValueError('Identity policy not set')
+            raise AttributeError('Identity policy not set')
         return self._identity_policy
 
     @property
     def auth_policy(self):
         if not self._auth_policy:
-            raise ValueError('Authorization policy not set')
+            raise AttributeError('Authorization policy not set')
         return self._auth_policy

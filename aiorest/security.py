@@ -24,7 +24,7 @@ class AbstractIdentityPolicy(metaclass=abc.ABCMeta):
 
     @asyncio.coroutine
     @abc.abstractmethod
-    def forget(request):
+    def forget(self, request):
         """ Modify request.response which
         can be used to 'forget' the current identity
         on subsequent requests."""
@@ -35,7 +35,7 @@ class AbstractAuthorizationPolicy(metaclass=abc.ABCMeta):
 
     @asyncio.coroutine
     @abc.abstractmethod
-    def permits(self, user_id, permission, context):
+    def permits(self, user_id, permission, context=None):
         """ Return True if the user_id is allowed the permission in the
         current context, else return False"""
         pass
@@ -59,5 +59,5 @@ class CookieIdentityPolicy(AbstractIdentityPolicy):
         request.response.set_cookie('userid', identity)
 
     @asyncio.coroutine
-    def forget(request):
+    def forget(self, request):
         request.response.del_cookie('userid')
