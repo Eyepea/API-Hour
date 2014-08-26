@@ -19,7 +19,7 @@ class DictionaryAuthorizationPolicy(AbstractAuthorizationPolicy):
         return False
 
     @asyncio.coroutine
-    def authorized_userid(self, identity):
+    def authorized_user_id(self, identity):
         return identity if identity in self.data else None
 
 
@@ -29,8 +29,8 @@ def handler(request):
     if not identity:
         return {'error': 'Identity not found'}
 
-    userid = yield from request.auth_policy.authorized_userid(identity)
-    if not userid:
+    user_id = yield from request.auth_policy.authorized_user_id(identity)
+    if not user_id:
         return {'error': 'User not found'}
 
     asked_permission = request.matchdict['permission']
@@ -67,7 +67,7 @@ def main():
 
         resp = yield from aiohttp.request(
             'GET', 'http://127.0.0.1:8080/auth/read',
-            cookies={'userid': 'john'},
+            cookies={'user_id': 'john'},
             loop=loop)
         json_data = yield from resp.json()
         assert json_data == {'error': 'User not found'}
@@ -75,7 +75,7 @@ def main():
         # correct user, must have read permission
         resp = yield from aiohttp.request(
             'GET', 'http://127.0.0.1:8080/auth/read',
-            cookies={'userid': 'chris'},
+            cookies={'user_id': 'chris'},
             loop=loop)
         json_data = yield from resp.json()
         assert json_data == {'allowed': True}
@@ -83,7 +83,7 @@ def main():
         # correct user, don't have write permission
         resp = yield from aiohttp.request(
             'GET', 'http://127.0.0.1:8080/auth/write',
-            cookies={'userid': 'chris'},
+            cookies={'user_id': 'chris'},
             loop=loop)
         json_data = yield from resp.json()
         assert json_data == {'allowed': False}

@@ -42,8 +42,8 @@ class AbstractAuthorizationPolicy(metaclass=abc.ABCMeta):
 
     @asyncio.coroutine
     @abc.abstractmethod
-    def authorized_userid(self, identity):
-        """ Return the userid of the user identified by the identity
+    def authorized_user_id(self, identity):
+        """ Return the user_id of the user identified by the identity
         or 'None' if no user exists related to the identity """
         pass
 
@@ -52,12 +52,12 @@ class CookieIdentityPolicy(AbstractIdentityPolicy):
 
     @asyncio.coroutine
     def identify(self, request):
-        return request.cookies.get('userid', None)
+        return request.cookies.get('user_id', None)
 
     @asyncio.coroutine
     def remember(self, request, identity, **kw):
-        request.response.set_cookie('userid', identity)
+        request.response.set_cookie('user_id', identity)
 
     @asyncio.coroutine
     def forget(self, request):
-        request.response.del_cookie('userid')
+        request.response.del_cookie('user_id')
