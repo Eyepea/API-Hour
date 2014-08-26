@@ -6,6 +6,21 @@ from aiorest.security import AbstractAuthorizationPolicy, CookieIdentityPolicy
 
 
 class DictionaryAuthorizationPolicy(AbstractAuthorizationPolicy):
+    """
+    This class should check if the given identity exists and if it has
+    enough permissions. Here, the state is self.data, however in
+    real world you would probably fetch DB or some cache.
+
+    Identity is fetched from a request by AbstractIdentityPolicy subclass.
+    CookieIdentityPolicy simply stores identity in cookies, feel free
+    to implement your own IdentityPolicy.
+
+    You are free to decide what is an identity (here it is just a login),
+    what is a permission (here it is str `read`/`write`)
+    and what is context.
+
+    For more info see http://plope.com/pyramid_auth_design_api_postmortem
+    """
     def __init__(self, data):
         self.data = data
 
@@ -13,7 +28,6 @@ class DictionaryAuthorizationPolicy(AbstractAuthorizationPolicy):
     def permits(self, identity, permission, context=None):
         record = self.data.get(identity)
         if record is not None:
-            # TODO: implement actual permission checker
             if permission in record:
                 return True
         return False
@@ -25,15 +39,18 @@ class DictionaryAuthorizationPolicy(AbstractAuthorizationPolicy):
 
 @asyncio.coroutine
 def handler(request):
+    # fetch identity from request
     identity = yield from request.identity_policy.identify(request)
     if not identity:
         return {'error': 'Identity not found'}
 
+    # check if it is really exists
     user_id = yield from request.auth_policy.authorized_user_id(identity)
     if not user_id:
         return {'error': 'User not found'}
 
     asked_permission = request.matchdict['permission']
+    # check if user have this permission
     resp = yield from request.auth_policy.permits(
         identity, asked_permission,
     )
