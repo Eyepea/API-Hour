@@ -18,13 +18,13 @@ _loads = partial(pickle.loads)
 _dumps = partial(pickle.dumps, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def RedisSessionFactory(redis, secret_key, cookie_name, *,
+def RedisSessionFactory(redis_pool, secret_key, cookie_name, *,
                         loads=_loads, dumps=_dumps, key_prefix='session:',
                         session_max_age=None, loop=None, **kwargs):
     cookie_store = SecureCookie(secret_key, cookie_name,
                                 session_max_age=session_max_age,
                                 **kwargs)
-    backend = RedisBackend(redis, loads=loads, dumps=dumps,
+    backend = RedisBackend(redis_pool, loads=loads, dumps=dumps,
                            session_max_age=session_max_age)
     return create_session_factory(session_id_store=cookie_store,
                                   backend_store=backend,
@@ -35,9 +35,9 @@ class RedisBackend(SessionBackendStore):
     """Redis session store backend.
     """
 
-    def __init__(self, redis, *, loads=_loads, dumps=_dumps,
+    def __init__(self, redis_pool, *, loads=_loads, dumps=_dumps,
                  key_prefix='session:', session_max_age=None):
-        self._redis = redis
+        self._redis_pool = redis_pool
         self._loads = loads
         self._dumps = dumps
         self._key_prefix = key_prefix
@@ -49,7 +49,8 @@ class RedisBackend(SessionBackendStore):
         """
         sid = cookie_value
         key = self._make_key(sid)
-        packed = yield from self._redis.get(key)
+        with (yield from self._redis_pool) as redis:
+            packed = yield from redis.get(key)
         if packed is not None:
             try:
                 data = self._loads(packed)
@@ -68,14 +69,15 @@ class RedisBackend(SessionBackendStore):
         else:
             sid = session.identity
         key = self._make_key(sid)
-        if not session and sid:
-            yield from self._redis.delete([key])
-            return None
-        data = self._dumps(dict(session))
-        if self.session_max_age is not None:
-            yield from self._redis.setex(key, self.session_max_age, data)
-        else:
-            yield from self._redis.set(key, data)
+        with (yield from self._redis_pool) as redis:
+            if not session and sid:
+                yield from redis.delete(key)
+                return None
+            data = self._dumps(dict(session))
+            if self.session_max_age is not None:
+                yield from redis.setex(key, self.session_max_age, data)
+            else:
+                yield from redis.set(key, data)
         return sid
 
     def new_sid(self):

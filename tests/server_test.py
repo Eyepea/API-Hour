@@ -2,8 +2,8 @@ import unittest
 
 import asyncio
 import aiohttp
-from aiorest import RESTServer
 import json
+from aiorest import RESTServer
 
 
 def server_port(srv):
@@ -62,6 +62,17 @@ class REST:
         return {'success': True,
                 'cookie': req.cookies['test_cookie']}
 
+    @asyncio.coroutine
+    def check_session(self, req):
+        sess = yield from req.session
+        self.case.assertIsNone(sess)
+
+        fut = req.session
+        self.case.assertTrue(fut.done())
+        sess = yield from fut
+        self.case.assertIsNone(sess)
+        return {}
+
 
 class ServerTests(unittest.TestCase):
 
@@ -78,6 +89,7 @@ class ServerTests(unittest.TestCase):
         self.server.add_url('GET', '/post/{id}/2', rest.func_GET2)
         self.server.add_url('GET', '/cookie/{value}', rest.coro_set_cookie)
         self.server.add_url('GET', '/get_cookie/', rest.func_get_cookie)
+        self.server.add_url('GET', '/check/no/session', rest.check_session)
 
     def tearDown(self):
         self.loop.close()
@@ -324,3 +336,17 @@ class ServerTests(unittest.TestCase):
 
         srv.close()
         self.loop.run_until_complete(srv.wait_closed())
+
+    def test_no_session(self):
+        srv = self.loop.run_until_complete(self.loop.create_server(
+            self.server.make_handler,
+            '127.0.0.1', 0))
+        self.port = port = server_port(srv)
+        url = 'http://127.0.0.1:{}/check/no/session'.format(port)
+
+        @asyncio.coroutine
+        def query():
+            resp = yield from aiohttp.request('GET', url, loop=self.loop)
+            self.assertEqual(200, resp.status)
+            yield from resp.read()
+        self.loop.run_until_complete(query())

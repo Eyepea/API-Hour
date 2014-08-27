@@ -14,7 +14,7 @@ elif PY_VER >= (3, 3):
 else:
     raise RuntimeError("aiorest doesn't suppport Python earllier than 3.3")
 
-extras_require = {'redis_session': ['asyncio-redis>=0.12.3']}
+extras_require = {'redis_session': ['aioredis>=0.1.3']}
 
 
 def read(f):

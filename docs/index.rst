@@ -41,7 +41,7 @@ Dependencies
 
 - Python 3.3 and :term:`asyncio` or Python 3.4+
 - :term:`aiohttp` 0.7.2+
-- ``aiorest.redis_session`` requires :term:`asyncio-redis` 0.12.3+
+- ``aiorest.redis_session`` requires :term:`aioredis` 0.1.3+
 
 License
 -------
