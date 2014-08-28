@@ -1,6 +1,26 @@
 CHANGES
 -------
 
+0.2.3 (2014-08-28)
+^^^^^^^^^^^^^^^^^^
+
+* Redis session switched from asyncio_redis to aioredis
+
+
+0.2.2 (2014-08-15)
+^^^^^^^^^^^^^^^^^^
+
+* Added Pyramid-like matchdict to request
+  (see https://github.com/aio-libs/aiorest/pull/18)
+
+* Return "400 Bad Request" for incorrect JSON body in POST/PUT methods
+
+* README fixed
+
+* Custom response status code
+  (see https://github.com/aio-libs/aiorest/pull/23)
+
+
 0.1.1 (2014-07-09)
 ^^^^^^^^^^^^^^^^^^
 
