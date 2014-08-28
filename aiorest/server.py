@@ -7,6 +7,7 @@ import aiohttp
 
 from . import errors
 from .handler import RESTRequestHandler
+from .security import AbstractIdentityPolicy, AbstractAuthorizationPolicy
 
 __all__ = [
     'RESTServer',
@@ -34,7 +35,8 @@ class RESTServer:
     }
 
     def __init__(self, *, hostname, session_factory=None,
-                 enable_cors=False, loop=None, **kwargs):
+                 enable_cors=False, loop=None,
+                 identity_policy=None, auth_policy=None, **kwargs):
         assert session_factory is None or callable(session_factory), \
             "session_factory must be None or callable (coroutine) function"
         if loop is None:
@@ -44,6 +46,12 @@ class RESTServer:
         self.hostname = hostname
         self.session_factory = session_factory
         self._enable_cors = enable_cors
+        self._identity_policy = identity_policy
+        if identity_policy:
+            assert isinstance(identity_policy, AbstractIdentityPolicy)
+        self._auth_policy = auth_policy
+        if auth_policy:
+            assert isinstance(auth_policy, AbstractAuthorizationPolicy)
         self._kwargs = kwargs
         self._urls = []
 
@@ -51,6 +59,8 @@ class RESTServer:
         return RESTRequestHandler(self, hostname=self.hostname,
                                   session_factory=self.session_factory,
                                   loop=self._loop,
+                                  identity_policy=self._identity_policy,
+                                  auth_policy=self._auth_policy,
                                   **self._kwargs)
 
     @property

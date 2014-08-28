@@ -16,11 +16,16 @@ __all__ = [
 
 class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
 
-    def __init__(self,  server, *, hostname, session_factory=None, **kwargs):
+    def __init__(self,  server, *, hostname,
+                 session_factory=None,
+                 identity_policy=None, auth_policy=None,
+                 **kwargs):
         super().__init__(**kwargs)
         self.server = server
         self.hostname = hostname
         self.session_factory = session_factory
+        self._identity_policy = identity_policy
+        self._auth_policy = auth_policy
 
     @asyncio.coroutine
     def handle_request(self, message, payload):
@@ -40,7 +45,9 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
 
             request = Request(self.hostname, message, req_body,
                               session_factory=self.session_factory,
-                              loop=self._loop)
+                              loop=self._loop,
+                              identity_policy=self._identity_policy,
+                              auth_policy=self._auth_policy)
 
             body = yield from self.server.dispatch(request)
             bbody = body.encode('utf-8')

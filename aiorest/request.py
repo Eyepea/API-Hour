@@ -76,7 +76,8 @@ class Request:
     _status_code = 200
 
     def __init__(self, host, message, req_body, *,
-                 session_factory=None, loop=None):
+                 session_factory=None, loop=None,
+                 identity_policy=None, auth_policy=None):
         if loop is None:
             loop = asyncio.get_event_loop()
         res = urlsplit(message.path)
@@ -100,6 +101,8 @@ class Request:
         self._json_body = None
         self._cookies = None
         self._on_response = []
+        self._identity_policy = identity_policy
+        self._auth_policy = auth_policy
 
     @property
     def status_code(self):
@@ -176,3 +179,15 @@ class Request:
             else:
                 callback(self, *args, **kwargs)
         self.response._copy_cookies()
+
+    @property
+    def identity_policy(self):
+        if not self._identity_policy:
+            raise AttributeError('Identity policy not set')
+        return self._identity_policy
+
+    @property
+    def auth_policy(self):
+        if not self._auth_policy:
+            raise AttributeError('Authorization policy not set')
+        return self._auth_policy

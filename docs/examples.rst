@@ -29,3 +29,8 @@ Redis-based session
 -------------------
 
 .. literalinclude:: ../examples/redis_session.py
+
+Simple authorization
+-------------------
+
+.. literalinclude:: ../examples/auth.py
