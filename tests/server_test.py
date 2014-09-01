@@ -258,7 +258,7 @@ class ServerTests(unittest.TestCase):
             data = yield from response.read()
             j = json.loads(data.decode('utf-8'))
             self.assertEqual({"error_code": 400,
-                              "error_reason": "Request hasn\'t a body",
+                              "error_reason": "Request has no body",
                               "error": {}}, j)
 
         self.loop.run_until_complete(query())
@@ -283,7 +283,7 @@ class ServerTests(unittest.TestCase):
             data = yield from response.read()
             j = json.loads(data.decode('utf-8'))
             self.assertEqual({"error_code": 400,
-                              "error_reason": "Json body cannot be decoded",
+                              "error_reason": "JSON body can not be decoded",
                               "error": {}}, j)
 
         self.loop.run_until_complete(query())
@@ -308,7 +308,7 @@ class ServerTests(unittest.TestCase):
             data = yield from response.read()
             j = json.loads(data.decode('utf-8'))
             self.assertEqual({"error_code": 400,
-                              "error_reason": "Json body is not utf-8 encoded",
+                              "error_reason": "JSON body is not utf-8 encoded",
                               "error": {}}, j)
 
         self.loop.run_until_complete(query())

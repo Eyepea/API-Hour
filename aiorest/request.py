@@ -135,21 +135,19 @@ class Request:
                 # don't try to parse json next time
                 try:
                     decoded = self._request_body.decode('utf-8')
+                    self._json_body = json.loads(decoded)
                 except UnicodeDecodeError as exc:
                     raise JsonDecodeError(exc.encoding,
                                           exc.object,
                                           exc.start,
                                           exc.end,
-                                          "Json body is not utf-8 encoded",
+                                          "JSON body is not utf-8 encoded",
                                           )
-                else:
-                    try:
-                        self._json_body = json.loads(decoded)
-                    except (ValueError):
-                        raise JsonLoadError("Json body cannot be decoded",
-                                            decoded)
+                except ValueError as exc:
+                    raise JsonLoadError(
+                        "JSON body can not be decoded", decoded)
             else:
-                raise JsonLoadError("Request hasn't a body")
+                raise JsonLoadError("Request has no body")
         return self._json_body
 
     @property
