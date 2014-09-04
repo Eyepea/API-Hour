@@ -51,8 +51,9 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
 
             body = yield from self.server.dispatch(request)
             bbody = body.encode('utf-8')
-            resp_impl = aiohttp.Response(self.writer, request.status_code,
-                                         http_version=message.version)
+            resp_impl = aiohttp.Response(
+                self.writer, request.response.status_code,
+                http_version=message.version)
 
             yield from request._call_response_callbacks()
 
