@@ -19,6 +19,7 @@ class Response:
 
     def __init__(self):
         self.headers = MutableMultiDict()
+        self._status_code = 200
         self._cookies = http.cookies.SimpleCookie()
         self._deleted_cookies = set()
 
@@ -70,10 +71,17 @@ class Response:
         self.set_cookie(name, '', max_age=0, domain=domain, path=path)
         self._deleted_cookies.add(name)
 
+    @property
+    def status_code(self):
+        return self._status_code
+
+    @status_code.setter
+    def status_code(self, value):
+        assert isinstance(value, int), "Status code must be int"
+        self._status_code = value
+
 
 class Request:
-
-    _status_code = 200
 
     def __init__(self, host, message, req_body, *,
                  session_factory=None, loop=None,
@@ -103,14 +111,6 @@ class Request:
         self._on_response = []
         self._identity_policy = identity_policy
         self._auth_policy = auth_policy
-
-    @property
-    def status_code(self):
-        return self._status_code
-
-    def set_status_code(self, code):
-        assert isinstance(code, int), 'Only `int` codes accepted'
-        self._status_code = code
 
     @property
     def response(self):

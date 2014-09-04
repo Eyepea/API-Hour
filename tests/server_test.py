@@ -21,7 +21,7 @@ class REST:
         return {'success': True}
 
     def create(self, request):
-        request.set_status_code(201)
+        request.response.status_code = 201
         return {'created': True}
 
     def func_GET(self, request):
