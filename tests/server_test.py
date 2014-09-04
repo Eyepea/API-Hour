@@ -22,6 +22,8 @@ class REST:
 
     def create(self, request):
         request.response.status_code = 201
+        with self.case.assertRaises(AssertionError):
+            request.response.status_code = 100.1
         return {'created': True}
 
     def func_GET(self, request):
