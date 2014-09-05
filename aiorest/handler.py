@@ -63,6 +63,7 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
             # content encoding
             accept_encoding = message.headers.get('ACCEPT-ENCODING',
                                                   '').lower()
+            accept_encoding = set(map(str.strip, accept_encoding.split(',')))
             if 'deflate' in accept_encoding:
                 resp_impl.add_header('Transfer-Encoding', 'chunked')
                 resp_impl.add_header('Content-Encoding', 'deflate')
