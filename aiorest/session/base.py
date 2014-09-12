@@ -108,7 +108,7 @@ class _SessionFactory:
         self._sid_store.put_session_id(request, session_id)
 
 
-def create_session_factory(session_id_store, backend_store, loop=None):
+def create_session_factory(session_id_store, backend_store, *, loop=None):
     """Creates new session factory.
 
     Create new session factory from two storage:
