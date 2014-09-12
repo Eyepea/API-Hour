@@ -1,6 +1,11 @@
 CHANGES
 -------
 
+0.2.4 (2014-09-12)
+^^^^^^^^^^^^^^^^^^
+
+* Make loop keywork-only parameter in create_session_factory() function
+
 0.2.3 (2014-08-28)
 ^^^^^^^^^^^^^^^^^^
 
