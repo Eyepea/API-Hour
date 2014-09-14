@@ -49,8 +49,7 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
                               identity_policy=self._identity_policy,
                               auth_policy=self._auth_policy)
 
-            body = yield from self.server.dispatch(request)
-            bbody = body.encode('utf-8')
+            bbody = yield from self.server.dispatch(request)
             resp_impl = aiohttp.Response(
                 self.writer, request.response.status_code,
                 http_version=message.version)
@@ -58,7 +57,6 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
             yield from request._call_response_callbacks()
 
             resp_impl.add_header('Host', self.hostname)
-            resp_impl.add_header('Content-Type', 'application/json')
 
             # content encoding
             accept_encoding = message.headers.get('ACCEPT-ENCODING',
