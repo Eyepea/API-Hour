@@ -26,6 +26,19 @@ class RouterTests(unittest.TestCase):
         self.assertIs(handler, entry.handler)
         self.assertEqual('^/post/(?P<id>[^{}/]+)$', entry.regex.pattern)
 
+    def test_add_urls(self):
+        handler = lambda id: None
+        self.server.add_url(['post', 'get'], '/post/{id}', handler)
+        self.assertEqual(2, len(self.server._urls))
+        entry = self.server._urls[0]
+        self.assertEqual('POST', entry.method)
+        self.assertIs(handler, entry.handler)
+        self.assertEqual('^/post/(?P<id>[^{}/]+)$', entry.regex.pattern)
+        entry = self.server._urls[1]
+        self.assertEqual('GET', entry.method)
+        self.assertIs(handler, entry.handler)
+        self.assertEqual('^/post/(?P<id>[^{}/]+)$', entry.regex.pattern)
+
     def test_add_url_invalid1(self):
         with self.assertRaises(ValueError):
             self.server.add_url('post', '/post/{id', lambda: None)

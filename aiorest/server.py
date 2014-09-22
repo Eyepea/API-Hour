@@ -77,8 +77,6 @@ class RESTServer:
 
         assert path.startswith('/')
         assert callable(handler), handler
-        method = method.upper()
-        assert method in self.METHODS, method
         regexp = []
         for part in path.split('/'):
             if not part:
@@ -102,8 +100,18 @@ class RESTServer:
             assert callable(allow_origin) \
                 or isinstance(allow_origin, (collections.Sequence, str)), \
                 "Invalid 'allow-origin' option {!r}".format(allow_origin)
-        self._urls.append(Entry(compiled, method, handler,
-                                check_cors, cors_options))
+
+        if isinstance(method, str):
+            method = [method]
+
+        if hasattr(method, '__iter__'):
+            for http_verb in method:
+                http_verb = http_verb.upper()
+                assert http_verb in self.METHODS, http_verb
+                self._urls.append(Entry(compiled, http_verb, handler,
+                                        check_cors, cors_options))
+        else:
+            raise ValueError("The HTTP verb must be a String or Iterable")
 
     @asyncio.coroutine
     def dispatch(self, request):
