@@ -104,7 +104,7 @@ class RouterTests(unittest.TestCase):
             None, loop=self.loop)
         ret = self.loop.run_until_complete(self.server.dispatch(request))
         # json.loads is required to avoid items order in dict
-        self.assertEqual({"b": 2, "a": 1}, json.loads(ret))
+        self.assertEqual({"b": 2, "a": 1}, json.loads(ret.decode('utf-8')))
 
     def test_dispatch_with_ending_slash(self):
         def f(request):
@@ -116,7 +116,7 @@ class RouterTests(unittest.TestCase):
             None, loop=self.loop)
         ret = self.loop.run_until_complete(self.server.dispatch(request))
         # json.loads is required to avoid items order in dict
-        self.assertEqual({"b": 2, "a": 1}, json.loads(ret))
+        self.assertEqual({"b": 2, "a": 1}, json.loads(ret.decode('utf-8')))
 
     def test_dispatch_with_ending_slash_not_found1(self):
         def f(request):
@@ -196,4 +196,4 @@ class RouterTests(unittest.TestCase):
 
         ret = self.loop.run_until_complete(self.server.dispatch(request))
         # json.loads is required to avoid items order in dict
-        self.assertEqual({"b": 2, "a": 1}, json.loads(ret))
+        self.assertEqual({"b": 2, "a": 1}, json.loads(ret.decode('utf-8')))

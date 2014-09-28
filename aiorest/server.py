@@ -1,13 +1,14 @@
 import asyncio
 import collections
 import inspect
-import json
 import re
 import aiohttp
 
 from . import errors
 from .handler import RESTRequestHandler
 from .security import AbstractIdentityPolicy, AbstractAuthorizationPolicy
+from . import serialize
+
 
 __all__ = [
     'RESTServer',
@@ -176,7 +177,10 @@ class RESTServer:
             raise aiohttp.HttpErrorException(500,
                                              "Internal Server Error") from exc
         else:
-            return json.dumps(ret)
+            if isinstance(ret, serialize.Base):
+                return ret.serialize(request)
+            else:
+                return serialize.Json(ret).serialize(request)
 
     def _make_cors_headers(self, request, cors_options):
         option = cors_options.get
