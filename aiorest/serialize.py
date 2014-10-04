@@ -1,5 +1,7 @@
 import json
+import asyncio
 import mimetypes
+import functools
 
 
 class Base:
@@ -30,3 +32,21 @@ class Asset(Base):
                                        mimetypes.guess_type(request.path)[0])
         request.response.headers.add('Content-Type', content_type)
         return self.data
+
+
+def to(serializer, **serizlizer_kwargs):
+    serializer = serializer.title()
+    serializer = globals()[serializer]
+
+    def decorator(f):
+        @functools.wraps(f)
+        @asyncio.coroutine
+        def wrapper(*args, **kwargs):
+            content = f(*args, **kwargs)
+            if asyncio.iscoroutine(content):
+                content = (yield from content)
+            return serializer(content, **serizlizer_kwargs)
+
+        return wrapper
+
+    return decorator
