@@ -2,15 +2,20 @@ import asyncio
 import aiorest
 
 
+@asyncio.coroutine
+@aiorest.serialize.to('html')
 def index(request):
-    return aiorest.serialize.Html('''
+    '''Seiralize coroutine with decorator'''
+    yield from asyncio.sleep(1)
+    return '''
         <!DOCTYPE html>
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <h1>Hello</h1>
-    ''')
+    '''
 
 
 def favicon(request):
+    '''Return serialized data'''
     with open('favicon.ico', 'rb') as f:
         content = f.read()
         return aiorest.serialize.Asset(content, content_type='image/x-icon')
