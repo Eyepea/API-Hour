@@ -11,10 +11,8 @@ class App(aiorest.RESTServer):
         self.add_url('GET', '/hello-world', self.handler)
         self.add_url('GET', '/hello/{name}', self.say_hello)
 
-
     def handler(self, request):
         return {'hello': 'world'}
-
 
     def say_hello(self, request):
         return 'Hello, {}!'.format(request.matchdict['name'])
