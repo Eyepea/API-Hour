@@ -54,9 +54,14 @@ class RouterTests(unittest.TestCase):
         @asyncio.coroutine
         def go():
             with self.assertRaises(aiohttp.HttpException) as ctx:
-                request = Request(self.server, 'host', aiohttp.RawRequestMessage(
-                    'POST', '/not/found', '1.1', {}, True, None),
-                    None, loop=self.loop)
+                request = Request(self.server,
+                                  'host',
+                                  aiohttp.RawRequestMessage('POST',
+                                                            '/not/found',
+                                                            '1.1',
+                                                            {}, True, None),
+                                  None,
+                                  loop=self.loop)
                 yield from self.server.dispatch(request)
             self.assertEqual(404, ctx.exception.code)
 
@@ -71,9 +76,16 @@ class RouterTests(unittest.TestCase):
         @asyncio.coroutine
         def go():
             with self.assertRaises(aiohttp.HttpException) as ctx:
-                request = Request(self.server, 'host', aiohttp.RawRequestMessage(
-                    'DELETE', '/post/123', '1.1', {}, True, None),
-                    None, loop=self.loop)
+                request = Request(self.server,
+                                  'host',
+                                  aiohttp.RawRequestMessage('DELETE',
+                                                            '/post/123',
+                                                            '1.1',
+                                                            {},
+                                                            True,
+                                                            None),
+                                  None,
+                                  loop=self.loop)
                 yield from self.server.dispatch(request)
             self.assertEqual(405, ctx.exception.code)
             self.assertEqual((('Allow', 'GET, POST'),), ctx.exception.headers)

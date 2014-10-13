@@ -8,7 +8,9 @@ def about(request):
 
 
 def secret(request):
-    return {'hashed_secret': hashlib.sha512(request.server.config['secret'].encode('utf-8')).hexdigest()}
+    b_secret = request.server.config['secret'].encode('utf-8')
+    h = hashlib.sha512(b_secret).hexdigest()
+    return {'hashed_secret': h}
 
 
 class App(aiorest.RESTServer):
@@ -26,7 +28,7 @@ def main():
     server.add_url('GET', '/about', about)
     server.add_url('GET', '/secret', secret)
 
-    srv = loop.run_until_complete(loop.create_server(
+    loop.run_until_complete(loop.create_server(
         server.make_handler, '127.0.0.1', 8080))
 
     loop.run_forever()
