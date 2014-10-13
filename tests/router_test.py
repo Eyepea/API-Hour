@@ -67,9 +67,14 @@ class RouterTests(unittest.TestCase):
         @asyncio.coroutine
         def go():
             with self.assertRaises(aiohttp.HttpException) as ctx:
-                request = Request('host', aiohttp.RawRequestMessage(
-                    'POST', '/not/found', '1.1', {}, True, None),
-                    None, loop=self.loop)
+                request = Request(self.server,
+                                  'host',
+                                  aiohttp.RawRequestMessage('POST',
+                                                            '/not/found',
+                                                            '1.1',
+                                                            {}, True, None),
+                                  None,
+                                  loop=self.loop)
                 yield from self.server.dispatch(request)
             self.assertEqual(404, ctx.exception.code)
 
@@ -84,9 +89,16 @@ class RouterTests(unittest.TestCase):
         @asyncio.coroutine
         def go():
             with self.assertRaises(aiohttp.HttpException) as ctx:
-                request = Request('host', aiohttp.RawRequestMessage(
-                    'DELETE', '/post/123', '1.1', {}, True, None),
-                    None, loop=self.loop)
+                request = Request(self.server,
+                                  'host',
+                                  aiohttp.RawRequestMessage('DELETE',
+                                                            '/post/123',
+                                                            '1.1',
+                                                            {},
+                                                            True,
+                                                            None),
+                                  None,
+                                  loop=self.loop)
                 yield from self.server.dispatch(request)
             self.assertEqual(405, ctx.exception.code)
             self.assertEqual((('Allow', 'GET, POST'),), ctx.exception.headers)
@@ -99,7 +111,7 @@ class RouterTests(unittest.TestCase):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}', f)
 
-        request = Request('host', aiohttp.RawRequestMessage(
+        request = Request(self.server, 'host', aiohttp.RawRequestMessage(
             'GET', '/post/123', '1.1', {}, True, None),
             None, loop=self.loop)
         ret = self.loop.run_until_complete(self.server.dispatch(request))
@@ -111,7 +123,7 @@ class RouterTests(unittest.TestCase):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}/', f)
 
-        request = Request('host', aiohttp.RawRequestMessage(
+        request = Request(self.server, 'host', aiohttp.RawRequestMessage(
             'GET', '/post/123/', '1.1', {}, True, None),
             None, loop=self.loop)
         ret = self.loop.run_until_complete(self.server.dispatch(request))
@@ -123,7 +135,7 @@ class RouterTests(unittest.TestCase):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}/', f)
 
-        request = Request('host', aiohttp.RawRequestMessage(
+        request = Request(self.server, 'host', aiohttp.RawRequestMessage(
             'GET', '/post/123', '1.1', {}, True, None),
             None, loop=self.loop)
 
@@ -136,7 +148,7 @@ class RouterTests(unittest.TestCase):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}/', f)
 
-        request = Request('host', aiohttp.RawRequestMessage(
+        request = Request(self.server, 'host', aiohttp.RawRequestMessage(
             'GET', '/po/123', '1.1', {}, True, None),
             None, loop=self.loop)
 
@@ -149,7 +161,7 @@ class RouterTests(unittest.TestCase):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}', f)
 
-        request = Request('host', aiohttp.RawRequestMessage(
+        request = Request(self.server, 'host', aiohttp.RawRequestMessage(
             'GET', '/post/123', '1.1', {}, True, None),
             None, loop=self.loop)
 
@@ -168,7 +180,7 @@ class RouterTests(unittest.TestCase):
                 headers=(('WWW-Authenticate', 'Basic'),))
         self.server.add_url('get', '/post/{id}', f)
 
-        request = Request('host', aiohttp.RawRequestMessage(
+        request = Request(self.server, 'host', aiohttp.RawRequestMessage(
             'GET', '/post/123', '1.1', {}, True, None),
             None, loop=self.loop)
 
@@ -190,7 +202,7 @@ class RouterTests(unittest.TestCase):
             return {'a': 1, 'b': 2}
         self.server.add_url('get', '/post/{id}', f)
 
-        request = Request('host', aiohttp.RawRequestMessage(
+        request = Request(self.server, 'host', aiohttp.RawRequestMessage(
             'GET', '/post/123', '1.1', {}, True, None),
             None, loop=self.loop)
 
