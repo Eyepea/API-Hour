@@ -61,5 +61,5 @@ setup(name='aiorest',
       # tests_require = tests_require,
       # test_suite = 'nose.collector',
       provides=['aiorest'],
-      requires=['aiohttp'],
+      requires=['aiohttp', 'configobj'],
       include_package_data=True)

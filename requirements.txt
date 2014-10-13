@@ -2,3 +2,4 @@
 wheel
 ipdb
 ipython
+configobj
