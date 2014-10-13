@@ -43,7 +43,7 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
             else:
                 req_body = None
 
-            request = Request(self.hostname, message, req_body,
+            request = Request(self.server, self.hostname, message, req_body,
                               session_factory=self.session_factory,
                               loop=self._loop,
                               identity_policy=self._identity_policy,

@@ -16,7 +16,7 @@ class CookiesTests(unittest.TestCase):
             'GET', '/some/path', '1.1', MutableMultiDict(), True, None)
 
     def test_no_request_cookies(self):
-        req = Request('host', aiohttp.RawRequestMessage(
+        req = Request(None, 'host', aiohttp.RawRequestMessage(
             'GET', '/some/path', '1.1', CaseInsensitiveMultiDict(),
             True, None),
             None, loop=self.loop)
@@ -28,7 +28,7 @@ class CookiesTests(unittest.TestCase):
 
     def test_request_cookie(self):
         self._REQUEST.headers['COOKIE'] = 'cookie1=value1; cookie2=value2'
-        req = Request('host', self._REQUEST, None, loop=self.loop)
+        req = Request(None, 'host', self._REQUEST, None, loop=self.loop)
 
         self.assertEqual(req.cookies, {
             'cookie1': 'value1',
@@ -38,7 +38,7 @@ class CookiesTests(unittest.TestCase):
     def test_request_cookie__set_item(self):
         self._REQUEST.headers['COOKIE'] = 'name=value'
 
-        req = Request('host', self._REQUEST, None, loop=self.loop)
+        req = Request(None, 'host', self._REQUEST, None, loop=self.loop)
         self.assertEqual(req.cookies, {'name': 'value'})
 
         with self.assertRaises(TypeError):
@@ -102,7 +102,7 @@ class CookiesTests(unittest.TestCase):
     def test_global_event_loop(self):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        req = Request('host', self._REQUEST, None)
+        req = Request(None, 'host', self._REQUEST, None)
         self.assertIs(req._loop, loop)
 
         loop.close()

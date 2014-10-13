@@ -151,7 +151,7 @@ class ServerTests(unittest.TestCase):
 
     def test_coockie_policy(self):
         identity_policy = CookieIdentityPolicy()
-        request = Request('host', aiohttp.RawRequestMessage(
+        request = Request(self.server, 'host', aiohttp.RawRequestMessage(
             'GET', '/post/123/', '1.1', {}, True, None),
             None, loop=self.loop)
 
