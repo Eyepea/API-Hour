@@ -233,7 +233,7 @@ class RESTServer:
         if allow_creds:
             yield ('Access-Control-Allow-Credentials', allow_creds and 'true')
 
-    def get_config(config_dir, cli_args):
+    def get_config(self, config_dir, cli_args):
         config_file = logging_file = None
 
         try:
