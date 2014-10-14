@@ -45,7 +45,7 @@ class RESTServer:
 
     def __init__(self, *, hostname, session_factory=None,
                  enable_cors=False, loop=None,
-                 identity_policy=None, auth_policy=None, config_dir=None, **kwargs):
+                 identity_policy=None, auth_policy=None, config_dir=None, cli_args=None, **kwargs):
         assert session_factory is None or callable(session_factory), \
             "session_factory must be None or callable (coroutine) function"
         if loop is None:
@@ -63,7 +63,7 @@ class RESTServer:
             assert isinstance(auth_policy, AbstractAuthorizationPolicy)
         self.config_dir = config_dir
         if config_dir:
-            self.config = self.get_config(config_dir)
+            self.config = self.get_config(config_dir, cli_args)
         self._kwargs = kwargs
         self._urls = []
 
@@ -233,7 +233,7 @@ class RESTServer:
         if allow_creds:
             yield ('Access-Control-Allow-Credentials', allow_creds and 'true')
 
-    def get_config(config_dir):
+    def get_config(config_dir, cli_args):
         config_file = logging_file = None
 
         try:
