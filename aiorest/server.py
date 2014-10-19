@@ -2,15 +2,9 @@ import asyncio
 import collections
 import inspect
 import re
-from configparser import NoSectionError
 import logging
-import logging.config
-import os
-import sys
 
 import aiohttp
-from configobj import ConfigObj
-
 from . import errors
 from .handler import RESTRequestHandler
 from .security import AbstractIdentityPolicy, AbstractAuthorizationPolicy
@@ -45,7 +39,7 @@ class RESTServer:
 
     def __init__(self, *, hostname, session_factory=None,
                  enable_cors=False, loop=None,
-                 identity_policy=None, auth_policy=None, config_dir=None, cli_args=None, **kwargs):
+                 identity_policy=None, auth_policy=None, config=None, **kwargs):
         assert session_factory is None or callable(session_factory), \
             "session_factory must be None or callable (coroutine) function"
         if loop is None:
@@ -61,9 +55,7 @@ class RESTServer:
         self._auth_policy = auth_policy
         if auth_policy:
             assert isinstance(auth_policy, AbstractAuthorizationPolicy)
-        self.config_dir = config_dir
-        if config_dir:
-            self.config = self.get_config(config_dir, cli_args)
+        self.config = config
         self._kwargs = kwargs
         self._urls = []
 
@@ -232,25 +224,3 @@ class RESTServer:
             yield ('Access-Control-Allow-Headers', allow_headers)
         if allow_creds:
             yield ('Access-Control-Allow-Credentials', allow_creds and 'true')
-
-    def get_config(self, config_dir, cli_args):
-        config_file = logging_file = None
-
-        try:
-            config_file = os.path.join(config_dir, "main.conf")
-            #Interpolation=False could be important, if we have postgresql queries in configuration
-            conf = ConfigObj(config_file, file_error=True)
-        except IOError as e:
-            print(e)
-            print('Configuration file "%s" cannot be found. please fix this and retry.' % config_file)
-            sys.exit(1)
-
-        try:
-            logging_file = os.path.join(config_dir, "logging.ini")
-            logging.config.fileConfig(logging_file, disable_existing_loggers=False)
-        except (NoSectionError, KeyError) as e:
-            print(e)
-            print('Your logging file is wrong or is missing, please provide a correct one: [%s]' % logging_file)
-            sys.exit(1)
-
-        return conf
