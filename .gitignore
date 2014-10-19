@@ -39,3 +39,4 @@ nosetests.xml
 htmlcov
 pyvenv/
 .idea/
+*.iml
