@@ -34,7 +34,7 @@ class Asset(Base):
         return self.data
 
 
-def to(serializer, **serizlizer_kwargs):
+def to(serializer, **serializer_kwargs):
     serializer = serializer.title()
     serializer = globals()[serializer]
 
@@ -45,7 +45,7 @@ def to(serializer, **serizlizer_kwargs):
             content = f(*args, **kwargs)
             if asyncio.iscoroutine(content):
                 content = (yield from content)
-            return serializer(content, **serizlizer_kwargs)
+            return serializer(content, **serializer_kwargs)
 
         return wrapper
 
