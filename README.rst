@@ -26,7 +26,7 @@ In **examples/**, you have also a cookiecutter template to generate quickly your
 Requirements
 ------------
 
-- Python 3.3
+- Python 3.4.2+
 
 - asyncio http://code.google.com/p/tulip/ or Python 3.4+
 
