@@ -12,7 +12,7 @@ from . import serialize
 
 
 __all__ = [
-    'RESTServer',
+    'Application',
     ]
 
 LOG = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ Entry = collections.namedtuple('Entry', 'regex method handler'
                                         ' check_cors cors_options')
 
 
-class RESTServer:
+class Application:
 
     DYN = re.compile(r'^\{[_a-zA-Z][_a-zA-Z0-9]*\}$')
     GOOD = r'[^{}/]+'

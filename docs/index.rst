@@ -60,8 +60,8 @@ Simple "hello world" REST server would look like this::
         return {'hello': 'world'}
 
     loop = asyncio.get_event_loop()
-    srv = api_hour.RESTServer(hostname='127.0.0.1',
-                                loop=loop)
+    srv = api_hour.Application(hostname='127.0.0.1',
+                               loop=loop)
 
     srv.add_url('GET', '/hello', hello)
     server = loop.run_until_complete(loop.create_server(

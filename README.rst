@@ -31,8 +31,8 @@ Simple REST server can be run like this::
 
 
    loop = asyncio.get_event_loop()
-   server = api_hour.RESTServer(hostname='127.0.0.1',
-                               loop=loop)
+   server = api_hour.Application(hostname='127.0.0.1',
+                                 loop=loop)
 
    # configure routes
    server.add_url('GET', '/hello', hello)
