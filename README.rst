@@ -1,4 +1,4 @@
-api_hour
+API Hour
 ========
 
 API-Hour is a lightweight webservices framework,  that lets you write powerful APIs for web applications.
