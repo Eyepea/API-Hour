@@ -1,4 +1,4 @@
-import json
+import ujson
 import asyncio
 import mimetypes
 import functools
@@ -17,7 +17,7 @@ class Base:
 class Json(Base):
     def serialize(self, request):
         request.response.headers.add('Content-Type', 'application/json')
-        return json.dumps(self.data).encode(self.encoding)
+        return ujson.dumps(self.data).encode(self.encoding)
 
 
 class Html(Base):

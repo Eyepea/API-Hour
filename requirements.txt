@@ -3,3 +3,4 @@ wheel
 ipdb
 ipython
 configobj
+ujson
