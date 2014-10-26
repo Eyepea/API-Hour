@@ -1,6 +1,6 @@
 import hashlib
 import asyncio
-import aiorest
+import api_hour
 
 
 def about(request):
@@ -13,12 +13,12 @@ def secret(request):
     return {'hashed_secret': h}
 
 
-class App(aiorest.RESTServer):
+class App(api_hour.RESTServer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.config = {'name': 'aiorest', 'secret': 'sducvvhdivhvidvd'}
+        self.config = {'name': 'api_hour', 'secret': 'sducvvhdivhvidvd'}
 
 
 def main():

@@ -3,7 +3,7 @@ from unittest import mock
 
 import asyncio
 import aiohttp
-from aiorest import RESTServer, Request
+from api_hour import RESTServer, Request
 import json
 
 

@@ -6,8 +6,8 @@ import contextlib
 import hashlib
 import hmac
 
-from aiorest import RESTServer
-from aiorest.session import CookieSessionFactory
+from api_hour import RESTServer
+from api_hour.session import CookieSessionFactory
 
 from unittest import mock
 
@@ -93,7 +93,7 @@ class CookieSessionTests(unittest.TestCase):
         srv.close()
         self.loop.run_until_complete(srv.wait_closed())
 
-    @mock.patch('aiorest.session.cookie_session.time')
+    @mock.patch('api_hour.session.cookie_session.time')
     def test_init_session(self, time_mock):
         time_mock.time.return_value = 1
         with self.run_server() as (srv, base_url):
@@ -110,7 +110,7 @@ class CookieSessionTests(unittest.TestCase):
 
             self.loop.run_until_complete(query())
 
-    @mock.patch('aiorest.session.cookie_session.time')
+    @mock.patch('api_hour.session.cookie_session.time')
     def test_get_from_session(self, time_mock):
         time_mock.time.return_value = 1
         with self.run_server() as (srv, base_url):

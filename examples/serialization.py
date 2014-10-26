@@ -1,9 +1,9 @@
 import asyncio
-import aiorest
+import api_hour
 
 
 @asyncio.coroutine
-@aiorest.serialize.to('html')
+@api_hour.serialize.to('html')
 def index(request):
     '''Seiralize coroutine with decorator'''
     yield from asyncio.sleep(1)
@@ -18,11 +18,11 @@ def favicon(request):
     '''Return serialized data'''
     with open('favicon.ico', 'rb') as f:
         content = f.read()
-        return aiorest.serialize.Asset(content, content_type='image/x-icon')
+        return api_hour.serialize.Asset(content, content_type='image/x-icon')
 
 
 loop = asyncio.get_event_loop()
-server = aiorest.RESTServer(hostname='127.0.0.1', loop=loop)
+server = api_hour.RESTServer(hostname='127.0.0.1', loop=loop)
 
 # configure routes
 server.add_url('GET', '/', index)

@@ -4,7 +4,7 @@ import pickle
 import aioredis
 from unittest import mock
 
-from aiorest.session import RedisSessionFactory
+from api_hour.session import RedisSessionFactory
 
 
 class RedisSessionTests(unittest.TestCase):

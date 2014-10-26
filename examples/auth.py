@@ -1,8 +1,8 @@
 import asyncio
 import aiohttp
-import aiorest
+import api_hour
 
-from aiorest.security import AbstractAuthorizationPolicy, CookieIdentityPolicy
+from api_hour.security import AbstractAuthorizationPolicy, CookieIdentityPolicy
 
 
 class DictionaryAuthorizationPolicy(AbstractAuthorizationPolicy):
@@ -63,7 +63,7 @@ def main():
     identity_policy = CookieIdentityPolicy()
     auth_policy = DictionaryAuthorizationPolicy({'chris': ('read',)})
 
-    server = aiorest.RESTServer(
+    server = api_hour.RESTServer(
         hostname='127.0.0.1', loop=loop,
         identity_policy=identity_policy,
         auth_policy=auth_policy

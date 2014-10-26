@@ -1,11 +1,11 @@
 import asyncio
 import aiohttp
-import aiorest
+import api_hour
 
 from asyncio_redis import Connection
 from asyncio_redis.encoders import BytesEncoder
 
-from aiorest.session import RedisSessionFactory
+from api_hour.session import RedisSessionFactory
 
 
 class Handler:
@@ -38,7 +38,7 @@ def main():
                                           cookie_name='test_cookie',
                                           loop=loop)
 
-    server = aiorest.RESTServer(hostname='127.0.0.1', keep_alive=75,
+    server = api_hour.RESTServer(hostname='127.0.0.1', keep_alive=75,
                                 session_factory=session_factory,
                                 loop=loop)
 

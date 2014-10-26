@@ -1,8 +1,8 @@
-Examples of aiorest usage
+Examples of api_hour usage
 =========================
 
-Here is the list of examples from `aiorest/examples
-<https://github.com/aio-libs/aiorest/tree/master/examples>`_.
+Here is the list of examples from `api_hour/examples
+<https://github.com/Eyepea/API-Hour/tree/master/examples>`_.
 
 Every example is a python program that can be executed.
 
@@ -10,7 +10,7 @@ Every example is a python program that can be executed.
    All examples starts server on port ``8080``
    so be sure it is not listened by some other process
 
-.. _aiorest-examples-hello:
+.. _api_hour-examples-hello:
 
 Simple "Hello world" server
 ---------------------------
@@ -18,7 +18,7 @@ Simple "Hello world" server
 .. literalinclude:: ../examples/hello_world.py
 
 
-.. _aiorest-examples-cookie-session:
+.. _api_hour-examples-cookie-session:
 
 Cookie-based session
 --------------------
