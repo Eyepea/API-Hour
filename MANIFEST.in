@@ -1,6 +1,6 @@
 include LICENSE
-include CHANGES.txt
 include README.rst
+include HISTORY.rst
 graft api_hour
 global-exclude *.pyc *.swp
 

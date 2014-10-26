@@ -3,16 +3,16 @@ import re
 import sys
 from setuptools import setup, find_packages
 
-install_requires = ['aiohttp>=0.9.0', 'ujson', 'lockfile']
+__docformat__ = 'rst'
+
+install_requires = ['aiohttp>=0.9.0', 'configobj', 'ujson', 'lockfile']
 
 PY_VER = sys.version_info
 
-if PY_VER >= (3, 4):
+if PY_VER >= (3, 4, 2):
     pass
-elif PY_VER >= (3, 3):
-    install_requires.append('asyncio')
 else:
-    raise RuntimeError("api_hour doesn't suppport Python earllier than 3.3")
+    raise RuntimeError("api_hour doesn't support Python earlier than 3.4.2")
 
 extras_require = {'redis_session': ['aioredis>=0.1.3']}
 
@@ -34,26 +34,33 @@ def read_version():
 
 
 classifiers = [
-    'License :: OSI Approved :: BSD License',
-    'Intended Audience :: Developers',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 3.3',
-    'Programming Language :: Python :: 3.4',
-    'Operating System :: OS Independent',
+    'Development Status :: 5 - Production/Stable',
     'Environment :: Web Environment',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: BSD License',
+    'Natural Language :: English',
+    'Natural Language :: French',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: Implementation :: CPython',
+    'Topic :: Internet :: WWW/HTTP',
+    'Topic :: Internet :: WWW/HTTP :: HTTP Servers',
 ]
 
 
 setup(name='api_hour',
       version=read_version(),
-      description=('Write performant WebServices with ease.'),
-      long_description='\n\n'.join((read('README.rst'), read('CHANGES.txt'))),
+      description=('Write efficient WebServices with ease.'),
+      long_description='\n\n'.join((read('README.rst'), read('HISTORY.rst'))),
       classifiers=classifiers,
       platforms=['OS Independent'],
       author='Eyepea Dev Team',
       author_email='gmludo@gmail.com',
-      url='https://github.com/Eyepea/API-Hour',
+      url='http://www.api-hour.io',
       download_url='https://pypi.python.org/pypi/api_hour',
+      keywords = ['asyncio', 'performance', 'efficient', 'web', 'service', 'rest', 'json'],
       license='BSD',
       packages=find_packages(),
       install_requires=install_requires,
@@ -61,5 +68,5 @@ setup(name='api_hour',
       # tests_require = tests_require,
       # test_suite = 'nose.collector',
       provides=['api_hour'],
-      requires=['aiohttp', 'configobj'],
+      # requires=['aiohttp'],
       include_package_data=True)

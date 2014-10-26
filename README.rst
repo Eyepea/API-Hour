@@ -10,7 +10,7 @@ It was created to answer the need for a simple, robust, and super-fast server-si
 Install
 -------
 
-~~pip install api_hour~~ (coming very soon)
+pip install api_hour
 
 Mailing-list
 ------------
@@ -21,6 +21,7 @@ Example usages
 --------------
 
 See `examples <https://github.com/Eyepea/API-Hour/tree/master/examples>`_ for more.
+
 In **examples/**, you have also a cookiecutter template to generate quickly your application.
 
 Requirements
@@ -55,8 +56,7 @@ Its goals
     2. **flexible setup**: Some people have no problems with using many dependencies, while others want to have none (other thant Python). Some people are ok to loose a bit on performance, for the ease (and speed) of coding, while others wouldn't sacrifice a millisecond  for ready-made functionality. These choices are yours, so there are no mandatory extra layer, plugin or middleware.
 4. **Easy**: API-Hour is meant to be very easy to grasp: No steep learning curve, no mountain of docs to read: Download our turn-key «Hello-world» applications, and immediately start coding your own application from there.
 5. **Packages-friendly and friendly-packages**: We try to let you use external packages without the need to re-write them, adapt them,  « wrap » them or embed them in the framework. On the other hand, API-Hour « plugins » are written as much as possible to be usable as stand-alone packages outside the framework, to benefit to more people.
-6. **Asynchronous... or not**: If you don't need the extra complexity of building asynchronous code, you don't have to (you'll still enjoy tremendous performance). You can just handle your requests in a traditional synchronous way.
-On the other hand, if your project does IO or processing that could benefit from parallelizing tasks, the whole power of Async. IO, futures, coroutines and tasks is at your fingertips. All provided plugins (in particular, Database plugins) are Async-ready.
+6. **Asynchronous... or not**: If you don't need the extra complexity of building asynchronous code, you don't have to (you'll still enjoy tremendous performance). You can just handle your requests in a traditional synchronous way. On the other hand, if your project does IO or processing that could benefit from parallelizing tasks, the whole power of Async. IO, futures, coroutines and tasks is at your fingertips. All provided plugins (in particular, Database plugins) are Async-ready.
 
 What it is not
 --------------
