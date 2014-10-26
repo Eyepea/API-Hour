@@ -10,7 +10,7 @@ It was created to answer the need for a simple, robust, and super-fast server-si
 Install
 -------
 
-pip install api_hour
+~~pip install api_hour~~ (coming very soon)
 
 Mailing-list
 ------------
