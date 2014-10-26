@@ -1,0 +1,5 @@
+aiohttp==0.9.1
+-e git+https://github.com/Eyepea/API-Hour.git@b8899d3017d95a078d9dc6a45f6e08514f1140c4#egg=api-hour-master
+configobj==5.0.6
+six==1.8.0
+lockfile==0.10.2

@@ -1,0 +1,80 @@
+#!/bin/sh
+#
+### BEGIN INIT INFO
+# Provides:          {{cookiecutter.app_name}}
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Startup daemon script for {{cookiecutter.app_name}}
+### END INIT INFO
+#
+# Author: Ludovic Gasc <ludovic.gasc@eyepea.eu>
+set -e
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
+DAEMONNAME={{cookiecutter.app_name}}
+RUNDIR=/run/$DAEMONNAME
+DAEMON=/opt/{{cookiecutter.app_name}}/${DAEMONNAME}_cli
+PIDFILE=/run/$DAEMONNAME.pid
+DAEMON_ARGS=""
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
+
+# Create RUNDIR if it doesn't exist
+[ -d "$RUNDIR" ] || mkdir -p "$RUNDIR"
+
+# Read configuration variable file if it is present
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+# Load the VERBOSE setting and other rcS variables
+[ -f /etc/default/rcS ] && . /etc/default/rcS
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
+. /lib/lsb/init-functions
+
+case "$1" in
+  start)
+    log_daemon_msg "Starting" "$DAEMONNAME"
+    if start-stop-daemon -b --start --quiet --oknodo --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_ARGS;
+    then
+        log_end_msg 0
+    else
+        log_end_msg 1
+    fi
+    ;;
+  stop)
+    log_daemon_msg "Stopping" "$DAEMONNAME"
+     if start-stop-daemon --stop --quiet --oknodo --retry 5 --pidfile $PIDFILE;
+     then
+         log_end_msg 0
+     else
+         log_end_msg 1
+     fi
+     rm -f $PIDFILE
+    ;;
+  reload|force-reload)
+    log_daemon_msg "Reloading" "$DAEMONNAME"
+     if start-stop-daemon --stop --signal 1 --quiet --oknodo --pidfile $PIDFILE --exec $DAEMON;
+     then
+         log_end_msg 0
+     else
+         log_end_msg 1
+     fi
+    ;;
+  restart)
+    $0 stop
+    $0 start
+    ;;
+  status)
+    status_of_proc -p $PIDFILE "$DAEMON" $DAEMONNAME && exit 0 || exit $?
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|reload|force-reload|restart|status}"
+    exit 1
+    ;;
+esac
+
+exit 0
