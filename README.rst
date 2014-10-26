@@ -1,11 +1,11 @@
 API Hour
 ========
 
-.. image:: https://raw.githubusercontent.com/Eyepea/API-Hour/master/docs/API-Hour_small.png
-
 API-Hour is a lightweight webservices framework,  that lets you write powerful APIs for web applications.
 It uses a simplified form of the MVC pattern. (with serialisers instead of views).
 It was created to answer the need for a simple, robust, and super-fast server-side environment to build very efficient WebServices with ease.
+
+.. image:: https://raw.githubusercontent.com/Eyepea/API-Hour/master/docs/API-Hour_small.png
 
 Install
 -------
