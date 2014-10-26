@@ -3,7 +3,7 @@ import asyncio
 import aiohttp
 import contextlib
 
-from aiorest import RESTServer
+from api_hour import RESTServer
 
 
 class REST:

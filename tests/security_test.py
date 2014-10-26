@@ -2,8 +2,8 @@ import unittest
 import asyncio
 import aiohttp
 
-from aiorest import RESTServer, Request
-from aiorest.security import AbstractAuthorizationPolicy, CookieIdentityPolicy
+from api_hour import RESTServer, Request
+from api_hour.security import AbstractAuthorizationPolicy, CookieIdentityPolicy
 
 
 def server_port(srv):

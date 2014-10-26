@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# aiorest documentation build configuration file, created by
+# api_hour documentation build configuration file, created by
 # sphinx-quickstart on Fri Mar 14 19:59:09 2014.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -43,7 +43,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'aiorest'
+project = 'api_hour'
 copyright = '2014, Andrew Svetlov'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -197,7 +197,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'aiorest.tex', 'aiorest Documentation',
+  ('index', 'api_hour.tex', 'api_hour Documentation',
    'Andrew Svetlov', 'manual'),
 ]
 
@@ -227,7 +227,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'aiorest', 'aiorest Documentation',
+    ('index', 'api_hour', 'api_hour Documentation',
      ['Andrew Svetlov'], 1)
 ]
 
@@ -241,8 +241,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'aiorest', 'aiorest Documentation',
-   'Andrew Svetlov', 'aiorest', 'One line description of project.',
+  ('index', 'api_hour', 'api_hour Documentation',
+   'Andrew Svetlov', 'api_hour', 'One line description of project.',
    'Miscellaneous'),
 ]
 

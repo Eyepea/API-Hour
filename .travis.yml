@@ -12,8 +12,8 @@ install:
   - pip install docutils
 
 script:
-  - pyflakes aiorest tests examples
-  - pep8 aiorest tests examples
+  - pyflakes api_hour tests examples
+  - pep8 api_hour tests examples
   - python runtests.py -v
   - python setup.py check -rms
 

@@ -2,9 +2,9 @@ import unittest
 import asyncio
 from unittest import mock
 
-from aiorest.session import Session
-from aiorest.session.base import _SessionFactory, create_session_factory
-from aiorest.session.interface import SessionIdStore, SessionBackendStore
+from api_hour.session import Session
+from api_hour.session.base import _SessionFactory, create_session_factory
+from api_hour.session.interface import SessionIdStore, SessionBackendStore
 
 
 class SessionFactoryTests(unittest.TestCase):

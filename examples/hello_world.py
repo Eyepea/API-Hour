@@ -1,7 +1,7 @@
 import os
 import asyncio
 import aiohttp
-import aiorest
+import api_hour
 
 
 def handler(request):
@@ -15,7 +15,7 @@ def say_hello(request):
 def main():
     loop = asyncio.get_event_loop()
 
-    server = aiorest.RESTServer(hostname='127.0.0.1', loop=loop)
+    server = api_hour.RESTServer(hostname='127.0.0.1', loop=loop)
     server.add_url('GET', '/hello-world', handler)
     server.add_url(['GET', 'POST'], '/hello/{name}', say_hello)
 

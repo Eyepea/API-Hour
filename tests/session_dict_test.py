@@ -1,6 +1,6 @@
 import unittest
 
-from aiorest.session import Session
+from api_hour.session import Session
 
 
 class SessionTests(unittest.TestCase):

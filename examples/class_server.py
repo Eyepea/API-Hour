@@ -1,10 +1,10 @@
 import os
 import asyncio
 import aiohttp
-import aiorest
+import api_hour
 
 
-class App(aiorest.RESTServer):
+class App(api_hour.RESTServer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

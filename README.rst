@@ -1,11 +1,12 @@
-aiorest
+api_hour
 =======
 
-JSON REST framework based on aiohttp (an asyncio (PEP 3156) http server).
+Write performant WebServices with ease.
 
-.. image:: https://travis-ci.org/aio-libs/aiorest.svg?branch=master
-   :target: https://travis-ci.org/aio-libs/aiorest
+Install
+-------
 
+pip install api_hour
 
 Example usage
 -------------
@@ -14,7 +15,7 @@ Simple REST server can be run like this::
 
    import asyncio
    import aiohttp
-   import aiorest
+   import api_hour
 
 
    # define a simple request handler
@@ -25,7 +26,7 @@ Simple REST server can be run like this::
 
 
    loop = asyncio.get_event_loop()
-   server = aiorest.RESTServer(hostname='127.0.0.1',
+   server = api_hour.RESTServer(hostname='127.0.0.1',
                                loop=loop)
 
    # configure routes
@@ -50,7 +51,7 @@ Simple REST server can be run like this::
 
 this will print ``{'hello': 'world'}`` json
 
-See `examples <https://github.com/aio-libs/aiorest/tree/master/examples>`_ for more.
+See `examples <https://github.com/Eyepea/API-Hour/tree/master/examples>`_ for more.
 
 
 Requirements
@@ -62,10 +63,10 @@ Requirements
 
 - aiohttp http://github.com/KeepSafe/aiohttp
 
-- optional module ``aiorest.redis_session`` requires aioredis
+- optional module ``api_hour.redis_session`` requires aioredis
   https://github.com/aio-libs/aioredis
 
 License
 -------
 
-aiorest is offered under the MIT license.
+api_hour is offered under the MIT license.

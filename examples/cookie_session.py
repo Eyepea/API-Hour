@@ -1,8 +1,8 @@
 import asyncio
 import aiohttp
-import aiorest
+import api_hour
 import json
-from aiorest.session import CookieSessionFactory
+from api_hour.session import CookieSessionFactory
 
 
 class Handler:
@@ -33,7 +33,7 @@ def main():
                                            loads=json.loads,
                                            loop=loop)
 
-    server = aiorest.RESTServer(hostname='127.0.0.1', keep_alive=75,
+    server = api_hour.RESTServer(hostname='127.0.0.1', keep_alive=75,
                                 session_factory=session_factory,
                                 loop=loop)
 

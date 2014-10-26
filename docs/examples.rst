@@ -1,8 +1,8 @@
-Examples of aiorest usage
+Examples of api_hour usage
 =========================
 
-Here is the list of examples from `aiorest/examples
-<https://github.com/aio-libs/aiorest/tree/master/examples>`_.
+Here is the list of examples from `api_hour/examples
+<https://github.com/Eyepea/API-Hour/tree/master/examples>`_.
 
 Every example is a python program that can be executed.
 

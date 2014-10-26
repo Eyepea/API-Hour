@@ -3,7 +3,7 @@ import unittest
 import asyncio
 import aiohttp
 import json
-from aiorest import RESTServer
+from api_hour import RESTServer
 
 
 def server_port(srv):

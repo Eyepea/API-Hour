@@ -1,15 +1,15 @@
-.. aiorest documentation master file, created by
+.. api_hour documentation master file, created by
    sphinx-quickstart on Fri Mar 14 19:59:09 2014.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. _GitHub: https://github.com/aio-libs/aiorest
+.. _GitHub: https://github.com/Eyepea/API-Hour
 
 
-aiorest
+api_hour
 =======
 
-aiorest is a minimalistic framework to build JSON REST server.
+api_hour is a minimalistic framework to build JSON REST server.
 
 Features
 --------
@@ -25,7 +25,7 @@ Installation
 
 The library can be installed by executing::
 
-    pip3 install aiorest
+    pip3 install api_hour
 
 Source code
 -----------
@@ -33,7 +33,7 @@ Source code
 The project is hosted on GitHub_
 
 Please feel free to file an issue on `bug tracker
-<https://github.com/aio-libs/aiorest/issues>`_ if you have found a bug
+<https://github.com/Eyepea/API-Hour/issues>`_ if you have found a bug
 or have some suggestion for library improvement.
 
 Dependencies
@@ -41,7 +41,7 @@ Dependencies
 
 - Python 3.3 and :term:`asyncio` or Python 3.4+
 - :term:`aiohttp` 0.7.2+
-- ``aiorest.redis_session`` requires :term:`aioredis` 0.1.3+
+- ``api_hour.redis_session`` requires :term:`aioredis` 0.1.3+
 
 License
 -------
@@ -54,13 +54,13 @@ Getting started
 Simple "hello world" REST server would look like this::
 
     import asyncio
-    import aiorest
+    import api_hour
 
     def hello(request):
         return {'hello': 'world'}
 
     loop = asyncio.get_event_loop()
-    srv = aiorest.RESTServer(hostname='127.0.0.1',
+    srv = api_hour.RESTServer(hostname='127.0.0.1',
                                 loop=loop)
 
     srv.add_url('GET', '/hello', hello)

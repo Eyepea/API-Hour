@@ -4,7 +4,7 @@ import asyncio
 
 from unittest import mock
 
-from aiorest import Request, Response
+from api_hour import Request, Response
 from aiohttp.multidict import MutableMultiDict, CaseInsensitiveMultiDict
 
 
