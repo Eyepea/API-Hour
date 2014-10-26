@@ -224,3 +224,10 @@ class Application:
             yield ('Access-Control-Allow-Headers', allow_headers)
         if allow_creds:
             yield ('Access-Control-Allow-Credentials', allow_creds and 'true')
+
+    @asyncio.coroutine
+    def start(self):
+        raise NotImplementedError("Please Implement this method")
+
+    def stop(self):
+        raise NotImplementedError("Please Implement this method")

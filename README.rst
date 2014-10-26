@@ -21,6 +21,7 @@ Example usages
 --------------
 
 See `examples <https://github.com/Eyepea/API-Hour/tree/master/examples>`_ for more.
+In **examples/**, you have also a cookiecutter template to generate quickly your application.
 
 Requirements
 ------------
@@ -37,7 +38,7 @@ Requirements
 License
 -------
 
-api_hour is offered under the MIT license.
+API-Hour is offered under the MIT license.
 
 Origin
 ------

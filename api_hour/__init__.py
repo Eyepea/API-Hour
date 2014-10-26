@@ -34,11 +34,12 @@ def _parse_version(ver):
 version_info = _parse_version(__version__)
 
 
+from .multi_process import MultiProcess
 from .application import Application
 from .request import Request, Response
 from .errors import RESTError, JsonDecodeError, JsonLoadError
 from . import serialize
 
 # make pyflakes happy
-(Application, Request, Response, RESTError, JsonDecodeError, JsonLoadError,
+(MultiProcess, Application, Request, Response, RESTError, JsonDecodeError, JsonLoadError,
  serialize)
