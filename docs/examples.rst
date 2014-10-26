@@ -10,7 +10,7 @@ Every example is a python program that can be executed.
    All examples starts server on port ``8080``
    so be sure it is not listened by some other process
 
-.. _aiorest-examples-hello:
+.. _api_hour-examples-hello:
 
 Simple "Hello world" server
 ---------------------------
@@ -18,7 +18,7 @@ Simple "Hello world" server
 .. literalinclude:: ../examples/hello_world.py
 
 
-.. _aiorest-examples-cookie-session:
+.. _api_hour-examples-cookie-session:
 
 Cookie-based session
 --------------------

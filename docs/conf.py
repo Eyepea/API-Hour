@@ -178,7 +178,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'aiorestdoc'
+htmlhelp_basename = 'api_hourdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------

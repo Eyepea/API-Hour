@@ -1,4 +1,4 @@
-"""Run aiorest unittests.
+"""Run api_hour unittests.
 
 Usage:
   python3 runtests.py [flags] [pattern] ...

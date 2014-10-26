@@ -10,8 +10,8 @@ doc:
 	echo "open file://`pwd`/docs/_build/html/index.html"
 
 pep:
-	$(FLAKE) aiorest tests examples
-	$(PEP) aiorest tests examples
+	$(FLAKE) api_hour tests examples
+	$(PEP) api_hour tests examples
 
 test:
 	$(PYTHON) runtests.py
