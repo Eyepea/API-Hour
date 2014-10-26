@@ -8,6 +8,11 @@ Install
 
 pip install api_hour
 
+Mailing-list
+------------
+
+https://groups.google.com/d/forum/api-hour
+
 Example usage
 -------------
 
