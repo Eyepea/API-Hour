@@ -6,14 +6,14 @@ from lockfile.pidlockfile import PIDLockFile
 from .utils import STOP_SIGNALS
 
 __all__ = [
-    'MultiProcess',
+    'Arbiter',
     ]
 
 
 
 LOG = logging.getLogger(__name__)
 
-class MultiProcess:
+class Arbiter:
 
     def __init__(self, config, application, loop=None, *args, **kwargs):
         # super().__init__(*args, **kwargs)

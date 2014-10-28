@@ -3,7 +3,7 @@ import re
 import sys
 
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 
 version = __version__ + ' , Python ' + sys.version
 
@@ -34,12 +34,12 @@ def _parse_version(ver):
 version_info = _parse_version(__version__)
 
 
-from .multi_process import MultiProcess
+from .arbiter import Arbiter
 from .application import Application
 from .request import Request, Response
 from .errors import RESTError, JsonDecodeError, JsonLoadError
 from . import serialize
 
 # make pyflakes happy
-(MultiProcess, Application, Request, Response, RESTError, JsonDecodeError, JsonLoadError,
+(Arbiter, Application, Request, Response, RESTError, JsonDecodeError, JsonLoadError,
  serialize)

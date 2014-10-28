@@ -38,4 +38,4 @@ def main(cli_args):
     application = App(hostname='{{cookiecutter.hostname}}', config=config, loop=loop,
               access_log_format=('%(p)s %(h)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'))
 
-    api_hour.MultiProcess(config=config, application=application, loop=loop)
+    api_hour.Arbiter(config=config, application=application, loop=loop)
