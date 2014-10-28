@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+0.3.1 (2014-10-28)
+------------------
+
+* Rename multi_process to arbiter
+* Improve Python packaging
+
 0.3.0 (2014-10-26)
 ------------------
 
