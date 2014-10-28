@@ -41,5 +41,6 @@ publish:
 	python setup.py register
 	python setup.py sdist upload
 	python setup.py bdist_wheel upload
+	python setup.py upload_docs
 
 .PHONY: all doc pep test vtest testloop cov clean
