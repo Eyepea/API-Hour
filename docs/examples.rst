@@ -1,5 +1,5 @@
 Examples of api_hour usage
-=========================
+==========================
 
 Here is the list of examples from `api_hour/examples
 <https://github.com/Eyepea/API-Hour/tree/master/examples>`_.
@@ -31,6 +31,6 @@ Redis-based session
 .. literalinclude:: ../examples/redis_session.py
 
 Simple authorization
--------------------
+--------------------
 
 .. literalinclude:: ../examples/auth.py

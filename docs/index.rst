@@ -6,10 +6,10 @@
 .. _GitHub: https://github.com/Eyepea/API-Hour
 
 
-api_hour
-=======
+API-Hour
+========
 
-api_hour is a minimalistic framework to build JSON REST server.
+API-Hour is a minimalistic framework to build JSON REST server.
 
 Features
 --------
