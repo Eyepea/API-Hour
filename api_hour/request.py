@@ -83,7 +83,7 @@ class Response:
 
 class Request:
 
-    def __init__(self, server, host, message, req_body, *,
+    def __init__(self, application, host, message, req_body, *,
                  session_factory=None, loop=None,
                  identity_policy=None, auth_policy=None):
         if loop is None:
@@ -92,7 +92,7 @@ class Request:
         self._loop = loop
         self.version = message.version
         self.method = message.method.upper()
-        self.server = server
+        self.application = application
         self.host = message.headers.get('HOST', host)
         self.host_url = 'http://' + self.host
         self.path_qs = message.path

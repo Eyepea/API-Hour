@@ -4,16 +4,16 @@ import api_hour
 
 
 def about(request):
-    return {'app_name': request.server.config['name']}
+    return {'app_name': request.application.config['name']}
 
 
 def secret(request):
-    b_secret = request.server.config['secret'].encode('utf-8')
+    b_secret = request.application.config['secret'].encode('utf-8')
     h = hashlib.sha512(b_secret).hexdigest()
     return {'hashed_secret': h}
 
 
-class App(api_hour.RESTServer):
+class Application(api_hour.Application):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -24,7 +24,7 @@ class App(api_hour.RESTServer):
 def main():
     loop = asyncio.get_event_loop()
 
-    server = App(hostname='127.0.0.1', loop=loop)
+    server = Application(hostname='127.0.0.1', loop=loop)
     server.add_url('GET', '/about', about)
     server.add_url('GET', '/secret', secret)
 

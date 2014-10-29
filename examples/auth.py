@@ -63,7 +63,7 @@ def main():
     identity_policy = CookieIdentityPolicy()
     auth_policy = DictionaryAuthorizationPolicy({'chris': ('read',)})
 
-    server = api_hour.RESTServer(
+    server = api_hour.Application(
         hostname='127.0.0.1', loop=loop,
         identity_policy=identity_policy,
         auth_policy=auth_policy

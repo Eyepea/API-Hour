@@ -33,7 +33,7 @@ def main():
                                            loads=json.loads,
                                            loop=loop)
 
-    server = api_hour.RESTServer(hostname='127.0.0.1', keep_alive=75,
+    server = api_hour.Application(hostname='127.0.0.1', keep_alive=75,
                                 session_factory=session_factory,
                                 loop=loop)
 

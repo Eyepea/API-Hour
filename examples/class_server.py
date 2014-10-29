@@ -4,7 +4,7 @@ import aiohttp
 import api_hour
 
 
-class App(api_hour.RESTServer):
+class App(api_hour.Application):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

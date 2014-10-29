@@ -16,12 +16,12 @@ __all__ = [
 
 class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
 
-    def __init__(self,  server, *, hostname,
+    def __init__(self,  application, *, hostname,
                  session_factory=None,
                  identity_policy=None, auth_policy=None,
                  **kwargs):
         super().__init__(**kwargs)
-        self.server = server
+        self.application = application
         self.hostname = hostname
         self.session_factory = session_factory
         self._identity_policy = identity_policy
@@ -43,13 +43,13 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
             else:
                 req_body = None
 
-            request = Request(self.server, self.hostname, message, req_body,
+            request = Request(self.application, self.hostname, message, req_body,
                               session_factory=self.session_factory,
                               loop=self._loop,
                               identity_policy=self._identity_policy,
                               auth_policy=self._auth_policy)
 
-            bbody = yield from self.server.dispatch(request)
+            bbody = yield from self.application.dispatch(request)
             resp_impl = aiohttp.Response(
                 self.writer, request.response.status_code,
                 http_version=message.version)
