@@ -12,6 +12,8 @@ Benchmarks on the kitchen table
 
 .. image:: https://raw.githubusercontent.com/Eyepea/API-Hour/master/propaganda/en/stats.png
 
+For details, read information in `benchmarks <https://github.com/Eyepea/API-Hour/tree/master/benchmarks>`_.
+
 Where is the magic to have theses performances ?
 ''''''''''''''''''''''''''''''''''''''''''''''''
 
