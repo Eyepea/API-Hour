@@ -25,8 +25,8 @@ def get_config(overrides: dict) -> ConfigObj:
     """
     try:
         config_file = os.path.join(overrides['config_dir'], 'main.conf')
-        #Interpolation=False could be important, if we have postgresql queries in configuration
-        conf = ConfigObj(config_file, file_error=True)
+        #interpolation=False could be important, if we have %s in configuration
+        conf = ConfigObj(config_file, interpolation=False, file_error=True)
     except IOError as e:
         print(e)
         print('Configuration file "%s" cannot be found. please fix this and retry.' % config_file)

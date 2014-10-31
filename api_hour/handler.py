@@ -92,13 +92,14 @@ class RESTRequestHandler(aiohttp.server.ServerHttpProtocol):
             # self.log.exception("Cannot handle request %r", message)
             raise
 
+    @asyncio.coroutine
     def handle_error(self, status=500, message=None, payload=None,
                      exc=None, headers=None):
         now = time.time()
         if isinstance(exc, errors.RESTError):
             resp_impl = aiohttp.Response(self.writer, status, close=True)
             resp_impl.add_header('Host', self.hostname)
-            exc.write_response(resp_impl)
+            yield from exc.write_response(resp_impl)
             self.log_access(message, None, resp_impl, time.time() - now)
             self.keep_alive(False)
         else:

@@ -1,5 +1,7 @@
+import asyncio
+
 import aiohttp
-import json
+import ujson
 
 
 class JsonLoadError(ValueError):
@@ -25,9 +27,10 @@ class RESTError(aiohttp.HttpException):
             body = {'error': json_body,
                     'error_reason': message,
                     'error_code': code}
-            self.body = json.dumps(body).encode('utf-8')
+            self.body = ujson.dumps(body).encode('utf-8')
         self.headers = headers
 
+    @asyncio.coroutine
     def write_response(self, response):
         if self.body is not None:
             response.add_headers(
@@ -45,7 +48,7 @@ class RESTError(aiohttp.HttpException):
 
         if self.body is not None:
             response.write(self.body)
-        response.write_eof()
+        yield from response.write_eof()
 
 
 class HttpCorsOptions(RESTError):

@@ -2,10 +2,27 @@ API Hour
 ========
 
 API-Hour is a lightweight webservices framework,  that lets you write powerful APIs for web applications.
-It uses a simplified form of the MVC pattern. (with serialisers instead of views).
+It uses a simplified form of the MVC pattern. (with serializers instead of views).
 It was created to answer the need for a simple, robust, and super-fast server-side environment to build very efficient WebServices with ease.
 
 .. image:: https://raw.githubusercontent.com/Eyepea/API-Hour/master/docs/API-Hour_small.png
+
+Benchmarks on the kitchen table
+-------------------------------
+
+.. image:: https://raw.githubusercontent.com/Eyepea/API-Hour/master/propaganda/en/stats.png
+
+Where is the magic to have theses performances ?
+''''''''''''''''''''''''''''''''''''''''''''''''
+
+Architecture matters a lot more that tools.
+We use asynchronous and multiprocess patterns, combined together, to handle as much as possible HTTP requests.
+Ideally, the limitation should be your network card, not your CPU nor memory.
+Moreover, we've tried to reduce as much as possible layers between your code and async sockets.
+For each layer, we use the best in term of performances and simplicity:
+1. AsyncIO: an easy asynchronous framework, directly integrated in Python 3.4+
+2. aiohttp: HTTP protocol implementation for AsyncIO
+3. ujson: fastest JSON serialization
 
 Install
 -------
@@ -29,12 +46,9 @@ Requirements
 
 - Python 3.4.2+
 
-- asyncio http://code.google.com/p/tulip/ or Python 3.4+
+- `aiohttp <http://github.com/KeepSafe/aiohttp>`_
 
-- aiohttp http://github.com/KeepSafe/aiohttp
-
-- optional module ``api_hour.redis_session`` requires aioredis
-  https://github.com/aio-libs/aioredis
+- optional module ``api_hour.redis_session`` requires `aioredis <https://github.com/aio-libs/aioredis>`_
 
 License
 -------
@@ -46,8 +60,20 @@ Origin
 
 API-Hour is a performance oriented version of aiorest.
 
-Its goals
----------
+Why you don't contribute in aiorest instead of make your fork ?
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+We tried, but we wanted to add in aiorest some features that aiorest don't wish to integrate.
+Nevertheless, aiorest and API-Hour have the same roots with aiohttp, we contribute together inside aiohttp.
+
+Thanks
+------
+
+Thanks to aiorest, aiohttp and AsyncIO community, they made 99,9999% of the job for API-Hour.
+Special thanks to **Andrew Svetlov**, the creator of aiorest.
+
+Goals of API-Hour
+-----------------
 
 1. **Fast**: API-Hour is designed from bottom-up to be extremely fast, and capable of handling a huge load. It uses Python 3 and its new powerful AsyncIO package.
 2. **Scalable**: API-Hour is built to be elastic, and easily scalable.

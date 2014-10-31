@@ -1,1 +1,1 @@
-from {{cookiecutter.app_name}}.endpoints import index
+from . import {{cookiecutter.endpoint_name}}

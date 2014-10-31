@@ -37,16 +37,17 @@ class Application:
         'max-age': 86400,
     }
 
-    def __init__(self, *, hostname, session_factory=None,
+    def __init__(self, config, *, session_factory=None,
                  enable_cors=False, loop=None,
-                 identity_policy=None, auth_policy=None, config=None, **kwargs):
+                 identity_policy=None, auth_policy=None, **kwargs):
         assert session_factory is None or callable(session_factory), \
             "session_factory must be None or callable (coroutine) function"
         if loop is None:
             loop = asyncio.get_event_loop()
         self._loop = loop
         super().__init__()
-        self.hostname = hostname
+        self.config = config
+        self.hostname = self.config['main']['hostname']
         self.session_factory = session_factory
         self._enable_cors = enable_cors
         self._identity_policy = identity_policy
@@ -55,9 +56,14 @@ class Application:
         self._auth_policy = auth_policy
         if auth_policy:
             assert isinstance(auth_policy, AbstractAuthorizationPolicy)
-        self.config = config
+        if 'access_log_format' not in kwargs:
+            kwargs['access_log_format'] = (self.config['main']['access_log_format'])
         self._kwargs = kwargs
         self._urls = []
+        # engines initialisation
+        self.engines = {}
+        # Stores initialisation
+        self.stores = {}
 
     def make_handler(self):
         return RESTRequestHandler(self, hostname=self.hostname,
@@ -227,7 +233,8 @@ class Application:
 
     @asyncio.coroutine
     def start(self):
-        raise NotImplementedError("Please Implement this method")
+        pass
 
     def stop(self):
-        raise NotImplementedError("Please Implement this method")
+        LOG.info('Stopping daemon...')
+        self._loop.stop()

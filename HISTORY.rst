@@ -1,10 +1,13 @@
 CHANGES
 =======
 
-0.3.2 (YYYY-MM-DD)
+0.3.2 (2014-10-31)
 ------------------
 
 * Refactoring and clean-up
+* Publish benchmark server for API-Hour
+* English version of PyCON-FR presentation about API-Hour
+* Fix response.write_eof() to follow aiohttp changes (Thanks aiorest for the patch)
 
 0.3.1 (2014-10-28)
 ------------------

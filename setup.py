@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 __docformat__ = 'rst'
 
-install_requires = ['aiohttp>=0.9.0', 'configobj', 'ujson', 'lockfile']
+install_requires = ['aiohttp>=0.9.3', 'configobj', 'ujson', 'lockfile']
 
 PY_VER = sys.version_info
 
