@@ -1,0 +1,5 @@
+check process cache_updater with pidfile /run/benchmarks.pid
+	group benchmarks
+	start program = "/etc/init.d/benchmarks start"
+	stop program = "/etc/init.d/benchmarks stop"
+	if 5 restarts within 5 cycles then timeout
