@@ -2,13 +2,13 @@ API Hour
 ========
 
 API-Hour is a lightweight webservices framework,  that lets you write powerful APIs for web applications.
-It uses a simplified form of the MVC pattern. (with serializers instead of views).
+
 It was created to answer the need for a simple, robust, and super-fast server-side environment to build very efficient WebServices with ease.
 
 .. image:: https://raw.githubusercontent.com/Eyepea/API-Hour/master/docs/API-Hour_small.png
 
-Benchmarks on the kitchen table
--------------------------------
+Benchmarks on a kitchen table
+-----------------------------
 
 .. image:: https://raw.githubusercontent.com/Eyepea/API-Hour/master/propaganda/en/stats.png
 
@@ -25,37 +25,36 @@ Ideally, the limitation should be your network card, not your CPU nor memory.
 
 Moreover, we've tried to reduce as much as possible layers between your code and async sockets.
 
-For each layer, we use the best in term of performances and simplicity:
+For each layer, we use the best in term of performance and simplicity:
 
-1. AsyncIO: an easy asynchronous framework, directly integrated in Python 3.4+
-2. aiohttp: HTTP protocol implementation for AsyncIO
-3. ujson: fastest JSON serialization
+1. `AsyncIO <https://docs.python.org/3/library/asyncio.html>`_: an easy asynchronous framework, directly integrated in Python 3.4+
+2. `aiohttp <https://github.com/KeepSafe/aiohttp#http-clientserver-for-asyncio>`_: HTTP protocol implementation for AsyncIO
+3. `ujson <https://github.com/esnme/ultrajson#ultrajson>`_: fastest JSON serialization
 
-Install
+Examples
+--------
+
+In `examples <https://github.com/Eyepea/API-Hour/tree/master/examples>`_, you have a cookiecutter template to generate quickly your application.
+
+You have also a real example with PostgreSQL integration in `benchmarks <https://github.com/Eyepea/API-Hour/tree/master/benchmarks/api_hour/benchmarks>`_.
+
+Support
 -------
 
-pip install api_hour
-
-Mailing-list
-------------
-
-https://groups.google.com/d/forum/api-hour
-
-Example usages
---------------
-
-See `examples <https://github.com/Eyepea/API-Hour/tree/master/examples>`_ for more.
-
-In **examples/**, you have also a cookiecutter template to generate quickly your application.
+* `Mailing-list <https://groups.google.com/d/forum/api-hour>`_
 
 Requirements
 ------------
 
-- Python 3.4.2+
+- Python 3.4.2+ (You can use `Pythonz <https://github.com/saghul/pythonz#pythonz-a-python-installation-manager>`_ if you don't have this version)
 
-- `aiohttp <http://github.com/KeepSafe/aiohttp>`_
+Install
+-------
 
-- optional module ``api_hour.redis_session`` requires `aioredis <https://github.com/aio-libs/aioredis>`_
+0. If you don't have **Python 3.4.2+**, use `Pythonz <https://github.com/saghul/pythonz#pythonz-a-python-installation-manager>`_.
+1. pyvenv pyvenv (To create a Python environment, pyvenv is Python 3.3+ integrated virtualenv)
+2. . pyvenv/bin/activate
+3. pip3 install api_hour
 
 License
 -------
@@ -97,7 +96,9 @@ What it is not
 --------------
 
 API-Hour is not a framework meant to generate HTML pages.
+
 If you are looking for a framework that will help you build things like Forums, Blogs, CMSes , Database applications...  keeping the traditional submit => refresh paradigm, then you might want to take a look at frameworks like Django or Flask.
+
 Both are widely used, they have plenty of plugins and they both use a powerful templating system to generate your pages.
 
 Why another web framework ?

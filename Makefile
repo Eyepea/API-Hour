@@ -37,6 +37,10 @@ clean:
 	rm -f .coverage
 	rm -rf coverage
 
+
+check_readme:
+	rst2html.py --strict README.rst
+
 publish:
 	python setup.py register
 	python setup.py sdist upload
