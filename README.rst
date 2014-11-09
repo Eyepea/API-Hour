@@ -38,6 +38,12 @@ In `examples <https://github.com/Eyepea/API-Hour/tree/master/examples>`_, you ha
 
 You have also a real example with PostgreSQL integration in `benchmarks <https://github.com/Eyepea/API-Hour/tree/master/benchmarks/api_hour/benchmarks>`_.
 
+How-to start an API-Hour project ?
+----------------------------------
+
+1. Clone somewhere API-Hour: **git clone https://github.com/Eyepea/API-Hour.git**
+2. In the location folder where you want to create the project, launch: **cookiecutter <<API-Hour location>>/examples/project_template**
+
 Support
 -------
 
