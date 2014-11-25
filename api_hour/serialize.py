@@ -27,10 +27,15 @@ class Html(Base):
 
 
 class Asset(Base):
+    def __init__(self, *args, content_type=None, **kwargs):
+        self._content_type = content_type
+        super().__init__(*args, **kwargs)
+
     def serialize(self, request):
-        content_type = self.kwargs.get('content_type',
-                                       mimetypes.guess_type(request.path)[0])
-        request.response.headers.add('Content-Type', content_type)
+        if self._content_type is None:
+            content_type = self.kwargs.get('content_type',
+                                           mimetypes.guess_type(request.path)[0])
+            request.response.headers.add('Content-Type', content_type)
         return self.data
 
 
