@@ -10,7 +10,7 @@ from configobj import ConfigObj
 
 LOG = logging.getLogger(__name__)
 
-STOP_SIGNALS = (signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGABRT, signal.SIGTERM)
+STOP_SIGNALS = (signal.SIGINT, signal.SIGQUIT, signal.SIGABRT, signal.SIGTERM)
 
 
 def get_config(overrides: dict) -> ConfigObj:
