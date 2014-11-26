@@ -38,7 +38,7 @@ DAEMON_ARGS=""
 case "$1" in
   start)
     log_daemon_msg "Starting" "$DAEMONNAME"
-    if start-stop-daemon -b --start --quiet --oknodo --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_ARGS;
+    if start-stop-daemon -b --start --pidfile $PIDFILE --startas $DAEMON -- $DAEMON_ARGS;
     then
         log_end_msg 0
     else
@@ -47,17 +47,16 @@ case "$1" in
     ;;
   stop)
     log_daemon_msg "Stopping" "$DAEMONNAME"
-     if start-stop-daemon --stop --quiet --oknodo --retry 5 --pidfile $PIDFILE;
+    if start-stop-daemon --stop --quiet --retry 5 --pidfile $PIDFILE;
      then
          log_end_msg 0
      else
          log_end_msg 1
      fi
-     rm -f $PIDFILE
     ;;
   reload|force-reload)
     log_daemon_msg "Reloading" "$DAEMONNAME"
-     if start-stop-daemon --stop --signal 1 --quiet --oknodo --pidfile $PIDFILE --exec $DAEMON;
+    if start-stop-daemon --stop --signal 1 --pidfile $PIDFILE --startas $DAEMON;
      then
          log_end_msg 0
      else
