@@ -1,7 +1,0 @@
-{
-        "app_name": "appname",
-        "email": "you@example.com",
-        "hostname": "your.server.example.com",
-        "endpoint_name": "index",
-        "store_name": "data"
-}

@@ -1,7 +1,0 @@
-/var/log/{{cookiecutter.app_name}}/{{cookiecutter.app_name}}.log {
-    daily
-    rotate 15
-    compress
-    copytruncate
-    missingok
-}
