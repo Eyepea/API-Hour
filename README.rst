@@ -34,15 +34,14 @@ For each layer, we use the best in term of performance and simplicity:
 Examples
 --------
 
-In `examples <https://github.com/Eyepea/API-Hour/tree/master/examples>`_, you have a cookiecutter template to generate quickly your application.
+We made a cookiecutter template to generate quickly your application.
 
 You have also a real example with PostgreSQL integration in `benchmarks <https://github.com/Eyepea/API-Hour/tree/master/benchmarks/api_hour/benchmarks>`_.
 
 How-to start an API-Hour project ?
 ----------------------------------
 
-1. Clone somewhere API-Hour: **git clone https://github.com/Eyepea/API-Hour.git**
-2. In the location folder where you want to create the project, launch: **cookiecutter <<API-Hour location>>/examples/project_template**
+In the location folder where you want to create the project, launch: **cookiecutter https://github.com/Eyepea/cookiecutter-API-Hour.git**
 
 Support
 -------
