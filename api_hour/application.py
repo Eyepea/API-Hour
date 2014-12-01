@@ -248,9 +248,9 @@ class Application:
         end_path = request.path.split('/')[2:]
         file_path = os.path.join(self.config['main']['static_folder'], *end_path)
         try:
-            with open(file_path, 'r') as static_file:
+            with open(file_path, 'rb') as static_file:
                 content = static_file.read()
-                return Asset(bytes(content, encoding='utf-8'))
+                return Asset(content)
         except FileNotFoundError as e:
             raise RESTError(404, 'File Not Found')
 
