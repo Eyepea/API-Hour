@@ -1,11 +1,14 @@
 import asyncio
 import collections
 import inspect
+import os
 import re
 import logging
 
 import aiohttp
 from . import errors
+from api_hour.errors import RESTError
+from api_hour.serialize import Asset
 from .handler import RESTRequestHandler
 from .security import AbstractIdentityPolicy, AbstractAuthorizationPolicy
 from . import serialize
@@ -64,6 +67,8 @@ class Application:
         self.engines = {}
         # Stores initialisation
         self.stores = {}
+        if 'static_folder' in self.config['main']:
+            self.add_static_url()
 
     def make_handler(self):
         return RESTRequestHandler(self, hostname=self.hostname,
@@ -230,6 +235,25 @@ class Application:
             yield ('Access-Control-Allow-Headers', allow_headers)
         if allow_creds:
             yield ('Access-Control-Allow-Credentials', allow_creds and 'true')
+
+    def add_static_url(self):
+        static_url = '/static'
+        # Check for an override and cleanup the trailing slash
+        if 'static_url' in self.config['main']:
+            static_url = self.config['main']['static_url']
+            static_url.rstrip('/')
+        self.add_url(['GET'], '%s/.*' % static_url, self.serve_static_files)
+
+    def serve_static_files(self, request):
+        end_path = request.path.split('/')[2:]
+        file_path = os.path.join(self.config['main']['static_folder'], *end_path)
+        try:
+            with open(file_path, 'r') as static_file:
+                content = static_file.read()
+                return Asset(bytes(content, encoding='utf-8'))
+        except FileNotFoundError as e:
+            raise RESTError(404, 'File Not Found')
+
 
     @asyncio.coroutine
     def start(self):
