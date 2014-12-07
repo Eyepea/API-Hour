@@ -44,7 +44,7 @@ class Application:
             "session_factory must be None or callable (coroutine) function"
         if loop is None:
             loop = asyncio.get_event_loop()
-        self._loop = loop
+        self.loop = loop
         super().__init__()
         self.config = config
         self.hostname = self.config['main']['hostname']
@@ -68,7 +68,7 @@ class Application:
     def make_handler(self):
         return RESTRequestHandler(self, hostname=self.hostname,
                                   session_factory=self.session_factory,
-                                  loop=self._loop,
+                                  loop=self.loop,
                                   identity_policy=self._identity_policy,
                                   auth_policy=self._auth_policy,
                                   **self._kwargs)
@@ -237,4 +237,4 @@ class Application:
 
     def stop(self):
         LOG.info('Stopping daemon...')
-        self._loop.stop()
+        self.loop.stop()

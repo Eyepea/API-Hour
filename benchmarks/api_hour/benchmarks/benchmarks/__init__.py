@@ -35,7 +35,7 @@ class Application(api_hour.Application):
                                                           cursor_factory=psycopg2.extras.RealDictCursor,
                                                           minsize=int(self.config['engines']['pg']['minsize']),
                                                           maxsize=int(self.config['engines']['pg']['maxsize']),
-                                                          loop=self._loop)
+                                                          loop=self.loop)
 
 
     def stop(self):
