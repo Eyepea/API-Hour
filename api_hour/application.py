@@ -259,6 +259,13 @@ class Application:
     def start(self):
         pass
 
+    def pre_stop(self):
+        task = self.loop.create_task(self.stop())
+        task.add_done_callback(self.post_stop)
+
+    @asyncio.coroutine
     def stop(self):
-        LOG.info('Stopping daemon...')
+        LOG.info('Stopping application...')
+
+    def post_stop(self, future):
         self.loop.stop()
