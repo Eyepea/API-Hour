@@ -69,6 +69,7 @@ class Application:
         self.stores = {}
         if 'static_folder' in self.config['main']:
             self.add_static_url()
+        self._stopping = False
 
     def make_handler(self):
         return RESTRequestHandler(self, hostname=self.hostname,
@@ -260,8 +261,12 @@ class Application:
         pass
 
     def pre_stop(self):
-        task = self.loop.create_task(self.stop())
-        task.add_done_callback(self.post_stop)
+        if not self._stopping:
+            self._stopping = True
+            task = self.loop.create_task(self.stop())
+       	    task.add_done_callback(self.post_stop)
+        else:
+            LOG.debug('Already stopping application, not doing anything')
 
     @asyncio.coroutine
     def stop(self):
