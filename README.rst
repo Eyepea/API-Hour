@@ -88,8 +88,8 @@ Goals of API-Hour
 3. **Lightweight**:
     1. **small codebase**: Doing less means being faster: the codebase for processing an HTTP request is kept as small as possible. Beyond this base foot-print, you can of course activate, preload and initialize more plugins or packages , but that choice is yours.
     2. **flexible setup**: Some people have no problems with using many dependencies, while others want to have none (other thant Python). Some people are ok to loose a bit on performance, for the ease (and speed) of coding, while others wouldn't sacrifice a millisecond  for ready-made functionality. These choices are yours, so there are no mandatory extra layer, plugin or middleware.
-4. **Easy**: API-Hour is meant to be very easy to grasp: No steep learning curve, no mountain of docs to read: Download our turn-key «Hello-world» applications, and immediately start coding your own application from there.
-5. **Packages-friendly and friendly-packages**: We try to let you use external packages without the need to re-write them, adapt them,  « wrap » them or embed them in the framework. On the other hand, API-Hour « plugins » are written as much as possible to be usable as stand-alone packages outside the framework, to benefit to more people.
+4. **Easy**: API-Hour is meant to be very easy to grasp: No steep learning curve, no mountain of docs to read: Download our turn-key "Hello-world" applications, and immediately start coding your own application from there.
+5. **Packages-friendly and friendly-packages**: We try to let you use external packages without the need to re-write them, adapt them,  " wrap " them or embed them in the framework. On the other hand, API-Hour " plugins " are written as much as possible to be usable as stand-alone packages outside the framework, to benefit to more people.
 6. **Asynchronous... or not**: If you don't need the extra complexity of building asynchronous code, you don't have to (you'll still enjoy tremendous performance). You can just handle your requests in a traditional synchronous way. On the other hand, if your project does IO or processing that could benefit from parallelizing tasks, the whole power of Async. IO, futures, coroutines and tasks is at your fingertips. All provided plugins (in particular, Database plugins) are Async-ready.
 
 What it is not
@@ -111,7 +111,7 @@ The API paradigm shift
 
 Over the last few years, the web has deeply changed. Browsers are more sophisticated than ever, javascript engines are finally showing good performances, and large client-side (javascript) frameworks are now bringing easy cross-browser compatibility. They also ease the building of nice and complex GUIs, they compensate for most of the language  weaknesses and nowadays, they even provide structuring patterns like MVC on the client side.
 
-Meanwhile, more and more services are provided « in the cloud », and there are more and more software as a service (SaaS) and whit-labeling is everywhere.
+Meanwhile, more and more services are provided " in the cloud ", and there are more and more software as a service (SaaS) and whit-labeling is everywhere.
 
 We see three main consequences there:
 
@@ -119,7 +119,7 @@ We see three main consequences there:
 2. Client-side programming is becoming more and more GUI programming.
 3. The need for service-to-service (thus server-to-server ) interconnections is increasing quickly, meaning that the server-side needs have now shifted towards providing an API.
 
-We believe that providing an API built « on top of » or « alongside » traditional web is no longer a wise option.
+We believe that providing an API built " on top of " or " alongside " traditional web is no longer a wise option.
 
 Nowadays, your web-application should rely solely on your API, the very same API that you will expose to third parties. If your API works 100% for you, it will work 100% for them. If you API covers 100% of the service needs for your, it will cover 100% of their needs as well. Any new feature requested or provided in the API immediately benefits to everyone.
 
