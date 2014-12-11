@@ -1,5 +1,0 @@
-check process cache_updater with pidfile /run/{{cookiecutter.app_name}}.pid
-	group {{cookiecutter.app_name}}
-	start program = "/etc/init.d/{{cookiecutter.app_name}} start"
-	stop program = "/etc/init.d/{{cookiecutter.app_name}} stop"
-	if 5 restarts within 5 cycles then timeout

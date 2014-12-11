@@ -4,3 +4,4 @@ ipdb
 ipython
 configobj
 ujson
+setproctitle

@@ -8,7 +8,9 @@ from configparser import NoSectionError
 from configobj import ConfigObj
 
 
-STOP_SIGNALS = (signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGABRT, signal.SIGTERM)
+LOG = logging.getLogger(__name__)
+
+STOP_SIGNALS = (signal.SIGINT, signal.SIGQUIT, signal.SIGABRT, signal.SIGTERM)
 
 
 def get_config(overrides: dict) -> ConfigObj:
@@ -39,5 +41,7 @@ def get_config(overrides: dict) -> ConfigObj:
         print(e)
         print('Your logging file is wrong or is missing, please provide a correct one: [%s]' % logging_file)
         sys.exit(1)
+
+    LOG.info('Config file used: %s', config_file)
 
     return conf

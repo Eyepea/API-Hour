@@ -28,6 +28,6 @@ In API-Hour, you have:
 Examples
 --------
 
-In `examples <https://github.com/Eyepea/API-Hour/tree/master/examples>`_, you have a cookiecutter template to generate quickly your application.
+We made a cookiecutter template to generate quickly your application.
 
 You have also a real example with PostgreSQL integration in `benchmarks <https://github.com/Eyepea/API-Hour/tree/master/benchmarks/api_hour/benchmarks>`_.

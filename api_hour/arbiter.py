@@ -36,7 +36,7 @@ class Arbiter:
 
         # To stop properly the daemon
         for sig_num in STOP_SIGNALS:
-            self._loop.add_signal_handler(sig_num, self._app.stop)
+            self._loop.add_signal_handler(sig_num, self._app.pre_stop)
 
         LOG.info('Starting daemon on %s:%s...', self.config['main']['host'], self.config['main']['port'])
 

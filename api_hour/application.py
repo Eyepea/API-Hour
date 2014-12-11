@@ -1,11 +1,14 @@
 import asyncio
 import collections
 import inspect
+import os
 import re
 import logging
 
 import aiohttp
 from . import errors
+from api_hour.errors import RESTError
+from api_hour.serialize import Asset
 from .handler import RESTRequestHandler
 from .security import AbstractIdentityPolicy, AbstractAuthorizationPolicy
 from . import serialize
@@ -44,7 +47,7 @@ class Application:
             "session_factory must be None or callable (coroutine) function"
         if loop is None:
             loop = asyncio.get_event_loop()
-        self._loop = loop
+        self.loop = loop
         super().__init__()
         self.config = config
         self.hostname = self.config['main']['hostname']
@@ -64,11 +67,14 @@ class Application:
         self.engines = {}
         # Stores initialisation
         self.stores = {}
+        if 'static_folder' in self.config['main']:
+            self.add_static_url()
+        self._stopping = False
 
     def make_handler(self):
         return RESTRequestHandler(self, hostname=self.hostname,
                                   session_factory=self.session_factory,
-                                  loop=self._loop,
+                                  loop=self.loop,
                                   identity_policy=self._identity_policy,
                                   auth_policy=self._auth_policy,
                                   **self._kwargs)
@@ -231,10 +237,40 @@ class Application:
         if allow_creds:
             yield ('Access-Control-Allow-Credentials', allow_creds and 'true')
 
+    def add_static_url(self):
+        static_url = '/static'
+        # Check for an override and cleanup the trailing slash
+        if 'static_url' in self.config['main']:
+            static_url = self.config['main']['static_url']
+            static_url.rstrip('/')
+        self.add_url(['GET'], '%s/.*' % static_url, self.serve_static_files)
+
+    def serve_static_files(self, request):
+        end_path = request.path.split('/')[2:]
+        file_path = os.path.join(self.config['main']['static_folder'], *end_path)
+        try:
+            with open(file_path, 'rb') as static_file:
+                content = static_file.read()
+                return Asset(content)
+        except FileNotFoundError as e:
+            raise RESTError(404, 'File Not Found')
+
+
     @asyncio.coroutine
     def start(self):
         pass
 
+    def pre_stop(self):
+        if not self._stopping:
+            self._stopping = True
+            task = self.loop.create_task(self.stop())
+       	    task.add_done_callback(self.post_stop)
+        else:
+            LOG.debug('Already stopping application, not doing anything')
+
+    @asyncio.coroutine
     def stop(self):
-        LOG.info('Stopping daemon...')
-        self._loop.stop()
+        LOG.info('Stopping application...')
+
+    def post_stop(self, future):
+        self.loop.stop()

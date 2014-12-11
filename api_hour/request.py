@@ -1,5 +1,5 @@
 import asyncio
-import json
+import ujson
 import http.cookies
 
 from urllib.parse import urlsplit, parse_qsl
@@ -83,7 +83,7 @@ class Response:
 
 class Request:
 
-    def __init__(self, application, host, message, req_body, *,
+    def __init__(self, handler, application, host, message, req_body, *,
                  session_factory=None, loop=None,
                  identity_policy=None, auth_policy=None):
         if loop is None:
@@ -92,6 +92,7 @@ class Request:
         self._loop = loop
         self.version = message.version
         self.method = message.method.upper()
+        self.handler = handler
         self.application = application
         self.host = message.headers.get('HOST', host)
         self.host_url = 'http://' + self.host
@@ -103,7 +104,7 @@ class Request:
         self.args = MultiDict(parse_qsl(res.query))
         self.headers = message.headers
         self.matchdict = {}
-        self._request_body = req_body
+        self.body = req_body
         self._response = Response()
         self._session_factory = session_factory
         self._session_fut = None
@@ -128,15 +129,14 @@ class Request:
                 fut.set_result(None)
         return self._session_fut
 
-    @property
     def json_body(self):
         if self._json_body is None:
-            if self._request_body:
+            if self.body:
                 # TODO: store generated exception and
                 # don't try to parse json next time
                 try:
-                    decoded = self._request_body.decode('utf-8')
-                    self._json_body = json.loads(decoded)
+                    decoded = self.body.decode('utf-8')
+                    self._json_body = ujson.loads(decoded)
                 except UnicodeDecodeError as exc:
                     raise JsonDecodeError(exc.encoding,
                                           exc.object,
@@ -144,7 +144,7 @@ class Request:
                                           exc.end,
                                           "JSON body is not utf-8 encoded",
                                           )
-                except ValueError as exc:
+                except ValueError:
                     raise JsonLoadError(
                         "JSON body can not be decoded", decoded)
             else:

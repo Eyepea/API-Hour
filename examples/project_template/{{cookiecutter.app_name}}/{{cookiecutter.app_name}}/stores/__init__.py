@@ -1,1 +1,0 @@
-from . import {{cookiecutter.store_name}}
