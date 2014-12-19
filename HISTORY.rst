@@ -1,6 +1,17 @@
 CHANGES
 =======
 
+0.3.3 (2014-12-19)
+------------------
+
+* Static files can be served automatically
+* body and json_body and transport accessible in Request
+* loop accessible in Application
+* Asset Serializer accepts encoding
+* cookiecutter available at https://github.com/Eyepea/cookiecutter-API-Hour
+* Use of ujson
+* Bugfixes
+
 0.3.2 (2014-10-31)
 ------------------
 

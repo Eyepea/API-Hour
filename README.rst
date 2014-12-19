@@ -27,16 +27,16 @@ Moreover, we've tried to reduce as much as possible layers between your code and
 
 For each layer, we use the best in term of performance and simplicity:
 
-1. `AsyncIO <https://docs.python.org/3/library/asyncio.html>`_: an easy asynchronous framework, directly integrated in Python 3.4+
-2. `aiohttp <https://github.com/KeepSafe/aiohttp#http-clientserver-for-asyncio>`_: HTTP protocol implementation for AsyncIO
-3. `ujson <https://github.com/esnme/ultrajson#ultrajson>`_: fastest JSON serialization
+#. `AsyncIO <https://docs.python.org/3/library/asyncio.html>`_: an easy asynchronous framework, directly integrated in Python 3.4+
+#. `aiohttp <https://github.com/KeepSafe/aiohttp#http-clientserver-for-asyncio>`_: HTTP protocol implementation for AsyncIO
+#. `ujson <https://github.com/esnme/ultrajson#ultrajson>`_: fastest JSON serialization
 
 Examples
 --------
 
 We made a cookiecutter template to generate quickly your application.
 
-You have also a real example with PostgreSQL integration in `benchmarks <https://github.com/Eyepea/API-Hour/tree/master/benchmarks/api_hour/benchmarks>`_.
+You have also a real example `with PostgreSQL integration in benchmarks <https://github.com/Eyepea/API-Hour/tree/master/benchmarks/api_hour/benchmarks>`_.
 
 How-to start an API-Hour project ?
 ----------------------------------
@@ -56,10 +56,10 @@ Requirements
 Install
 -------
 
-0. If you don't have **Python 3.4.2+**, use `Pythonz <https://github.com/saghul/pythonz#pythonz-a-python-installation-manager>`_.
-1. pyvenv pyvenv (To create a Python environment, pyvenv is Python 3.3+ integrated virtualenv)
-2. . pyvenv/bin/activate
-3. pip3 install api_hour
+#. If you don't have **Python 3.4.2+**, `use Pythonz <https://github.com/saghul/pythonz#pythonz-a-python-installation-manager>`_.
+#. pyvenv pyvenv (To create a Python environment, pyvenv is Python 3.3+ integrated virtualenv)
+#. . pyvenv/bin/activate
+#. pip3 install api_hour
 
 License
 -------
@@ -88,14 +88,14 @@ Special thanks to **Andrew Svetlov**, the creator of aiorest.
 Goals of API-Hour
 -----------------
 
-1. **Fast**: API-Hour is designed from bottom-up to be extremely fast, and capable of handling a huge load. It uses Python 3 and its new powerful AsyncIO package.
-2. **Scalable**: API-Hour is built to be elastic, and easily scalable.
-3. **Lightweight**:
-    1. **small codebase**: Doing less means being faster: the codebase for processing an HTTP request is kept as small as possible. Beyond this base foot-print, you can of course activate, preload and initialize more plugins or packages , but that choice is yours.
-    2. **flexible setup**: Some people have no problems with using many dependencies, while others want to have none (other thant Python). Some people are ok to loose a bit on performance, for the ease (and speed) of coding, while others wouldn't sacrifice a millisecond  for ready-made functionality. These choices are yours, so there are no mandatory extra layer, plugin or middleware.
-4. **Easy**: API-Hour is meant to be very easy to grasp: No steep learning curve, no mountain of docs to read: Download our turn-key "Hello-world" applications, and immediately start coding your own application from there.
-5. **Packages-friendly and friendly-packages**: We try to let you use external packages without the need to re-write them, adapt them,  " wrap " them or embed them in the framework. On the other hand, API-Hour " plugins " are written as much as possible to be usable as stand-alone packages outside the framework, to benefit to more people.
-6. **Asynchronous... or not**: If you don't need the extra complexity of building asynchronous code, you don't have to (you'll still enjoy tremendous performance). You can just handle your requests in a traditional synchronous way. On the other hand, if your project does IO or processing that could benefit from parallelizing tasks, the whole power of Async. IO, futures, coroutines and tasks is at your fingertips. All provided plugins (in particular, Database plugins) are Async-ready.
+#. **Fast**: API-Hour is designed from bottom-up to be extremely fast, and capable of handling a huge load. It uses Python 3 and its new powerful AsyncIO package.
+#. **Scalable**: API-Hour is built to be elastic, and easily scalable.
+#. **Lightweight**:
+    #. **small codebase**: Doing less means being faster: the codebase for processing an HTTP request is kept as small as possible. Beyond this base foot-print, you can of course activate, preload and initialize more plugins or packages , but that choice is yours.
+    #. **flexible setup**: Some people have no problems with using many dependencies, while others want to have none (other thant Python). Some people are ok to loose a bit on performance, for the ease (and speed) of coding, while others wouldn't sacrifice a millisecond  for ready-made functionality. These choices are yours, so there are no mandatory extra layer, plugin or middleware.
+#. **Easy**: API-Hour is meant to be very easy to grasp: No steep learning curve, no mountain of docs to read: Download our turn-key "Hello-world" applications, and immediately start coding your own application from there.
+#. **Packages-friendly and friendly-packages**: We try to let you use external packages without the need to re-write them, adapt them,  " wrap " them or embed them in the framework. On the other hand, API-Hour " plugins " are written as much as possible to be usable as stand-alone packages outside the framework, to benefit to more people.
+#. **Asynchronous... or not**: If you don't need the extra complexity of building asynchronous code, you don't have to (you'll still enjoy tremendous performance). You can just handle your requests in a traditional synchronous way. On the other hand, if your project does IO or processing that could benefit from parallelizing tasks, the whole power of Async. IO, futures, coroutines and tasks is at your fingertips. All provided plugins (in particular, Database plugins) are Async-ready.
 
 What it is not
 --------------
@@ -120,9 +120,9 @@ Meanwhile, more and more services are provided " in the cloud ", and there are m
 
 We see three main consequences there:
 
-1. Traditional web-sites had to provide more interactive and user-friendly pages, drifting away from the submit-refresh paradigm, towards Ajax-only pages.
-2. Client-side programming is becoming more and more GUI programming.
-3. The need for service-to-service (thus server-to-server ) interconnections is increasing quickly, meaning that the server-side needs have now shifted towards providing an API.
+#. Traditional web-sites had to provide more interactive and user-friendly pages, drifting away from the submit-refresh paradigm, towards Ajax-only pages.
+#. Client-side programming is becoming more and more GUI programming.
+#. The need for service-to-service (thus server-to-server ) interconnections is increasing quickly, meaning that the server-side needs have now shifted towards providing an API.
 
 We believe that providing an API built " on top of " or " alongside " traditional web is no longer a wise option.
 
