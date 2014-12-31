@@ -1,7 +1,9 @@
 import collections
 import re
 import sys
+import warnings
 
+warnings.warn("Please to use aiohttp.web or aiorest mainstream, this fork of aiorest will be deleted.", DeprecationWarning)
 
 __version__ = '0.3.3'
 
