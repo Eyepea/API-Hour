@@ -7,8 +7,8 @@ import logging
 
 import aiohttp
 from . import errors
-from api_hour.errors import RESTError
-from api_hour.serialize import Asset
+from .errors import RESTError
+from .serialize import Asset
 from .handler import RESTRequestHandler
 from .security import AbstractIdentityPolicy, AbstractAuthorizationPolicy
 from . import serialize
@@ -16,7 +16,7 @@ from . import serialize
 
 __all__ = [
     'Application',
-    ]
+]
 
 LOG = logging.getLogger(__name__)
 
@@ -25,10 +25,9 @@ Entry = collections.namedtuple('Entry', 'regex method handler'
 
 
 class Application:
-
     DYN = re.compile(r'^\{[_a-zA-Z][_a-zA-Z0-9]*\}$')
     GOOD = r'[^{}/]+'
-    PLAIN = re.compile('^'+GOOD+'$')
+    PLAIN = re.compile('^' + GOOD + '$')
 
     METHODS = {'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'}
 
@@ -98,7 +97,7 @@ class Application:
             if not part:
                 continue
             if self.DYN.match(part):
-                regexp.append('(?P<'+part[1:-1]+'>'+self.GOOD+')')
+                regexp.append('(?P<' + part[1:-1] + '>' + self.GOOD + ')')
             elif self.PLAIN.match(part):
                 regexp.append(part)
             else:
@@ -114,7 +113,7 @@ class Application:
         allow_origin = cors_options.get('allow-origin')
         if allow_origin is not None:
             assert callable(allow_origin) \
-                or isinstance(allow_origin, (collections.Sequence, str)), \
+                   or isinstance(allow_origin, (collections.Sequence, str)), \
                 "Invalid 'allow-origin' option {!r}".format(allow_origin)
 
         if isinstance(method, str):
@@ -264,7 +263,8 @@ class Application:
         if not self._stopping:
             self._stopping = True
             task = self.loop.create_task(self.stop())
-       	    task.add_done_callback(self.post_stop)
+            task.add_done_callback(self.post_stop)
+            return task
         else:
             LOG.debug('Already stopping application, not doing anything')
 

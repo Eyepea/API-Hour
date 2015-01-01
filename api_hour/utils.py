@@ -10,8 +10,6 @@ from configobj import ConfigObj
 
 LOG = logging.getLogger(__name__)
 
-STOP_SIGNALS = (signal.SIGINT, signal.SIGQUIT, signal.SIGABRT, signal.SIGTERM)
-
 
 def get_config(overrides: dict) -> ConfigObj:
     """
@@ -34,8 +32,9 @@ def get_config(overrides: dict) -> ConfigObj:
         print('Configuration file "%s" cannot be found. please fix this and retry.' % config_file)
         sys.exit(1)
 
+    logging.captureWarnings(True)
+    logging_file = os.path.join(overrides['config_dir'], 'logging.ini')
     try:
-        logging_file = os.path.join(overrides['config_dir'], 'logging.ini')
         logging.config.fileConfig(logging_file, disable_existing_loggers=False)
     except (NoSectionError, KeyError) as e:
         print(e)

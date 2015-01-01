@@ -37,4 +37,4 @@ def agents_with_psycopg2_async(request):
 
 @asyncio.coroutine
 def agents_with_psycopg2_async_pool(request):
-    return (yield from stores.agents.list(request.application))
+    return (yield from stores.agents.list(request.application.ah_container))

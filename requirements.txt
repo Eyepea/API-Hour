@@ -5,3 +5,4 @@ ipython
 configobj
 ujson
 setproctitle
+gunicorn
