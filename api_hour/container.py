@@ -22,7 +22,7 @@ class Container:
         # engines initialisation
         self.engines = {}
         # Stores initialisation
-        self.stores = {}
+        self.services = {}
         self.servers = OrderedDict()
         self._stopping = False
 

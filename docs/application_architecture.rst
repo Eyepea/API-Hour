@@ -18,12 +18,12 @@ API-Hour proposal
 In API-Hour, you have:
 
 0. **Application**: An object that represents your application with everything inside: routing...
-#. **Endpoints**: Simple Python functions called when your Application received a HTTP requests. It's functions because:
+#. **Endpoints**: Simple Python coroutines called when your Application received a HTTP requests. It's coroutines because:
     #. Global state is stored in Application
     #. Reduce complexity
-    #. Easier to share Endpoints between Application if it's only functions
+    #. Easier to share Endpoints between Application if it's only coroutines
 #. **Engines**: Data source providers for Stores. Example: PostgreSQL, Asterisk, CouchDB...
-#. **Stores**: Where you transform data for Endpoints. Like Endpoints, a Store is only a Python file with functions.
+#. **Services**: Where you transform data for Endpoints. Like Endpoints, a Service is only a Python file with coroutines.
 
 Examples
 --------

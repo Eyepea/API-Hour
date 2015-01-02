@@ -3,7 +3,7 @@ import aiopg
 import psycopg2
 import psycopg2.extras
 
-from benchmarks import stores
+from .. import services
 
 
 def agents_with_psycopg2_sync(request):
@@ -37,4 +37,4 @@ def agents_with_psycopg2_async(request):
 
 @asyncio.coroutine
 def agents_with_psycopg2_async_pool(request):
-    return (yield from stores.agents.list(request.application.ah_container))
+    return (yield from services.agents.list(request.application.ah_container))
