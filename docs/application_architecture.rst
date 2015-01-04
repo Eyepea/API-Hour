@@ -12,22 +12,24 @@ But, with WebServices API shift, from our point of view, MVC doesn't fit very we
 1. You already have MVC pattern on client part, MVC on server becomes Model layer in your Javascript application.
 2. With REST/JSON, you don't really need to have views (eg: templates), it's "only" JSON serialization.
 
+Moreover, if you build a Daemon without an UI, like a SSH server, MVC doesn't fit very well.
+
 API-Hour proposal
 -----------------
 
 In API-Hour, you have:
 
-0. **Application**: An object that represents your application with everything inside: routing...
-#. **Endpoints**: Simple Python coroutines called when your Application received a HTTP requests. It's coroutines because:
-    #. Global state is stored in Application
+0. **Container**: An object that represents your application with everything inside: routing...
+#. **Endpoints**: Simple Python coroutines called when your Application received requests (HTTP, SSH...). It's coroutines because:
+    #. Global state is stored in Container
     #. Reduce complexity
-    #. Easier to share Endpoints between Application if it's only coroutines
-#. **Engines**: Data source providers for Stores. Example: PostgreSQL, Asterisk, CouchDB...
-#. **Services**: Where you transform data for Endpoints. Like Endpoints, a Service is only a Python file with coroutines.
+    #. Easier to share Endpoints between Containers if it's only coroutines
+#. **Engines**: Data source providers for Services. Example: PostgreSQL, Asterisk, CouchDB...
+#. **Services**: Where you transform data for Endpoints. Like Endpoints, a Service is only a Python file with coroutines. It represents your business logic and your internal Python API.
 
 Examples
 --------
 
 We made a cookiecutter template to generate quickly your application.
 
-You have also a real example with PostgreSQL integration in `benchmarks <https://github.com/Eyepea/API-Hour/tree/master/benchmarks/api_hour/benchmarks>`_.
+You have also an example with PostgreSQL integration in `benchmarks <https://github.com/Eyepea/API-Hour/tree/master/benchmarks/api_hour/benchmarks>`_.

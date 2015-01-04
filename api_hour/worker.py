@@ -31,6 +31,7 @@ class Worker(base.Worker):
         try:
             self.loop.run_until_complete(self._runner)
         finally:
+            # self._runner.cancel() # @todo: Fix ctrl-c stack trace pending task remaining
             self.loop.close()
 
     def wrap_protocol(self, proto):
@@ -89,11 +90,11 @@ class Worker(base.Worker):
                             conn.closing()
 
                 yield from asyncio.sleep(1.0, loop=self.loop)
-        except KeyboardInterrupt:
+        except (Exception, BaseException, GeneratorExit, KeyboardInterrupt):
             pass
 
+        yield from api_hour_app.stop()
         if self.servers:
-            yield from api_hour_app.stop()
             for server in self.servers:
                 server.close()
 

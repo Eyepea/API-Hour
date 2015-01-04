@@ -38,7 +38,8 @@ class Application(GunicornApp):
         self.cfg.set("default_proc_name", args[0])
         self.app_uri = args[0]
 
-        self.config = get_config({'config_dir': '/home/lg/Documents/IDEA/API-Hour/benchmarks/api_hour/benchmarks/etc/benchmarks/'})
+        # self.config = get_config({'config_dir': '/home/lg/Documents/IDEA/API-Hour/benchmarks/api_hour/benchmarks/etc/benchmarks/'})
+        self.config = get_config({'config_dir': '/home/lg/Documents/IDEA/FrameworkBenchmarks/frameworks/Python/API-Hour/hello/etc/hello/'})
 
     def chdir(self):
         # chdir to the configured path before loading,
