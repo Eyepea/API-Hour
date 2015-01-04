@@ -61,7 +61,9 @@ class Worker(base.Worker):
 
     @asyncio.coroutine
     def _run(self):
-        self.container = self.app.callable(config=self.app.config, loop=self.loop)
+        self.container = self.app.callable(config=self.app.config,
+                                           worker=self,
+                                           loop=self.loop)
         handlers = self.container.make_servers()
         for i, sock in enumerate(self.sockets):
             if len(handlers) == 1:

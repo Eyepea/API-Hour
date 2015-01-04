@@ -13,15 +13,16 @@ LOG = logging.getLogger(__name__)
 
 class Container:
 
-    def __init__(self, config, loop=None):
+    def __init__(self, config, worker, loop=None):
         if loop is None:
             loop = asyncio.get_event_loop()
         self.loop = loop
         super().__init__()
         self.config = config
-        # engines initialisation
+        self.worker = worker
+        # Engines initialisation
         self.engines = {}
-        # Stores initialisation
+        # Services initialisation
         self.services = {}
         self.servers = OrderedDict()
         self._stopping = False
