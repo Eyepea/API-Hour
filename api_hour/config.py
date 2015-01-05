@@ -2,18 +2,17 @@ import logging
 import logging.config
 import os
 import sys
-from configparser import NoSectionError
 
-from configobj import ConfigObj
 from gunicorn import util
 from gunicorn.config import Setting, validate_string
 from gunicorn.errors import ConfigError
+import yaml
 
 
 LOG = logging.getLogger(__name__)
 
 
-def get_config(overrides: dict) -> ConfigObj:
+def get_config(overrides: dict) -> dict:
     """
         :param overrides: config values that overrides the config file(s).
         :type overrides: dict
@@ -25,24 +24,13 @@ def get_config(overrides: dict) -> ConfigObj:
         get_config(vars(p.parse_args()))
 
     """
-    config_file = os.path.join(overrides['config_dir'], 'main.conf')
+    config_file = os.path.join(overrides['config_dir'], 'main/main.yaml')
     try:
-        #interpolation=False could be important, if we have %s in configuration
-        conf = ConfigObj(config_file, interpolation=False, file_error=True)
+        conf = yaml.load(open(config_file, 'r'))
     except IOError as e:
         print(e)
         print('Configuration file "%s" cannot be found. please fix this and retry.' % config_file)
         sys.exit(1)
-
-    logging.captureWarnings(True)
-    logging_file = os.path.join(overrides['config_dir'], 'logging.ini')
-    try:
-        logging.config.fileConfig(logging_file, disable_existing_loggers=False)
-    except (NoSectionError, KeyError) as e:
-        print(e)
-        print('Your logging file is wrong or is missing, please provide a correct one: [%s]' % logging_file)
-        sys.exit(1)
-
     LOG.info('Config file used: %s', config_file)
 
     return conf
