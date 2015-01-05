@@ -71,7 +71,7 @@ class Worker(base.Worker):
             else:
                 handler = handlers[i]
 
-            srv = yield from self.loop.create_server(handler, sock=sock.sock)
+            srv = yield from self.loop.create_server(handler, sock=sock.sock) # @todo: add unix socket support
             self.servers[srv] = handler
         yield from self.container.start()
 

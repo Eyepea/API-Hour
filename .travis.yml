@@ -1,21 +1,15 @@
 language: python
 
 python:
-  - "3.3"
   - "3.4"
 
 install:
   - python setup.py install
   - pip install pyflakes
   - pip install pep8
-  - pip install aioredis
   - pip install docutils
 
 script:
   - pyflakes api_hour tests examples
   - pep8 api_hour tests examples
-  - python runtests.py -v
   - python setup.py check -rms
-
-services:
-  - redis-server

@@ -6,3 +6,4 @@ configobj
 ujson
 setproctitle
 gunicorn
+PyYAML

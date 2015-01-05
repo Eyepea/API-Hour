@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 __docformat__ = 'rst'
 
-install_requires = ['ujson', 'setproctitle', 'gunicorn', 'configobj']
+install_requires = ['ujson', 'setproctitle', 'gunicorn', 'PyYAML']
 
 PY_VER = sys.version_info
 

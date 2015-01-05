@@ -13,18 +13,6 @@ pep:
 	$(FLAKE) api_hour tests examples
 	$(PEP) api_hour tests examples
 
-test:
-	$(PYTHON) runtests.py
-
-vtest:
-	$(PYTHON) runtests.py -v
-
-testloop:
-	$(PYTHON) runtests.py --forever
-
-cov cover coverage:
-	$(PYTHON) runtests.py --coverage
-
 clean:
 	rm -rf `find . -name __pycache__`
 	rm -f `find . -type f -name '*.py[co]' `
