@@ -1,6 +1,14 @@
 CHANGES
 =======
 
+0.5.0 (2015-01-06)
+------------------
+
+* Project reboot
+* Change API-Hour main goal: API-Hour can now multiprocess all AsyncIO lib server, not only HTTP
+* API-Hour is now based on Gunicorn
+* Remove aiorest fork, recommend to use aiohttp.web for HTTP daemons in cookiecutter
+
 0.3.3 (2014-12-19)
 ------------------
 

@@ -11,6 +11,8 @@ Table of contents
 .. toctree::
 
    application_architecture
+   examples
+   manifesto
 
 .. include:: ../README.rst
 

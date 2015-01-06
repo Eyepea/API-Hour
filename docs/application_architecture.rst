@@ -26,10 +26,3 @@ In API-Hour, you have:
     #. Easier to share Endpoints between Containers if it's only coroutines
 #. **Engines**: Data source providers for Services. Example: PostgreSQL, Asterisk, CouchDB...
 #. **Services**: Where you transform data for Endpoints. Like Endpoints, a Service is only a Python file with coroutines. It represents your business logic and your internal Python API.
-
-Examples
---------
-
-We made a cookiecutter template to generate quickly your application.
-
-You have also an example with PostgreSQL integration in `benchmarks <https://github.com/Eyepea/API-Hour/tree/master/benchmarks/api_hour/benchmarks>`_.
