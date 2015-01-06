@@ -1,0 +1,7 @@
+/var/log/http_and_ssh/http_and_ssh.log {
+    daily
+    rotate 15
+    compress
+    copytruncate
+    missingok
+}

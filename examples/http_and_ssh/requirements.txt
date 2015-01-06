@@ -1,0 +1,14 @@
+PyYAML==3.11
+aiohttp==0.13.1
+api_hour==0.5.0
+asyncssh==0.9.1
+cffi==0.8.6
+cryptography==0.7.1
+enum34==1.0.4
+gunicorn==19.1.1
+pyasn1==0.1.7
+pycparser==2.10
+pycrypto==2.6.1
+setproctitle==1.1.8
+six==1.9.0
+ujson==1.33

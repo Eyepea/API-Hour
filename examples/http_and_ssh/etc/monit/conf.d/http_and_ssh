@@ -1,0 +1,5 @@
+check process cache_updater with pidfile /run/lock/http_and_ssh.pid
+	group http_and_ssh
+	start program = "/etc/init.d/http_and_ssh start"
+	stop program = "/etc/init.d/http_and_ssh stop"
+	if 5 restarts within 5 cycles then timeout

@@ -45,15 +45,20 @@ class Worker(base.Worker):
 
             # stop accepting connections
             for server, handler in servers.items():
-                self.log.info("Stopping server: %s, connections: %s",
-                              self.pid, len(handler.connections))
+                if hasattr(handler, 'connections'):
+                    self.log.info("Stopping server: %s, connections: %s",
+                                  self.pid, len(handler.connections))
+                else:
+                    self.log.info("Stopping server: %s",
+                                  self.pid)
                 server.close()
 
             # stop alive connections
-            tasks = [
-                handler.finish_connections(
-                    timeout=self.cfg.graceful_timeout / 100 * 80)
-                for handler in servers.values()]
+            tasks = []
+            for handler in servers.values():
+                if hasattr(handler, 'finish_connections'):
+                    tasks.append(handler.finish_connections(
+                    timeout=self.cfg.graceful_timeout / 100 * 80))
             yield from asyncio.wait(tasks, loop=self.loop)
 
             # stop container
