@@ -1,11 +1,11 @@
 import logging
 import asyncio
 
+import aiohttp.web
 import aiopg
 import psycopg2.extras
 
 import api_hour
-import api_hour.aiorest
 
 from . import endpoints
 
@@ -16,31 +16,49 @@ LOG = logging.getLogger(__name__)
 class Container(api_hour.Container):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Servers
-        self.servers['http'] = api_hour.aiorest.Application(*args, **kwargs)
+        ## Servers
+        # You can define several servers, to listen HTTP and SSH for example.
+        # If you do that, you need to listen on two ports with api_hour --bind command line.
+        self.servers['http'] = aiohttp.web.Application(loop=kwargs['loop'])
         self.servers['http'].ah_container = self # keep a reference to Container
         # routes
-        self.servers['http'].add_url(['GET', 'POST'], '/index', endpoints.index.index)
-        self.servers['http'].add_url('GET', '/agents_with_psycopg2_sync', endpoints.benchmarks.agents_with_psycopg2_sync)
-        self.servers['http'].add_url('GET', '/agents_with_psycopg2_async', endpoints.benchmarks.agents_with_psycopg2_async)
-        self.servers['http'].add_url('GET', '/agents_with_psycopg2_async_pool', endpoints.benchmarks.agents_with_psycopg2_async_pool)
+        self.servers['http'].router.add_route('GET',
+                                              '/index',
+                                              endpoints.index.index)
+        self.servers['http'].router.add_route('GET',
+                                              '/agents_with_psycopg2_sync',
+                                              endpoints.benchmarks.agents_with_psycopg2_sync)
+        self.servers['http'].router.add_route('GET',
+                                              '/agents_with_psycopg2_async',
+                                              endpoints.benchmarks.agents_with_psycopg2_async)
+        self.servers['http'].router.add_route('GET',
+                                              '/agents_with_psycopg2_async_pool',
+                                              endpoints.benchmarks.agents_with_psycopg2_async_pool)
 
     def make_servers(self):
-        return [self.servers['http'].make_handler]
+        # This method is used by api_hour command line to bind each server on each socket
+        # Please don't touch if you don't understand how it works
+        return [self.servers['http'].make_handler(logger=self.worker.log,
+                                                  debug=self.worker.cfg.debug,
+                                                  keep_alive=self.worker.cfg.keepalive,
+                                                  access_log=self.worker.log.access_log,
+                                                  access_log_format=self.worker.cfg.access_log_format)]
 
     @asyncio.coroutine
     def start(self):
         yield from super().start()
         # Add your custom start here, example with PostgreSQL:
-        self.engines['pg'] = yield from aiopg.create_pool(host=self.config['engines']['pg']['host'],
-                                                          port=int(self.config['engines']['pg']['port']),
-                                                          dbname=self.config['engines']['pg']['dbname'],
-                                                          user=self.config['engines']['pg']['user'],
-                                                          password=self.config['engines']['pg']['password'],
-                                                          cursor_factory=psycopg2.extras.RealDictCursor,
-                                                          minsize=int(self.config['engines']['pg']['minsize']),
-                                                          maxsize=int(self.config['engines']['pg']['maxsize']),
-                                                          loop=self.loop)
+        self.engines['pg'] = self.loop.create_task(aiopg.create_pool(host=self.config['engines']['pg']['host'],
+                                                                     port=int(self.config['engines']['pg']['port']),
+                                                                     sslmode='disable',
+                                                                     dbname=self.config['engines']['pg']['dbname'],
+                                                                     user=self.config['engines']['pg']['user'],
+                                                                     password=self.config['engines']['pg']['password'],
+                                                                     cursor_factory=psycopg2.extras.RealDictCursor,
+                                                                     minsize=int(self.config['engines']['pg']['minsize']),
+                                                                     maxsize=int(self.config['engines']['pg']['maxsize']),
+                                                                     loop=self.loop))
+        yield from asyncio.wait([self.engines['pg']], return_when=asyncio.ALL_COMPLETED)
 
     @asyncio.coroutine
     def stop(self):

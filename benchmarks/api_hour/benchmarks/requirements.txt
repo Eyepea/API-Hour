@@ -1,2 +1,7 @@
-api_hour
-aiopg
+PyYAML==3.11
+aiohttp==0.13.1
+aiopg==0.5.2
+api_hour==0.5.0
+psycopg2==2.5.4
+six==1.8.0
+ujson==1.33

@@ -1,0 +1,9 @@
+engines:
+  pg:
+    host: 127.0.0.1
+    port: 5432
+    dbname: picard
+    user: asterisk
+    password: proformatique
+    minsize: 20
+    maxsize: 20

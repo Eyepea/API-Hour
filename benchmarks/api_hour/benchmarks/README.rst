@@ -1,10 +1,15 @@
 benchmarks
 =====
 
+Start manually
+--------------
+
+In this current folder, launch: **api_hour benchmarks:Container**
+
 Install
 -------
 
-Follow pythonz install doc
+Follow pythonz install doc: https://github.com/saghul/pythonz
 pythonz install 3.4.2
 cd /opt
 # Git clone your app here

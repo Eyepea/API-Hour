@@ -1,7 +1,0 @@
-/var/log/benchmarks/benchmarks.log {
-    daily
-    rotate 15
-    compress
-    copytruncate
-    missingok
-}
