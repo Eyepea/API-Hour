@@ -28,6 +28,7 @@ clean:
 
 check_readme:
 	rst2html.py --strict README.rst
+	rst2html.py --strict HISTORY.rst
 
 publish:
 	python setup.py register
