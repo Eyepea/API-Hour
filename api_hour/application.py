@@ -1,4 +1,4 @@
-# This file is part of API-Hour, forked from gunicorn.app.wsgiapp.py released under the MIT license.
+# This file is part of API-Hour, forked from gunicorn/app/wsgiapp.py released under the MIT license.
 import logging
 import os
 import sys
@@ -7,7 +7,7 @@ from gunicorn.app.base import Application as GunicornApp
 from gunicorn import util
 from gunicorn.config import Config
 
-from .config import ConfigDir, get_config
+from .config import get_config
 
 
 class Application(GunicornApp):
@@ -18,23 +18,24 @@ class Application(GunicornApp):
         self.cfg.set("default_proc_name", args[0])
         self.app_uri = args[0]
 
-        # Default config_dir
-        config_dir = os.path.join(self.cfg.chdir,
-                                  'etc',
-                                  self.app_uri.split(":", 1)[0])
-        if os.path.exists(config_dir):
-            self.cfg.set('config_dir', config_dir)  # Define dev etc folder as default config directory
-
-        # generate config_dir directly: egg or chicken problem
-        if opts.config_dir:
-            self.cfg.set('config_dir', opts.config_dir)
-
-        if not opts.config:
-            opts.config = os.path.join(self.cfg.config_dir, 'api_hour/gunicorn_conf.py')
-
         logging.captureWarnings(True)
-        if not self.cfg.logconfig:
-            self.cfg.set('logconfig', os.path.join(self.cfg.config_dir, 'api_hour/logging.ini'))
+        if opts.auto_config:
+            # Default config_dir
+            config_dir = os.path.join(self.cfg.chdir,
+                                      'etc',
+                                      self.app_uri.split(":", 1)[0])
+            if os.path.exists(config_dir):
+                self.cfg.set('config_dir', config_dir)  # Define dev etc folder as default config directory
+
+            # generate config_dir directly: egg or chicken problem
+            if opts.config_dir:
+                self.cfg.set('config_dir', opts.config_dir)
+
+            if not opts.config:
+                opts.config = os.path.join(self.cfg.config_dir, 'api_hour/gunicorn_conf.py')
+
+            if not self.cfg.logconfig:
+                self.cfg.set('logconfig', os.path.join(self.cfg.config_dir, 'api_hour/logging.ini'))
 
     def load_default_config(self):
         # init configuration
@@ -44,7 +45,10 @@ class Application(GunicornApp):
     def load_config(self):
         # parse console args
         super().load_config()
-        self.config = get_config({'config_dir': self.cfg.config_dir})
+        if self.cfg.config_dir:
+            self.config = get_config({'config_dir': self.cfg.config_dir})
+        else:
+            self.config = None
         # import ipdb; ipdb.set_trace()
 
     def chdir(self):

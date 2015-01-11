@@ -4,7 +4,7 @@ import os
 import sys
 
 from gunicorn import util
-from gunicorn.config import Setting, validate_string
+from gunicorn.config import Setting, validate_string, validate_bool
 from gunicorn.errors import ConfigError
 import yaml
 
@@ -36,24 +36,38 @@ def get_config(overrides: dict) -> dict:
     return conf
 
 def validate_config_dir(val):
-    # valid if the value is a string
-    val = validate_string(val)
+    if val is None:
+        return val
+    else:
+        # valid if the value is a string
+        val = validate_string(val)
 
-    # transform relative paths
-    path = os.path.abspath(os.path.normpath(os.path.join(util.getcwd(), val)))
+        # transform relative paths
+        path = os.path.abspath(os.path.normpath(os.path.join(util.getcwd(), val)))
 
-    # test if the path exists
-    if not os.path.exists(path):
-        raise ConfigError("can't find a config directory in %r" % val)
+        # test if the path exists
+        if not os.path.exists(path):
+            raise ConfigError("can't find a config directory in %r" % val)
 
-    return path
+        return path
 
 class ConfigDir(Setting):
     name = "config_dir"
     section = "API-Hour"
     cli = ["--config_dir"]
     validator = validate_config_dir
-    default = ''
+    default = None
     desc = """\
         Config directory of your API-Hour Daemon. Example: /etc/hello/
+        """
+
+class AutoConfig(Setting):
+    name = "auto_config"
+    section = "API-Hour"
+    cli = ['-ac', "--auto_config"]
+    validator = validate_bool
+    action = "store_true"
+    default = False
+    desc = """\
+        Enable auto-configuration discover based on daemon name
         """
