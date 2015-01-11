@@ -1,5 +1,4 @@
 # This file is part of API-Hour, forked from aiohttp/worker.py.
-
 __all__ = ['Worker']
 
 import asyncio
@@ -30,10 +29,14 @@ class Worker(base.Worker):
     def run(self):
         self._runner = asyncio.async(self._run(), loop=self.loop)
 
+        # prof = cProfile.Profile()
+        # prof.enable()
         try:
             self.loop.run_until_complete(self._runner)
         finally:
             self.loop.close()
+        # prof.disable()
+        # prof.dump_stats('/tmp/out.pyprof')
 
         sys.exit(self.exit_code)
 

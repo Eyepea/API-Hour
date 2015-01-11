@@ -1,0 +1,37 @@
+Source: api-hour
+Maintainer: Ludovic Gasc <gmludo@gmail.com>
+Section: python
+Priority: optional
+Build-Depends: python3-setuptools, python3-all, debhelper (>= 7.4.3)
+Standards-Version: 3.9.1
+
+
+
+
+
+Package: api-hour
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}, python3-gunicorn (>= 19), python3-setproctitle (>= 1.1.8), python3-yaml (>= 3.11)
+X-Python3-Version: >= 3.3
+Description: Write efficient network daemons (HTTP, SSH...) with ease.
+ API Hour
+ ========
+ .
+ API-Hour is a lightweight daemon framework, that lets you write powerful applications.
+ .
+ It was created to answer the need for a simple, robust, and super-fast server-side environment to build very efficient Daemons with ease.
+ .
+ By default, API-Hour Starter Kit (Cookiecutter) creates for you a HTTP daemon to develop WebServices.
+ .
+ With API-Hour, you can quickly convert any AsyncIO server library to multi-processing daemon, ready for production.
+ .
+ .. image:: https://raw.githubusercontent.com/Eyepea/API-Hour/master/docs/API-Hour_small.png
+ .
+ Quick'n'dirty HTTP benchmarks on a kitchen table
+ ------------------------------------------------
+ .
+ .. image:: https://raw.githubusercontent.com/Eyepea/API-Hour/master/propaganda/en/stats.png
+ .
+ For details, read information in `benchmarks <https://github.com/Eyepea/API-Hour/tree/master/benchmarks>`_.
+ .
+
