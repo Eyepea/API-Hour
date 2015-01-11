@@ -5,6 +5,7 @@ CHANGES
 ------------------
 
 * API-Hour config file is now optional, use -ac to auto-configure your app
+* Add Python 3.3 compatibility
 
 0.5.0 (2015-01-07)
 ------------------

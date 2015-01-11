@@ -1,10 +1,10 @@
 benchmarks
-=====
+==========
 
 Start manually
 --------------
 
-In this current folder, launch: `api_hour benchmarks:Container`
+In this current folder, launch: `api_hour -ac benchmarks:Container`
 
 Install
 -------

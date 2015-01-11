@@ -5,14 +5,17 @@ from setuptools import setup, find_packages
 
 __docformat__ = 'rst'
 
-install_requires = ['ujson', 'setproctitle', 'gunicorn', 'PyYAML']
-
 PY_VER = sys.version_info
 
-if PY_VER >= (3, 4, 2):
-    pass
+if PY_VER < (3, 3, 0):
+    raise RuntimeError("api_hour doesn't support Python earlier than 3.3.0, current Python version is: %s" % PY_VER)
+
+if PY_VER >= (3, 4):
+    install_requires = []
 else:
-    raise RuntimeError("api_hour doesn't support Python earlier than 3.4.2")
+    install_requires = ['asyncio']
+
+install_requires += ['gunicorn', 'PyYAML', 'setproctitle']
 
 def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
@@ -40,6 +43,7 @@ classifiers = [
     'Operating System :: OS Independent',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.3',
     'Programming Language :: Python :: 3.4',
     'Programming Language :: Python :: 3 :: Only',
     'Programming Language :: Python :: Implementation :: CPython',
@@ -52,7 +56,7 @@ classifiers = [
 
 setup(name='api_hour',
       version=read_version(),
-      description=('Write efficient Daemons with ease.'),
+      description=('Write efficient network daemons (HTTP, SSH...) with ease.'),
       long_description='\n\n'.join((read('README.rst'), read('HISTORY.rst'))),
       classifiers=classifiers,
       platforms=['OS Independent'],
