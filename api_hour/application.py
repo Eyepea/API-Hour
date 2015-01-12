@@ -36,6 +36,12 @@ class Application(GunicornApp):
 
             if not self.cfg.logconfig:
                 self.cfg.set('logconfig', os.path.join(self.cfg.config_dir, 'api_hour/logging.ini'))
+        else:
+            # To avoid with Gunicorn 19 that the console it's empty when you test
+            if not opts.errorlog:
+                opts.errorlog = '-'
+            if not opts.accesslog:
+                opts.accesslog = '-'
 
     def load_default_config(self):
         # init configuration
