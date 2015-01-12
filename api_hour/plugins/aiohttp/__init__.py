@@ -8,9 +8,9 @@ except ImportError:
 class JSON(Response):
     """Serialize response to JSON with aiohttp.web"""
 
-    def __init__(self, json, status=200,
+    def __init__(self, data, status=200,
                  reason=None, headers=None):
-        body = json.dumps(json).encode('utf-8')
+        body = json.dumps(data).encode('utf-8')
 
         super().__init__(body=body, status=status, reason=reason,
                          headers=headers, content_type='application/json')

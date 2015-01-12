@@ -10,7 +10,9 @@ Table of contents
 
 .. toctree::
 
-   application_architecture
+   installation
+   tutorials/index
+   container_architecture
    examples
    manifesto
 

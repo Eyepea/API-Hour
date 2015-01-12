@@ -5,8 +5,11 @@ CHANGES
 ------------------
 
 * API-Hour config file is now optional, use -ac to auto-configure your app
-* Add Python 3.3 compatibility
+* Add Python 3.3 compatibility to use easily Python 3 directly from distributions package
 * Add Debian/Ubuntu package
+* ujson is now optional for aiohttp.web
+* More documentation with tutorials: all-in-one and Starter Kit
+* If api_hour CLI has no logging file, enable logging on console by default
 
 0.5.0 (2015-01-07)
 ------------------

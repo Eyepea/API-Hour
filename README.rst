@@ -56,12 +56,12 @@ Support
 Requirements
 ------------
 
-- Python 3.4.2+ (You can use `Pythonz <https://github.com/saghul/pythonz#pythonz-a-python-installation-manager>`_ if you don't have this version)
+- Python 3.3+ (You can use `Pythonz <https://github.com/saghul/pythonz#pythonz-a-python-installation-manager>`_ if you don't have this version)
 
 Install
 -------
 
-#. If you don't have **Python 3.4.2+**, `use Pythonz <https://github.com/saghul/pythonz#pythonz-a-python-installation-manager>`_.
+#. If you don't have **Python 3.3+**, `use Pythonz <https://github.com/saghul/pythonz#pythonz-a-python-installation-manager>`_.
 #. pyvenv pyvenv (To create a Python environment, pyvenv is Python 3.3+ integrated virtualenv)
 #. . pyvenv/bin/activate
 #. pip3 install api_hour

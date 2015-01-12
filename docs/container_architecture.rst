@@ -1,5 +1,7 @@
-Recommended architecture for your API-Hour Application
-======================================================
+.. _container_architecture:
+
+Recommended architecture for your API-Hour Container
+====================================================
 
 *Nota bene: This architecture proposed is only a suggestion, based on our experience.*
 
