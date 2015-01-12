@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-0.6.0 (2015-01-DD)
+0.6.0 (2015-01-13)
 ------------------
 
 * API-Hour config file is now optional, use -ac to auto-configure your app

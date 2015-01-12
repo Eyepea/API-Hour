@@ -14,6 +14,11 @@ Ubuntu Trusty (14.04+) or Debian Jessie (8.0+)
 
     apt-get install python3-venv python3-pip
 
+On other Linux distributions
+````````````````````````````
+
+You can install `Pythonz <https://github.com/saghul/pythonz#pythonz-a-python-installation-manager>`_ or compile yourself Python 3.4+.
+
 Install API-Hour with a Pyvenv
 ------------------------------
 
