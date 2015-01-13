@@ -1,9 +1,9 @@
 All-in-one Python script
 ========================
 
-If you don't already install **API-Hour**, you can follow :ref:`installation` instructions.
+If you haven't already installed **API-Hour**, you can follow the :ref:`installation` instructions.
 
-Now, we're creating an API-Hour daemon that handles HTTP requests.
+Let's an API-Hour daemon that handles HTTP requests.
 
 Create all_in_one.py file
 -------------------------
@@ -14,7 +14,7 @@ Create all_in_one.py file
 How to launch
 -------------
 
-In your current folder where you write your script, launch::
+In your current folder where you wrote your script, launch::
 
     api_hour all_in_one:Container
 

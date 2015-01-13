@@ -1,7 +1,7 @@
-With Starter Kit
+With The Starter Kit
 ================
 
-If you don't already install **API-Hour**, you can follow :ref:`installation` instructions.
+If you haven't already installed **API-Hour**, you can follow the :ref:`installation` instructions.
 
 
 Generate
@@ -15,10 +15,10 @@ Generate
 Customize
 ---------
 
-| In Starter Kit, the main file is **app_name/__init__.py**
-| you have an example with PostgreSQL, you can remove source code if you doesn't need that.
+| In the Starter Kit, the main file is **app_name/__init__.py**
+| you will have an example using PostgreSQL, you can remove the call to aiopg if it is'nt needed.
 
-You have all details about directories created by cookiecutter in :ref:`container_architecture`.
+You have all details about the directories created by cookiecutter in :ref:`container_architecture`.
 
 Launch
 ------
@@ -27,7 +27,7 @@ Launch
 
     api_hour -ac app_name:Container
 
-**-ac** means you use config discovery to find *etc/app_name* configuration directory you have in your daemon example.
+**-ac** is used to find the *etc/app_name* configuration directory you have in your daemon example.
 
 You can define the configuration directory with **--config_dir** command line parameter.
 
