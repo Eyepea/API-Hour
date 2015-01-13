@@ -38,4 +38,3 @@ To use several workers::
 Compare the difference between one worker and several workers with **wrk**::
 
     wrk -t12 -c400 -d30s http://127.0.0.1:8000/
-

@@ -1,5 +1,5 @@
 With The Starter Kit
-================
+====================
 
 If you haven't already installed **API-Hour**, you can follow the :ref:`installation` instructions.
 
