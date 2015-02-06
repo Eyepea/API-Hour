@@ -46,11 +46,12 @@ Examples
 How-to start an API-Hour project ?
 ----------------------------------
 
-In the location folder where you want to create the project, launch: **cookiecutter https://github.com/Eyepea/cookiecutter-API-Hour.git**
+You can follow `one of our tutorials <http://pythonhosted.org/api_hour/tutorials/index.html>`_
 
 Support
 -------
 
+* `Documentation <http://pythonhosted.org/api_hour/>`_.
 * `Mailing-list <https://groups.google.com/d/forum/api-hour>`_
 
 Requirements
