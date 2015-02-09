@@ -16,6 +16,10 @@ Quick'n'dirty HTTP benchmarks on a kitchen table
 
 .. image:: https://raw.githubusercontent.com/Eyepea/API-Hour/master/propaganda/en/stats.png
 
+Scale: Number of queries during 30 seconds with 400 simultaneous connexions.
+
+Benchmark made on a Dell Precision M6800 between API-Hour and Gunicorn with 16 workers.
+
 For details, read information in `benchmarks <https://github.com/Eyepea/API-Hour/tree/master/benchmarks>`_.
 
 Where is the magic to have theses performances ?
