@@ -14,6 +14,9 @@ pep:
 	$(PEP) api_hour tests examples
 
 clean:
+	rm -rf dist
+	rm -rf build
+	rm -rf *.egg-info
 	rm -rf `find . -name __pycache__`
 	rm -f `find . -type f -name '*.py[co]' `
 	rm -f `find . -type f -name '*~' `
@@ -24,7 +27,6 @@ clean:
 	rm -f `find . -type f -name '*.rej' `
 	rm -f .coverage
 	rm -rf coverage
-
 
 check_readme:
 	rst2html.py --strict README.rst > /dev/null
