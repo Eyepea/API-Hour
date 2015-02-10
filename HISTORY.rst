@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+0.6.1 (2015-02-10)
+------------------
+
+* Release a new version because PyPI is bugged: 0.6.0 is broken on PyPI
+
 0.6.0 (2015-01-13)
 ------------------
 
