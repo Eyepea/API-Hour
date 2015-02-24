@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+0.6.2 (2015-02-24)
+------------------
+
+* You can customize event loop used with make_event_loop() class method in Container
+
 0.6.1 (2015-02-10)
 ------------------
 

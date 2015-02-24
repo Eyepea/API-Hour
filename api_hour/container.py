@@ -31,6 +31,11 @@ class Container:
     def make_servers(self):
         """Return handlers to serve data"""
 
+    @classmethod
+    def make_event_loop(cls, config):
+        """To customize loop generation"""
+        return asyncio.new_event_loop()
+
     @asyncio.coroutine
     def start(self):
         LOG.info('Starting application...')

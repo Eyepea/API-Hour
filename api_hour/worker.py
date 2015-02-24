@@ -16,17 +16,17 @@ class Worker(base.Worker):
         self.servers = {}
         self.exit_code = 0
         self.container = None
+        self.loop = None
 
     def init_process(self):
         # create new event_loop after fork
         asyncio.get_event_loop().close()
 
-        self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
-
         super().init_process()
 
     def run(self):
+        self.loop = self.app.callable.make_event_loop(config=self.app.config)
+        asyncio.set_event_loop(self.loop)
         self._runner = asyncio.async(self._run(), loop=self.loop)
 
         # prof = cProfile.Profile()

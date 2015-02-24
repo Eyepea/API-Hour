@@ -4,7 +4,7 @@ import collections
 
 __author__ = 'Ludovic Gasc (GMLudo)'
 __email__ = 'git@gmludo.eu'
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 version = __version__ + ' , Python ' + sys.version
 
 
