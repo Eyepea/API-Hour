@@ -9,6 +9,4 @@ from api_hour.plugins.aiohttp import JSON
 
 @asyncio.coroutine
 def index(request):
-    return JSON({
-        'index': 'hello!'
-    })
+    return JSON({'hello': 'world'})

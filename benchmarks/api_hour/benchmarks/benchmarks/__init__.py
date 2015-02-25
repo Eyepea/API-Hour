@@ -1,6 +1,7 @@
 import logging
 import asyncio
 
+import aiouv
 import aiohttp.web
 import aiopg
 import psycopg2.extras
@@ -22,20 +23,14 @@ class Container(api_hour.Container):
         # You can define several servers, to listen HTTP and SSH for example.
         # If you do that, you need to listen on two ports with api_hour --bind command line.
         self.servers['http'] = aiohttp.web.Application(loop=kwargs['loop'])
-        self.servers['http'].ah_container = self # keep a reference to Container
+        self.servers['http']['ah_container'] = self  # keep a reference to Container
         # routes
         self.servers['http'].router.add_route('GET',
                                               '/index',
                                               endpoints.index.index)
         self.servers['http'].router.add_route('GET',
-                                              '/agents_with_psycopg2_sync',
-                                              endpoints.benchmarks.agents_with_psycopg2_sync)
-        self.servers['http'].router.add_route('GET',
-                                              '/agents_with_psycopg2_async',
-                                              endpoints.benchmarks.agents_with_psycopg2_async)
-        self.servers['http'].router.add_route('GET',
-                                              '/agents_with_psycopg2_async_pool',
-                                              endpoints.benchmarks.agents_with_psycopg2_async_pool)
+                                              '/agents',
+                                              endpoints.benchmarks.agents)
 
     def make_servers(self):
         # This method is used by api_hour command line to bind each server on each socket
@@ -45,6 +40,16 @@ class Container(api_hour.Container):
                                                   keep_alive=self.worker.cfg.keepalive,
                                                   access_log=self.worker.log.access_log,
                                                   access_log_format=self.worker.cfg.access_log_format)]
+
+    @classmethod
+    def make_event_loop(cls, config):
+        """To customize loop generation"""
+        if config['event_loop'] == 'aiouv':
+            LOG.info('Using aiouv event loop')
+            return aiouv.EventLoop()
+        else:
+            LOG.info('Using default AsyncIO event loop')
+            return asyncio.new_event_loop()
 
     @asyncio.coroutine
     def start(self):

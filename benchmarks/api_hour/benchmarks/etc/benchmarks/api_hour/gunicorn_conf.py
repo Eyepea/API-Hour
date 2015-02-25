@@ -7,5 +7,5 @@ if os.environ.get('TRAVIS') == 'true':
 
 bind = "0.0.0.0:8008"
 keepalive = 45
-pidfile = '/run/lock/{{cookiecutter.app_name}}.pid'
+pidfile = '/run/lock/benchmarks.pid'
 backlog = 10240000
