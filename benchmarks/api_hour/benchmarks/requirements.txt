@@ -4,3 +4,4 @@ aiopg==0.6.2
 psycopg2==2.5.4
 six==1.8.0
 ujson==1.33
+api_hour==0.6.2
