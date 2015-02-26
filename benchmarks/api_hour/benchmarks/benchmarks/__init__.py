@@ -36,7 +36,7 @@ class Container(api_hour.Container):
         # This method is used by api_hour command line to bind each server on each socket
         # Please don't touch if you don't understand how it works
         return [self.servers['http'].make_handler(logger=self.worker.log,
-                                                  debug=self.worker.cfg.debug,
+                                                  debug=False,
                                                   keep_alive=self.worker.cfg.keepalive,
                                                   access_log=self.worker.log.access_log,
                                                   access_log_format=self.worker.cfg.access_log_format)]
