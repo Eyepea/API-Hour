@@ -1,0 +1,140 @@
+    upstream flask {
+        server unix:/tmp/flask.sock fail_timeout=0;
+        # For a TCP configuration:
+        # server 192.168.0.7:8000 fail_timeout=0;
+    }
+
+    server {
+        listen 18000;
+        client_max_body_size 4G;
+        server_name _;
+
+        keepalive_timeout 45;
+
+        # path for static files
+        root /tmp;
+
+        location / {
+            # checks for static file, if not found proxy to app
+            try_files $uri @proxy_to_app;
+        }
+
+        location @proxy_to_app {
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Host $http_host;
+            proxy_redirect off;
+
+            proxy_pass   http://flask;
+        }
+
+        error_page 500 502 503 504 /500.html;
+        location = /500.html {
+            root /tmp;
+        }
+    }
+
+    upstream django {
+        server unix:/tmp/django.sock fail_timeout=0;
+        # For a TCP configuration:
+        # server 192.168.0.7:8000 fail_timeout=0;
+    }
+
+    server {
+        listen 18004;
+        client_max_body_size 4G;
+        server_name _;
+
+        keepalive_timeout 45;
+
+        # path for static files
+        root /tmp;
+
+        location / {
+            # checks for static file, if not found proxy to app
+            try_files $uri @proxy_to_app;
+        }
+
+        location @proxy_to_app {
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Host $http_host;
+            proxy_redirect off;
+
+            proxy_pass   http://django;
+        }
+
+        error_page 500 502 503 504 /500.html;
+        location = /500.html {
+            root /tmp;
+        }
+    }
+    
+    
+    upstream flask_uwsgi {
+        server unix:/tmp/flask_uwsgi.sock fail_timeout=0;
+        # For a TCP configuration:
+        # server 192.168.0.7:8000 fail_timeout=0;
+    }
+
+    server {
+        listen 28000;
+        client_max_body_size 4G;
+        server_name _;
+
+        keepalive_timeout 45;
+
+        # path for static files
+        root /tmp;
+
+        location / {
+            # checks for static file, if not found proxy to app
+            try_files $uri @proxy_to_app;
+        }
+
+        location @proxy_to_app {
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Host $http_host;
+            proxy_redirect off;
+
+            proxy_pass   http://flask_uwsgi;
+        }
+
+        error_page 500 502 503 504 /500.html;
+        location = /500.html {
+            root /tmp;
+        }
+    }
+
+    upstream django_uwsgi {
+        server unix:/tmp/django_uwsgi.sock fail_timeout=0;
+        # For a TCP configuration:
+        # server 192.168.0.7:8000 fail_timeout=0;
+    }
+
+    server {
+        listen 28004;
+        client_max_body_size 4G;
+        server_name _;
+
+        keepalive_timeout 45;
+
+        # path for static files
+        root /tmp;
+
+        location / {
+            # checks for static file, if not found proxy to app
+            try_files $uri @proxy_to_app;
+        }
+
+        location @proxy_to_app {
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Host $http_host;
+            proxy_redirect off;
+
+            proxy_pass   http://django_uwsgi;
+        }
+
+        error_page 500 502 503 504 /500.html;
+        location = /500.html {
+            root /tmp;
+        }
+    }
