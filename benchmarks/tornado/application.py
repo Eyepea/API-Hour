@@ -3,7 +3,7 @@ from tornado import gen
 from tornado.ioloop import IOLoop
 from tornado.httpserver import HTTPServer
 from tornado.options import parse_command_line
-from tornado.web import RequestHandler, Application, asynchronous
+from tornado.web import RequestHandler, Application
 
 import psycopg2
 import momoko
@@ -13,6 +13,7 @@ class BaseHandler(RequestHandler):
     @property
     def db(self):
         return self.application.db
+
 
 class Index(RequestHandler):
     def get(self):
@@ -52,11 +53,13 @@ if __name__ == '__main__':
         (r'/index', Index),
     ], debug=False)
 
+    http_server = HTTPServer(application)
+    http_server.bind(8000)
+    http_server.start(None)
+
     application.db = momoko.Pool(
         dsn='dbname=benchmarks user=asterisk password=asterisk host=127.0.0.1 port=5432',
         size=1
     )
 
-    http_server = HTTPServer(application)
-    http_server.listen(8000, 'localhost')
     IOLoop.instance().start()
