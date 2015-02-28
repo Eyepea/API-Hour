@@ -1,0 +1,4 @@
+Momoko==1.1.5
+certifi==14.05.14
+psycopg2==2.6
+tornado==4.1
