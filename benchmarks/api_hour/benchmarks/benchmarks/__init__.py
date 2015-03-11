@@ -1,7 +1,6 @@
 import logging
 import asyncio
 
-import aiouv
 import aiohttp.web
 import aiopg
 import psycopg2.extras
@@ -46,6 +45,7 @@ class Container(api_hour.Container):
         """To customize loop generation"""
         if config['event_loop'] == 'aiouv':
             LOG.info('Using aiouv event loop')
+            import aiouv
             return aiouv.EventLoop()
         else:
             LOG.info('Using default AsyncIO event loop')

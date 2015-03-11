@@ -1,3 +1,39 @@
+    upstream api_hour {
+        server unix:/tmp/api_hour.sock fail_timeout=0;
+        # For a TCP configuration:
+        # server 192.168.0.7:8000 fail_timeout=0;
+    }
+
+    server {
+        listen 18008;
+        client_max_body_size 4G;
+        server_name _;
+        access_log off;
+
+        keepalive_timeout 45;
+
+        # path for static files
+        root /tmp;
+
+        location / {
+            # checks for static file, if not found proxy to app
+            try_files $uri @proxy_to_app;
+        }
+
+        location @proxy_to_app {
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Host $http_host;
+            proxy_redirect off;
+
+            proxy_pass   http://api_hour;
+        }
+
+        error_page 500 502 503 504 /500.html;
+        location = /500.html {
+            root /tmp;
+        }
+    }
+
     upstream flask {
         server unix:/tmp/flask.sock fail_timeout=0;
         # For a TCP configuration:
@@ -8,6 +44,7 @@
         listen 18000;
         client_max_body_size 4G;
         server_name _;
+        access_log off;
 
         keepalive_timeout 45;
 
@@ -43,6 +80,7 @@
         listen 18004;
         client_max_body_size 4G;
         server_name _;
+        access_log off;
 
         keepalive_timeout 45;
 
@@ -79,6 +117,7 @@
         listen 28000;
         client_max_body_size 4G;
         server_name _;
+        access_log off;
 
         keepalive_timeout 45;
 
@@ -114,6 +153,7 @@
         listen 28004;
         client_max_body_size 4G;
         server_name _;
+        access_log off;
 
         keepalive_timeout 45;
 
@@ -126,11 +166,13 @@
         }
 
         location @proxy_to_app {
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header Host $http_host;
-            proxy_redirect off;
+#            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#            proxy_set_header Host $http_host;
+#            proxy_redirect off;
+#            proxy_pass   http://django_uwsgi;
 
-            proxy_pass   http://django_uwsgi;
+            uwsgi_pass django_uwsgi;
+            include uwsgi_params;
         }
 
         error_page 500 502 503 504 /500.html;
