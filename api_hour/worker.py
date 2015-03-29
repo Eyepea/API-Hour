@@ -29,6 +29,7 @@ class Worker(base.Worker):
         asyncio.set_event_loop(self.loop)
         self._runner = asyncio.async(self._run(), loop=self.loop)
 
+        # import cProfile
         # prof = cProfile.Profile()
         # prof.enable()
         try:
@@ -78,7 +79,12 @@ class Worker(base.Worker):
                 handler = handlers[0]
             else:
                 handler = handlers[i]
-            srv = yield from self.loop.create_server(handler, sock=sock.sock)
+            if asyncio.iscoroutinefunction(handler):
+                self.log.info('Handler "%s" is a coroutine => High-level AsyncIO API', handler)
+                srv = yield from asyncio.start_server(handler, sock=sock.sock, loop=self.loop)
+            else:
+                self.log.info('Handler "%s" is a function => Low-level AsyncIO API', handler)
+                srv = yield from self.loop.create_server(handler, sock=sock.sock)
             self.servers[srv] = handler
         yield from self.container.start()
 

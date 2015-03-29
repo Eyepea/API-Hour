@@ -5,6 +5,7 @@ CHANGES
 ------------------
 
 * Add HTML serializer plugin
+* Add AsyncIO high level stream server support (Used by FastAGI implementation of Panoramisk)
 
 0.6.2 (2015-02-24)
 ------------------
