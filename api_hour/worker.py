@@ -13,7 +13,7 @@ class Worker(base.Worker):
     def __init__(self, *args, **kw):  # pragma: no cover
         super().__init__(*args, **kw)
 
-        self.servers = {}
+        self.handlers = {}
         self.exit_code = 0
         self.container = None
         self.loop = None
@@ -43,9 +43,9 @@ class Worker(base.Worker):
 
     @asyncio.coroutine
     def close(self):
-        if self.servers:
-            servers = self.servers
-            self.servers = None
+        if self.handlers:
+            servers = self.handlers
+            self.handlers = None
 
             # stop accepting connections
             for server, handler in servers.items():
@@ -73,19 +73,22 @@ class Worker(base.Worker):
         self.container = self.app.callable(config=self.app.config,
                                            worker=self,
                                            loop=self.loop)
-        handlers = self.container.make_servers()
-        for i, sock in enumerate(self.sockets):
-            if len(handlers) == 1:
-                handler = handlers[0]
-            else:
-                handler = handlers[i]
-            if asyncio.iscoroutinefunction(handler):
-                self.log.info('Handler "%s" is a coroutine => High-level AsyncIO API', handler)
-                srv = yield from asyncio.start_server(handler, sock=sock.sock, loop=self.loop)
-            else:
-                self.log.info('Handler "%s" is a function => Low-level AsyncIO API', handler)
-                srv = yield from self.loop.create_server(handler, sock=sock.sock)
-            self.servers[srv] = handler
+        if asyncio.iscoroutinefunction(self.container.make_servers):
+            self.handlers = yield from self.container.make_servers(self.sockets)
+        else:
+            handlers = self.container.make_servers()
+            for i, sock in enumerate(self.sockets):
+                if len(handlers) == 1:
+                    handler = handlers[0]
+                else:
+                    handler = handlers[i]
+                if asyncio.iscoroutinefunction(handler):
+                    self.log.info('Handler "%s" is a coroutine => High-level AsyncIO API', handler)
+                    srv = yield from asyncio.start_server(handler, sock=sock.sock, loop=self.loop)
+                else:
+                    self.log.info('Handler "%s" is a function => Low-level AsyncIO API', handler)
+                    srv = yield from self.loop.create_server(handler, sock=sock.sock)
+                self.handlers[srv] = handler
         yield from self.container.start()
 
         # If our parent changed then we shut down.

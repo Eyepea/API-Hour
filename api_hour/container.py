@@ -28,7 +28,8 @@ class Container:
         self._stopping = False
 
     @abstractmethod
-    def make_servers(self):
+    @asyncio.coroutine
+    def make_servers(self, sockets):
         """Return handlers to serve data"""
 
     @classmethod

@@ -1,11 +1,12 @@
 CHANGES
 =======
 
-0.6.3 (YYYY-MM-DD)
+0.7.0 (YYYY-MM-DD)
 ------------------
 
 * Add HTML serializer plugin
 * Add AsyncIO high level stream server support (Used by FastAGI implementation of Panoramisk)
+* Now, you can use make_handler method to connect directly your handlers with your sockets for more flexibility
 
 0.6.2 (2015-02-24)
 ------------------
