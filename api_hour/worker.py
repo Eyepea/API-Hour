@@ -63,7 +63,8 @@ class Worker(base.Worker):
                 if hasattr(handler, 'finish_connections'):
                     tasks.append(handler.finish_connections(
                     timeout=self.cfg.graceful_timeout / 100 * 80))
-            yield from asyncio.wait(tasks, loop=self.loop)
+            if tasks:
+                yield from asyncio.wait(tasks, loop=self.loop)
 
             # stop container
             yield from self.container.stop()
