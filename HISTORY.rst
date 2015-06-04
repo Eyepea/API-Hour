@@ -1,8 +1,8 @@
 CHANGES
 =======
 
-0.7.0 (YYYY-MM-DD)
-------------------
+0.7.0 (20115-05-04)
+-------------------
 
 * Add HTML serializer plugin
 * Add AsyncIO high level stream server support (Used by FastAGI implementation of Panoramisk)
