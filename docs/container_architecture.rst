@@ -16,8 +16,10 @@ But, with WebServices API shift, from our point of view, MVC doesn't fit very we
 
 Moreover, if you build a Daemon without an UI, like a SSH server, MVC doesn't fit very well.
 
-API-Hour proposal
------------------
+API-Hour proposal: Program with EASE
+------------------------------------
+
+EASE = Endpoints for APIs, Services and Engines
 
 In API-Hour, you have:
 
@@ -27,4 +29,4 @@ In API-Hour, you have:
     #. Reduce complexity
     #. Easier to share Endpoints between Containers if it's only coroutines
 #. **Engines**: Data source providers for Services. Example: PostgreSQL, Asterisk, CouchDB...
-#. **Services**: Where you transform data for Endpoints. Like Endpoints, a Service is only a Python file with coroutines. It represents your business logic and your internal Python API.
+#. **Services**: Where you transform data for Endpoints. Like Endpoints, a Service is only a Python file with coroutines. It represents your business logic and your internal Python API. You should see this part like microservices without internal HTTP communications that reduce the global efficiency.
