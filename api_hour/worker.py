@@ -69,6 +69,10 @@ class Worker(base.Worker):
             # stop container
             yield from self.container.stop()
 
+            # Wait the end of close
+            for server, handler in servers.items():
+                yield from server.wait_closed()
+
     @asyncio.coroutine
     def _run(self):
         self.container = self.app.callable(config=self.app.config,
