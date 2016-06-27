@@ -1,6 +1,5 @@
 from pprint import pprint
 import logging
-import asyncio
 
 from api_hour.plugins.aiohttp import JSON
 
@@ -12,8 +11,7 @@ LOG = logging.getLogger(__name__)
 You handle inputs with outside world here
 """
 
-@asyncio.coroutine
-def get_ssh_content(request):
+async def get_ssh_content(request):
     container = request.app.ah_container
     # return JSON({
     #     'current_ssh_text': container.current_ssh_text
@@ -26,10 +24,9 @@ def get_ssh_content(request):
 
 # from ..services.data import get_random_record
 #
-# @asyncio.coroutine
-# def db(request):
+# async def db(request):
 #     """Test type 2: Single database query"""
 #     container = request.app.ah_container
 #
-#     return JSON((yield from get_random_record(container)))
+#     return JSON((await get_random_record(container)))
 #

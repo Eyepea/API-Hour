@@ -27,7 +27,7 @@ class Worker(base.Worker):
     def run(self):
         self.loop = self.app.callable.make_event_loop(config=self.app.config)
         asyncio.set_event_loop(self.loop)
-        self._runner = asyncio.async(self._run(), loop=self.loop)
+        self._runner = asyncio.wait_for(self._run(), loop=self.loop)
 
         # import cProfile
         # prof = cProfile.Profile()
@@ -41,8 +41,7 @@ class Worker(base.Worker):
 
         sys.exit(self.exit_code)
 
-    @asyncio.coroutine
-    def close(self):
+    async def close(self):
         if self.handlers:
             servers = self.handlers
             self.handlers = None
@@ -64,22 +63,21 @@ class Worker(base.Worker):
                     tasks.append(handler.finish_connections(
                     timeout=self.cfg.graceful_timeout / 100 * 80))
             if tasks:
-                yield from asyncio.wait(tasks, loop=self.loop)
+                await asyncio.wait(tasks, loop=self.loop)
 
             # stop container
-            yield from self.container.stop()
+            await self.container.stop()
 
             # Wait the end of close
             for server, handler in servers.items():
-                yield from server.wait_closed()
+                await server.wait_closed()
 
-    @asyncio.coroutine
-    def _run(self):
+    async def _run(self):
         self.container = self.app.callable(config=self.app.config,
                                            worker=self,
                                            loop=self.loop)
         if asyncio.iscoroutinefunction(self.container.make_servers):
-            self.handlers = yield from self.container.make_servers(self.sockets)
+            self.handlers = await self.container.make_servers(self.sockets)
         else:
             handlers = self.container.make_servers()
             for i, sock in enumerate(self.sockets):
@@ -89,12 +87,12 @@ class Worker(base.Worker):
                     handler = handlers[i]
                 if asyncio.iscoroutinefunction(handler):
                     self.log.info('Handler "%s" is a coroutine => High-level AsyncIO API', handler)
-                    srv = yield from asyncio.start_server(handler, sock=sock.sock, loop=self.loop)
+                    srv = await asyncio.start_server(handler, sock=sock.sock, loop=self.loop)
                 else:
                     self.log.info('Handler "%s" is a function => Low-level AsyncIO API', handler)
-                    srv = yield from self.loop.create_server(handler, sock=sock.sock)
+                    srv = await self.loop.create_server(handler, sock=sock.sock)
                 self.handlers[srv] = handler
-        yield from self.container.start()
+        await self.container.start()
 
         # If our parent changed then we shut down.
         pid = os.getpid()
@@ -106,11 +104,11 @@ class Worker(base.Worker):
                     self.alive = False
                     self.log.info("Parent changed, shutting down: %s", self)
                 else:
-                    yield from asyncio.sleep(1.0, loop=self.loop)
+                    await asyncio.sleep(1.0, loop=self.loop)
         except (Exception, BaseException, GeneratorExit, KeyboardInterrupt):
             pass
 
-        yield from self.close()
+        await self.close()
 
     def init_signal(self):
         # init new signaling
