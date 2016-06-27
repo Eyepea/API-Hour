@@ -4,6 +4,7 @@ from collections import OrderedDict
 import logging
 
 
+
 __all__ = [
     'Container',
 ]
@@ -28,8 +29,7 @@ class Container:
         self._stopping = False
 
     @abstractmethod
-    @asyncio.coroutine
-    def make_servers(self, sockets):
+    async def make_servers(self, sockets):
         """Return handlers to serve data"""
 
     @classmethod
@@ -37,20 +37,18 @@ class Container:
         """To customize loop generation"""
         return asyncio.new_event_loop()
 
-    @asyncio.coroutine
-    def start(self):
+    async def start(self):
         LOG.info('Starting application...')
 
     def pre_stop(self):
         if not self._stopping:
             self._stopping = True
-            task = asyncio.async(self.stop(), loop=self.loop)
+            task = asyncio.wait_for(self.stop(), loop=self.loop)
             task.add_done_callback(self.post_stop)
         else:
             LOG.debug('Already stopping application, not doing anything')
 
-    @asyncio.coroutine
-    def stop(self):
+    async def stop(self):
         LOG.info('Stopping application...')
 
     def post_stop(self, future):
