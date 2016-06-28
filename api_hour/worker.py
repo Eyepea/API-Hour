@@ -27,7 +27,7 @@ class Worker(base.Worker):
     def run(self):
         self.loop = self.app.callable.make_event_loop(config=self.app.config)
         asyncio.set_event_loop(self.loop)
-        self._runner = asyncio.wait_for(self._run(), loop=self.loop)
+        self._runner = asyncio.ensure_future(self._run(), loop=self.loop)
 
         # import cProfile
         # prof = cProfile.Profile()
