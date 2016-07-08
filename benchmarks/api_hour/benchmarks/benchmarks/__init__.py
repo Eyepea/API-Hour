@@ -51,9 +51,8 @@ class Container(api_hour.Container):
             LOG.info('Using default AsyncIO event loop')
             return asyncio.new_event_loop()
 
-    @asyncio.coroutine
-    def start(self):
-        yield from super().start()
+    async def start(self):
+        await super().start()
         LOG.info('Starting engines...')
         # Add your custom engines here, example with PostgreSQL:
         self.engines['pg'] = self.loop.create_task(aiopg.create_pool(host=self.config['engines']['pg']['host'],
@@ -65,20 +64,19 @@ class Container(api_hour.Container):
                                                                      cursor_factory=psycopg2.extras.RealDictCursor,
                                                                      minsize=int(self.config['engines']['pg']['minsize']),
                                                                      maxsize=int(self.config['engines']['pg']['maxsize'])))
-        yield from asyncio.wait([self.engines['pg']], return_when=asyncio.ALL_COMPLETED)
+        await asyncio.wait([self.engines['pg']], return_when=asyncio.ALL_COMPLETED)
 
         LOG.info('All engines ready !')
 
 
-    @asyncio.coroutine
-    def stop(self):
+    async def stop(self):
         LOG.info('Stopping engines...')
         # Add your custom end here, example with PostgreSQL:
         if 'pg' in self.engines:
             if self.engines['pg'].done():
                 self.engines['pg'].result().terminate()
-                yield from self.engines['pg'].result().wait_closed()
+                await self.engines['pg'].result().wait_closed()
             else:
-                yield from self.engines['pg'].cancel()
+                await self.engines['pg'].cancel()
         LOG.info('All engines stopped !')
-        yield from super().stop()
+        await super().stop()

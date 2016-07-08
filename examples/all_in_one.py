@@ -1,5 +1,4 @@
 import logging
-import asyncio
 
 import api_hour
 import aiohttp.web
@@ -22,23 +21,20 @@ class Container(api_hour.Container):
 
     # A HTTP handler example
     # More documentation: http://aiohttp.readthedocs.org/en/latest/web.html#handler
-    @asyncio.coroutine
-    def index(self, request):
+    async def index(self, request):
         message = 'Hello World !'
         return Response(text=message)
 
 
     # Container methods
-    @asyncio.coroutine
-    def start(self):
+    async def start(self):
         # A coroutine called when the Container is started
-        yield from super().start()
+        await super().start()
 
 
-    @asyncio.coroutine
-    def stop(self):
+    async def stop(self):
         # A coroutine called when the Container is stopped
-        yield from super().stop()
+        await super().stop()
 
 
     def make_servers(self):

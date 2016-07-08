@@ -1,5 +1,4 @@
 import logging
-import asyncio
 
 import aiohttp.web
 from asyncssh import import_private_key
@@ -46,15 +45,13 @@ class Container(api_hour.Container):
                                                   access_log_format=self.worker.cfg.access_log_format),
                 lambda: ssh_server]
 
-    @asyncio.coroutine
-    def start(self):
-        yield from super().start()
+    async def start(self):
+        await super().start()
         LOG.info('Starting engines...')
         LOG.info('All engines ready !')
 
 
-    @asyncio.coroutine
-    def stop(self):
+    async def stop(self):
         LOG.info('Stopping engines...')
         LOG.info('All engines stopped !')
-        yield from super().stop()
+        await super().stop()
