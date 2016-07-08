@@ -7,15 +7,10 @@ __docformat__ = 'rst'
 
 PY_VER = sys.version_info
 
-if PY_VER < (3, 3, 0):
-    raise RuntimeError("api_hour doesn't support Python earlier than 3.3.0, current Python version is: %s" % PY_VER)
+if PY_VER < (3, 5, 0):
+    raise RuntimeError("api_hour doesn't support Python earlier than 3.5.0, current Python version is: %s" % PY_VER)
 
-if PY_VER >= (3, 4):
-    install_requires = []
-else:
-    install_requires = ['asyncio']
-
-install_requires += ['gunicorn', 'PyYAML', 'setproctitle']
+install_requires = ['gunicorn', 'PyYAML', 'setproctitle']
 
 
 def read(f):

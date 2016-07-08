@@ -1,8 +1,18 @@
 CHANGES
 =======
 
-0.7.0 (20115-05-04)
--------------------
+0.8.0 (2016-07-08)
+------------------
+
+* Drop support of Python 3.3 and 3.4
+
+0.7.1 (2016-07-08)
+------------------
+
+* Merge bugfix from https://github.com/KeepSafe/aiohttp/pull/879
+
+0.7.0 (2015-05-04)
+------------------
 
 * Add HTML serializer plugin
 * Add AsyncIO high level stream server support (Used by FastAGI implementation of Panoramisk)
