@@ -7,6 +7,10 @@ import signal
 import sys
 import gunicorn.workers.base as base
 
+# from pycallgraph import PyCallGraph
+# from pycallgraph import Config
+# from pycallgraph.output import GraphvizOutput
+
 
 class Worker(base.Worker):
 
@@ -23,10 +27,18 @@ class Worker(base.Worker):
         asyncio.get_event_loop().close()
 
         super().init_process()
+        # graphviz = GraphvizOutput()
+        # graphviz.output_file = '/tmp/test.png'
+        #
+        # with PyCallGraph(output=graphviz):
+        #     super().init_process()
 
     def run(self):
         self.loop = self.app.callable.make_event_loop(config=self.app.config)
         asyncio.set_event_loop(self.loop)
+
+        self._init_signals()
+
         self._runner = asyncio.async(self._run(), loop=self.loop)
 
         # import cProfile
@@ -113,6 +125,10 @@ class Worker(base.Worker):
         yield from self.close()
 
     def init_signals(self):
+        # init_signals initialized later in _init_signals because self.loop isn't initialized yet
+        pass
+
+    def _init_signals(self):
         # Set up signals through the event loop API.
 
         self.loop.add_signal_handler(signal.SIGQUIT, self.handle_quit,
