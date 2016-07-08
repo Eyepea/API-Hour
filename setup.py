@@ -17,6 +17,7 @@ else:
 
 install_requires += ['gunicorn', 'PyYAML', 'setproctitle']
 
+
 def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
 
