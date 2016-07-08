@@ -7,3 +7,4 @@ ujson
 setproctitle
 gunicorn
 PyYAML
+sphinx
