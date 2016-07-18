@@ -36,26 +36,26 @@ Moreover, we've tried to reduce as much as possible layers between your code and
 For each layer, we use the best in term of performance and simplicity:
 
 #. `AsyncIO <https://docs.python.org/3/library/asyncio.html>`_: an easy asynchronous framework, directly integrated in Python 3.4+
-#. `aiohttp.web <http://aiohttp.readthedocs.org/en/latest/web.html>`_: HTTP protocol implementation for AsyncIO + Web framework
+#. `aiohttp.web <https://aiohttp.readthedocs.org/en/latest/web.html>`_: HTTP protocol implementation for AsyncIO + Web framework
 #. `ujson <https://github.com/esnme/ultrajson#ultrajson>`_: fastest JSON serialization
 
 Examples
 --------
 
 #. `API-Hour Starter Kit (Cookiecutter) <https://github.com/Eyepea/cookiecutter-API-Hour>`_
-#. `API-Hour implementation of TechEmpower Web Framework Benchmarks <https://github.com/Eyepea/FrameworkBenchmarks/tree/API-Hour/frameworks/Python/API-Hour>`_
+#. `API-Hour implementation of TechEmpower Web Framework Benchmarks <https://github.com/TechEmpower/FrameworkBenchmarks/tree/master/frameworks/Python/asyncio>`_
 #. `HTTP+SSH Daemon <https://github.com/Eyepea/API-Hour/tree/master/examples/http_and_ssh>`_
 #. `Quick'n'dirty benchmarks on a kitchen table <https://github.com/Eyepea/API-Hour/tree/master/benchmarks/api_hour/benchmarks>`_
 
 How-to start an API-Hour project ?
 ----------------------------------
 
-You can follow `one of our tutorials <http://pythonhosted.org/api_hour/tutorials/index.html>`_
+You can follow `one of our tutorials <https://pythonhosted.org/api_hour/tutorials/index.html>`_
 
 Support
 -------
 
-* `Documentation <http://pythonhosted.org/api_hour/>`_.
+* `Documentation <https://pythonhosted.org/api_hour/>`_.
 * `Mailing-list <https://groups.google.com/d/forum/api-hour>`_
 
 Requirements
@@ -66,7 +66,7 @@ Requirements
 Install
 -------
 
-Follow `official documentation <http://pythonhosted.org/api_hour/installation.html>`_.
+Follow `official documentation <https://pythonhosted.org/api_hour/installation.html>`_.
 
 License
 -------
