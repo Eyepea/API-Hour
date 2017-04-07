@@ -38,6 +38,7 @@ nosetests.xml
 
 htmlcov
 pyvenv/
+.pyvenv/
 venv/
 .idea/
 .env
