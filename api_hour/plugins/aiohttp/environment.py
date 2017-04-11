@@ -45,7 +45,7 @@ async def env_middleware_factory(app, handler):
 
         if 'json' in config:
             try:
-                request['env']['json'] = await request.json(loader=json.loads)
+                request['env']['json'] = await request.json(loads=json.loads)
             except ValueError:
                 raise JSON(status=400, data='''The payload must be of json format''')
 
