@@ -69,13 +69,16 @@ class Worker(base.Worker):
                 server.close()
 
             # stop alive connections
+            self.log.debug('Terminating connections')
             tasks = []
             for handler in servers.values():
-                if hasattr(handler, 'finish_connections'):
-                    tasks.append(handler.finish_connections(
-                    timeout=self.cfg.graceful_timeout / 100 * 80))
+                if hasattr(handler, 'shutdown'):
+                    tasks.append(handler.shutdown(timeout=self.cfg.graceful_timeout / 100 * 80))
+                elif hasattr(handler, 'finish_connections'):
+                    tasks.append(handler.finish_connections(timeout=self.cfg.graceful_timeout / 100 * 80))
             if tasks:
                 await asyncio.wait(tasks, loop=self.loop)
+            self.log.debug('All connections terminated')
 
             # stop container
             await self.container.stop()
@@ -83,6 +86,10 @@ class Worker(base.Worker):
             # Wait the end of close
             for server, handler in servers.items():
                 await server.wait_closed()
+            self.log.debug('All server closed')
+
+        else:
+            await self.container.stop()
 
     async def _run(self):
         self.container = self.app.callable(config=self.app.config,
