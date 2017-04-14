@@ -12,6 +12,8 @@ LOG = logging.getLogger(__name__)
 
 async def env_middleware_factory(app, handler):
     async def env_middleware(request):
+
+        LOG.debug('incoming request %s from: %s', request.method, request.path)
         request['env'] = {
             'container': request.app['ah_container'],
             'id': request.headers.get('Request_ID', None)
@@ -24,7 +26,10 @@ async def env_middleware_factory(app, handler):
             LOG.debug('Can not retrieve resource name for %(http_path)s', {'http_path': request.path})
             return await handler(request)
 
+        LOG.debug('Resource name: %s, config: %s', name, config)
+
         if 'pg' in config and 'pg' in request['env']['container'].engines:
+            LOG.debug('Creating pg cursor')
             request['env']['pg'] = dict()
             request['env']['pg']['engine'] = await request['env']['container'].engines['pg']
             request['env']['pg']['cursor_context_manager'] = await request['env']['pg']['engine'].cursor()
@@ -32,6 +37,7 @@ async def env_middleware_factory(app, handler):
             await request['env']['pg']['cursor'].execute('BEGIN')
 
         if 'mysql' in config and 'mysql' in request['env']['container'].engines:
+            LOG.debug('Creating mysql cursor')
             request['env']['mysql'] = dict()
             request['env']['mysql']['engine'] = await request['env']['container'].engines['mysql']
             request['env']['mysql']['connection'] = await request['env']['mysql']['engine'].acquire()
@@ -39,20 +45,24 @@ async def env_middleware_factory(app, handler):
             await request['env']['mysql']['connection'].begin()
 
         if 'redis' in config and 'redis' in request['env']['container'].engines:
+            LOG.debug('Creating redis connection')
             request['env']['redis'] = dict()
             request['env']['redis']['engine'] = await request['env']['container'].engines['redis']
             request['env']['redis']['connection'] = await request['env']['redis']['engine'].acquire()
 
         if 'json' in config:
+            LOG.debug('Parsing json')
             try:
                 request['env']['json'] = await request.json(loads=json.loads)
             except ValueError:
                 raise JSON(status=400, data='''The payload must be of json format''')
+            LOG.debug('Json parsed')
 
         request['env']['name'] = name
         request['env']['config'] = config
 
         try:
+            LOG.debug('Handling request')
             response = await handler(request)
         except Exception as exception:
             if 'pg' in config and 'pg' in request['env'] and not request['env']['pg']['cursor'].closed:
@@ -63,8 +73,8 @@ async def env_middleware_factory(app, handler):
             if 'mysql' in config and 'mysql' in request['env'] and not request['env']['mysql']['cursor'].closed:
                 LOG.debug('Rolling back mysql transaction')
                 await request['env']['mysql']['connection'].rollback()
-                request['env']['mysql']['connection'].close()
-
+                await request['env']['mysql']['cursor'].close()
+                request['env']['mysql']['engine'].release(request['env']['mysql']['connection'])
             raise exception
         else:
             if 'pg' in config and 'pg' in request['env'] and not request['env']['pg']['cursor'].closed:
@@ -75,7 +85,8 @@ async def env_middleware_factory(app, handler):
             if 'mysql' in config and 'mysql' in request['env'] and not request['env']['mysql']['cursor'].closed:
                 LOG.debug('Committing mysql transaction')
                 await request['env']['mysql']['connection'].commit()
-                request['env']['mysql']['connection'].close()
+                await request['env']['mysql']['cursor'].close()
+                request['env']['mysql']['engine'].release(request['env']['mysql']['connection'])
         finally:
             if 'redis' in config and 'redis' in request['env'] and not request['env']['redis']['connection'].closed:
                 LOG.debug('Closing redis connection')
