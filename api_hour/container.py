@@ -43,13 +43,16 @@ class Container:
     def pre_stop(self):
         if not self._stopping:
             self._stopping = True
-            task = asyncio.ensure_future(self.stop(), loop=self.loop)
-            task.add_done_callback(self.post_stop)
+            task = asyncio.ensure_future(self.shutdown(), loop=self.loop)
+            task.add_done_callback(self.cleanup())
         else:
             LOG.debug('Already stopping application, not doing anything')
 
-    async def stop(self):
-        LOG.info('Stopping application...')
+    async def shutdown(self):
+        pass
+
+    async def cleanup(self):
+        pass
 
     def post_stop(self, future):
         pass
