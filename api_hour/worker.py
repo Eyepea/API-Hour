@@ -7,6 +7,11 @@ import signal
 import sys
 import gunicorn.workers.base as base
 
+try:
+    import aiohttp.web
+except ImportError:
+    aiohttp = None
+
 # from pycallgraph import PyCallGraph
 # from pycallgraph import Config
 # from pycallgraph.output import GraphvizOutput
@@ -59,37 +64,32 @@ class Worker(base.Worker):
             self.handlers = None
 
             # stop accepting connections
+            self.log.info("Closing %s servers. PID: %s", len(servers), self.pid)
+            closing = list()
             for server, handler in servers.items():
-                if hasattr(handler, 'connections'):
-                    self.log.info("Stopping server: %s, connections: %s",
-                                  self.pid, len(handler.connections))
-                else:
-                    self.log.info("Stopping server: %s",
-                                  self.pid)
                 server.close()
+                closing.append(server.wait_closed())
 
-            # stop alive connections
-            self.log.debug('Terminating connections')
+            if closing:
+                await asyncio.wait(closing, return_when=asyncio.ALL_COMPLETED, loop=self.loop)
+
+            self.log.debug('Shutting down')
+            await self.container.shutdown()
             tasks = []
             for handler in servers.values():
-                if hasattr(handler, 'shutdown'):
+                if aiohttp and isinstance(handler, aiohttp.web.Server):
                     tasks.append(handler.shutdown(timeout=self.cfg.graceful_timeout / 100 * 80))
-                elif hasattr(handler, 'finish_connections'):
-                    tasks.append(handler.finish_connections(timeout=self.cfg.graceful_timeout / 100 * 80))
             if tasks:
-                await asyncio.wait(tasks, loop=self.loop)
-            self.log.debug('All connections terminated')
+                await asyncio.wait(tasks, loop=self.loop, return_when=asyncio.ALL_COMPLETED)
 
-            # stop container
-            await self.container.stop()
+            self.log.debug('Cleaning container')
+            await self.container.cleanup()
 
-            # Wait the end of close
-            for server, handler in servers.items():
-                await server.wait_closed()
             self.log.debug('All server closed')
 
         else:
-            await self.container.stop()
+            await self.container.shutdown()
+            await self.container.cleanup()
 
     async def _run(self):
         self.container = self.app.callable(config=self.app.config,
