@@ -5,10 +5,12 @@ from setuptools import setup, find_packages
 
 __docformat__ = 'rst'
 
-PY_VER = sys.version_info
+PY_VER = sys.version_info[:3]
 
 if PY_VER < (3, 5, 0):
-    raise RuntimeError("api_hour doesn't support Python earlier than 3.5.0, current Python version is: %s" % PY_VER)
+    PY_VERS = '.'.join(map(str, PY_VER))
+    raise RuntimeError("api_hour doesn't support Python earlier than 3.5.0, "
+                       "current Python version is: %s" % PY_VERS)
 
 install_requires = ['gunicorn', 'PyYAML', 'setproctitle']
 
