@@ -95,6 +95,7 @@ class Worker(base.Worker):
         self.container = self.app.callable(config=self.app.config,
                                            worker=self,
                                            loop=self.loop)
+        await self.container.pre_start()
         if asyncio.iscoroutinefunction(self.container.make_servers):
             self.handlers = await self.container.make_servers(self.sockets)
         else:

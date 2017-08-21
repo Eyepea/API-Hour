@@ -37,6 +37,9 @@ class Container:
         """To customize loop generation"""
         return asyncio.new_event_loop()
 
+    async def pre_start(self):
+        pass
+
     async def start(self):
         LOG.info('Starting application...')
 
