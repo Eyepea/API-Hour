@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+0.8.2 (2017-11-10)
+------------------
+
+* Add pre_start coroutine
+* Fix setup.py to check correctly minimal Python version. Thanks @romuald
+
 0.8.1 (2016-07-08)
 ------------------
 
