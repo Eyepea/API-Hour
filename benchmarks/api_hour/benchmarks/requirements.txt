@@ -1,4 +1,4 @@
-PyYAML==3.11
+PyYAML==5.1
 aiohttp==0.13.1
 aiopg==0.6.2
 psycopg2==2.5.4
