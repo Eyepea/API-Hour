@@ -1,4 +1,4 @@
-PyYAML==3.11
+PyYAML==5.1
 aiohttp==0.13.1
 api_hour==0.5.0
 asyncssh==0.9.1
