@@ -5,7 +5,7 @@ asyncssh==0.9.1
 cffi==0.8.6
 cryptography==0.7.1
 enum34==1.0.4
-gunicorn==19.1.1
+gunicorn==19.5.0
 pyasn1==0.1.7
 pycparser==2.10
 pycrypto==2.6.1
