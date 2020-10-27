@@ -3,7 +3,7 @@ aiohttp==0.13.1
 api_hour==0.5.0
 asyncssh==0.9.1
 cffi==0.8.6
-cryptography==0.7.1
+cryptography==3.2
 enum34==1.0.4
 gunicorn==19.1.1
 pyasn1==0.1.7
