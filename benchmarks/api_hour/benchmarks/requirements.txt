@@ -1,5 +1,5 @@
 PyYAML==3.11
-aiohttp==0.13.1
+aiohttp==3.7.4
 aiopg==0.6.2
 psycopg2==2.5.4
 six==1.8.0
