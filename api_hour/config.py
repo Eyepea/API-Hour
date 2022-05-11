@@ -26,7 +26,7 @@ def get_config(overrides: dict) -> dict:
     """
     config_file = os.path.join(overrides['config_dir'], 'main/main.yaml')
     try:
-        conf = yaml.load(open(config_file, 'r', encoding='utf-8'))
+        conf = yaml.safe_load(open(config_file, 'r', encoding='utf-8'))
     except IOError as e:
         print(e)
         print('Configuration file "%s" cannot be found. please fix this and retry.' % config_file)
