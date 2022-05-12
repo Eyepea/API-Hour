@@ -11,7 +11,7 @@ class JSON(HTTPException):
 
     def __init__(self, data, status=200,
                  reason=None, headers=None):
-        body = json.dumps(data).encode('utf-8')
+        body = json.dumps(data, default=str).encode('utf-8')
         self.status_code = status
 
         super().__init__(body=body, reason=reason,
