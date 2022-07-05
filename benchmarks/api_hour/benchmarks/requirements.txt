@@ -3,5 +3,5 @@ aiohttp==0.13.1
 aiopg==0.6.2
 psycopg2==2.5.4
 six==1.8.0
-ujson==1.33
+ujson==5.4.0
 api_hour==0.6.2
