@@ -11,4 +11,4 @@ pycparser==2.10
 pycrypto==2.6.1
 setproctitle==1.1.8
 six==1.9.0
-ujson==1.33
+ujson==5.4.0
